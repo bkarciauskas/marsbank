@@ -3584,6 +3584,50 @@ button.desk-primary-action {
   color: var(--desk-sheet);
 }
 
+.banking-shell .desk .theme-toggle {
+  min-width: 168px;
+  max-width: 220px;
+  overflow: hidden;
+  border: 1px solid var(--desk-rule);
+  border-radius: 3px;
+  background: var(--desk-shade);
+}
+
+.banking-shell .desk .theme-toggle button {
+  min-height: 38px;
+  color: var(--desk-ink-soft);
+  font-family: inherit;
+  font-size: var(--desk-text-md);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .desk .theme-toggle button[aria-pressed="true"] {
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+}
+
+.banking-shell .desk-quiet-action {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  padding: 0 20px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--desk-text-lg);
+  font-weight: 500;
+}
+
+.banking-shell .desk-quiet-action:hover {
+  background: var(--desk-shade);
+}
+
 /* Cards */
 .desk-card {
   overflow: hidden;
