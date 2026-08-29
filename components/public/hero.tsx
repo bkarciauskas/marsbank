@@ -12,7 +12,7 @@ export function Hero() {
   return (
     <section className="hero" aria-label="Mars Bank">
       <div className="hero-copy">
-        <h1>Earth had banks. Mars needs its own.</h1>
+        <h1>The only bank on Mars</h1>
         <p className="hero-body">
           Hold, move and plan with the unit that runs this world: model tokens.
         </p>
