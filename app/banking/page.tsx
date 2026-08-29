@@ -1,12 +1,16 @@
 "use client";
 
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { AccountList } from "@/components/banking/account-list";
-import { TransactionList } from "@/components/banking/transaction-list";
 import { availableBalance } from "@/lib/ledger";
 import { formatTokens, tokens } from "@/lib/money";
-import { latestPostedTime, solsBeforeLatest } from "@/lib/sol";
+import {
+  LEDGER_SOL,
+  latestPostedTime,
+  solNumberFromLatest,
+  solsBeforeLatest,
+} from "@/lib/sol";
 import { useBank } from "@/lib/store";
 import "@/components/banking/reports-surface.css";
 
@@ -38,94 +42,98 @@ export default function BankingOverview() {
       .reduce((total, transaction) => total + transaction.amount, 0),
   );
   const netMovement = tokens(totalCredits - totalDebits);
-  const formattedTotal = new Intl.NumberFormat("en-AU").format(totalAvailable);
+  const grouped = new Intl.NumberFormat("en-AU");
+  const recentMovements = snapshot.transactions.slice(0, 5);
+  const accountNames = new Map(
+    snapshot.accounts.map((account) => [account.id, account.name]),
+  );
 
   return (
-    <div className="dashboard">
-      <div className="page-intro">
-        <h1>Good evening, {snapshot.customer.displayName}</h1>
-        <p className="mars-time">Sol 21 · Jezero local</p>
+    <div className="desk">
+      <div className="desk-intro">
+        <div>
+          <h1>Good evening, {snapshot.customer.displayName.split(" ")[0]}</h1>
+          <p>
+            Mars sol {LEDGER_SOL} · Client {snapshot.customer.memberId}
+          </p>
+        </div>
+        <div className="desk-position">
+          <div>
+            <span>Available total</span>
+            <strong>{grouped.format(totalAvailable)}</strong>
+            <small>model tokens</small>
+          </div>
+          <Link className="desk-primary-action" href="/banking/transfer">
+            Make a transfer <ArrowRight />
+          </Link>
+        </div>
       </div>
 
-      <section className="position-panel">
-        <div>
-          <strong>
-            {formattedTotal} <small>Tokens</small>
-          </strong>
-        </div>
-        <Link href="/banking/transfer">
-          Send tokens <ArrowRight />
-        </Link>
+      <section aria-label="Accounts" className="desk-card">
+        <AccountList accounts={snapshot.accounts} compact showTotals />
       </section>
 
-      <div className="registry-layout">
-        <section className="bank-section account-register">
-          <div className="bank-section-heading">
-            <div>
-              <h2>Accounts</h2>
-            </div>
-            <Link href="/banking/accounts">
-              Open full register <ArrowRight />
+      <div className="desk-columns">
+        <section aria-labelledby="desk-movements" className="desk-card">
+          <div className="desk-card-heading">
+            <h2 id="desk-movements">Recent movements</h2>
+            <Link href="/banking/activity">
+              View all <ChevronRight />
             </Link>
           </div>
-          <AccountList accounts={snapshot.accounts} compact />
-        </section>
-
-        <aside className="bank-section movement-rail">
-          <div className="bank-section-heading">
-            <div>
-              <h2>Latest movement</h2>
-            </div>
-            <nav aria-label="Movement overflow" className="heading-links">
-              <Link href="/banking/activity">
-                Open full ledger <ArrowRight />
-              </Link>
-              <Link href="/banking/reports">
-                Posted movement <ArrowRight />
-              </Link>
-            </nav>
-          </div>
-          <TransactionList compact transactions={snapshot.transactions.slice(0, 5)} />
-        </aside>
-      </div>
-
-      <div className="register-summary">
-        <section>
-          <div className="bank-section-heading">
-            <div>
-              <h2>Position by account</h2>
-            </div>
-          </div>
-          <ul>
-            {spendableAccounts.map((account, index) => (
-              <li key={account.id}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <strong>{account.name}</strong>
-                <span>{formatTokens(availableBalance(account))}</span>
+          <ul className="desk-movements">
+            {recentMovements.map((transaction) => (
+              <li key={transaction.id}>
+                <span className="desk-movement-sol">
+                  Sol {solNumberFromLatest(transaction.postedOn, latestPostedAt)}
+                </span>
+                <span className="desk-movement-name">
+                  <strong>{transaction.description}</strong>
+                  <small>{accountNames.get(transaction.accountId)}</small>
+                </span>
+                <strong className={`desk-movement-amount ${transaction.direction}`}>
+                  {transaction.direction === "debit" ? "−" : "+"}
+                  {grouped.format(transaction.amount)} <small>MT</small>
+                </strong>
               </li>
             ))}
           </ul>
         </section>
-        <section className="sol-summary">
-          <div className="bank-section-heading">
-            <div>
-              <h2>Sol 21 movement</h2>
-            </div>
+
+        <section aria-labelledby="desk-sol" className="desk-card">
+          <div className="desk-card-heading">
+            <h2 id="desk-sol">This sol at a glance</h2>
+            <Link href="/banking/reports">
+              Posted movement <ChevronRight />
+            </Link>
           </div>
-          <dl>
+          <dl className="desk-glance">
             <div>
               <dt>Tokens in</dt>
-              <dd>{formatTokens(totalCredits)}</dd>
+              <dd className={totalCredits > 0 ? "credit" : undefined}>
+                {totalCredits > 0 ? "+" : ""}
+                {grouped.format(totalCredits)} <small>MT</small>
+              </dd>
             </div>
             <div>
               <dt>Tokens out</dt>
-              <dd>−{formatTokens(totalDebits)}</dd>
+              <dd>
+                {totalDebits > 0 ? "−" : ""}
+                {grouped.format(totalDebits)} <small>MT</small>
+              </dd>
             </div>
             <div>
               <dt>Net change</dt>
-              <dd>{formatTokens(netMovement)}</dd>
+              <dd className={netMovement > 0 ? "credit" : undefined}>
+                {netMovement > 0 ? "+" : netMovement < 0 ? "−" : ""}
+                {grouped.format(Math.abs(netMovement))} <small>MT</small>
+              </dd>
             </div>
           </dl>
+          <p className="desk-glance-note">
+            Posted lines only. {formatTokens(totalAvailable)} remain available
+            across your deposit accounts and unused credit.
+          </p>
         </section>
       </div>
     </div>

@@ -8,8 +8,12 @@ export function tokens(value: number): TokenAmount {
 }
 
 export function formatTokens(amount: TokenAmount): string {
-  const grouped = new Intl.NumberFormat("en-AU").format(amount);
-  return `${grouped} tokens`;
+  return `${groupTokens(amount)} tokens`;
+}
+
+/** Bare grouped figure, for columns that already carry the MT unit in their header. */
+export function groupTokens(amount: TokenAmount): string {
+  return new Intl.NumberFormat("en-AU").format(amount);
 }
 
 export function parseTokenInput(raw: string): TokenAmount | null {

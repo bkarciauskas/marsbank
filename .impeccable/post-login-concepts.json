@@ -1,0 +1,144 @@
+{
+  "title": "Choose a calmer post-login workspace",
+  "question": "Six light-first structures keep Mars Bank’s identity and behavior while replacing the harsh condensed register with a quieter banking interface. The last three explore row-level task patterns.",
+  "options": [
+    {
+      "id": "quiet-workspace",
+      "label": "Quiet Account Workspace",
+      "kicker": "THE ROLL",
+      "lineage": "premium desktop banking workspaces",
+      "thesis": "One centered account sheet carries the daily banking task, with navigation receding into a slim graphite rail.",
+      "palette": [
+        "#F4F5F3",
+        "#FFFFFF",
+        "#101518",
+        "#E4623F",
+        "#356CFF"
+      ],
+      "materials": [
+        "soft mineral canvas",
+        "paper-white account sheet",
+        "hairline dividers"
+      ],
+      "viewport": "A 72px graphite icon rail and compact utility bar frame a generous greeting, restrained total, and one dominant accounts table with recent movement reduced to a narrow footer strip.",
+      "risk": "The extreme calm depends on disciplined spacing; adding secondary panels would quickly weaken it.",
+      "comp": ".impeccable/mocks/decision/quiet-workspace.png"
+    },
+    {
+      "id": "grouped-balance-sheet",
+      "label": "Grouped Balance Sheet",
+      "lineage": "personal finance statements",
+      "thesis": "Accounts read as three spacious financial groups instead of one dense institutional register.",
+      "palette": [
+        "#EFE6DA",
+        "#FFFFFF",
+        "#101518",
+        "#E4623F",
+        "#2454D6"
+      ],
+      "materials": [
+        "warm dust canvas",
+        "white statement bands",
+        "graphite navigation"
+      ],
+      "viewport": "A 200px text rail sits beside a warm light canvas where Spend, Save, and Borrow appear as stacked open bands, each with one decisive balance and minimal metadata.",
+      "risk": "Grouping improves comprehension but gives up some at-a-glance column comparison.",
+      "comp": ".impeccable/mocks/decision/grouped-balance-sheet.png"
+    },
+    {
+      "id": "search-led-account-desk",
+      "label": "Search-led Account Desk",
+      "lineage": "Macquarie-style desktop banking portals",
+      "thesis": "A useful search bar and a familiar account table make the interface feel immediate, conventional, and calm.",
+      "palette": [
+        "#F2F3F5",
+        "#FFFFFF",
+        "#101518",
+        "#E4623F",
+        "#356CFF"
+      ],
+      "materials": [
+        "cool neutral canvas",
+        "white ledger surface",
+        "black utility chrome"
+      ],
+      "viewport": "A black top bar holds the Mars Bank mark, universal search, customer controls, and logout; a narrow icon rail leads to a large white accounts table below a sentence-case greeting.",
+      "risk": "It is the closest to the reference and therefore the least distinctive of the three.",
+      "comp": ".impeccable/mocks/decision/search-led-account-desk.png"
+    },
+    {
+      "id": "row-task-menu",
+      "label": "Row Task Menu",
+      "lineage": "enterprise banking task launchers",
+      "thesis": "Every account row carries its own quiet task menu, so transactions, statements, details, and transfers start where the account already is.",
+      "palette": [
+        "#F4F5F3",
+        "#FFFFFF",
+        "#101518",
+        "#E4623F",
+        "#356CFF"
+      ],
+      "materials": [
+        "paper-white ledger",
+        "hairline row rules",
+        "graphite menu surface"
+      ],
+      "viewport": "A calm greeting sits above one white accounts table; the hovered row lifts a hairline-bordered menu listing account transactions, statements, details, and transfer, with row checkboxes enabling a batch statement action in the table header.",
+      "risk": "Menus hide actions behind a click, so the labels have to be exact for the pattern to feel faster than links.",
+      "comp": ".impeccable/mocks/decision/row-task-menu.png"
+    },
+    {
+      "id": "expanding-rows",
+      "label": "Expanding Account Rows",
+      "lineage": "progressive-disclosure account lists",
+      "thesis": "The overview stays a single short list until a row opens in place to reveal its card, recent movement, and actions.",
+      "palette": [
+        "#F1F2F0",
+        "#FFFFFF",
+        "#101518",
+        "#E4623F",
+        "#356CFF"
+      ],
+      "materials": [
+        "soft neutral canvas",
+        "white expansion panel",
+        "hairline dividers"
+      ],
+      "viewport": "Four collapsed account rows on a white sheet, the first expanded to show the linked card, five recent movements, and three text actions, keeping the whole bank on one screen without a second page.",
+      "risk": "An expanded row pushes lower accounts off screen, so the collapsed rhythm has to stay very short.",
+      "comp": ".impeccable/mocks/decision/expanding-rows.png"
+    },
+    {
+      "id": "two-pane-desk",
+      "label": "Two-pane Account Desk",
+      "lineage": "master-detail finance clients",
+      "thesis": "The account list never leaves the screen; selecting an account fills a persistent detail pane beside it.",
+      "palette": [
+        "#EFF0EE",
+        "#FFFFFF",
+        "#101518",
+        "#E4623F",
+        "#356CFF"
+      ],
+      "materials": [
+        "quiet neutral canvas",
+        "white detail pane",
+        "graphite rail"
+      ],
+      "viewport": "A narrow icon rail, then a 320px account list with balances, then a wide white detail pane showing the selected account’s balance, movements, and actions with no page transition.",
+      "risk": "Two panes cost horizontal room, so the detail pane must degrade to a stacked view earlier than the other concepts.",
+      "comp": ".impeccable/mocks/decision/two-pane-desk.png"
+    }
+  ],
+  "reroll": {
+    "registers": [
+      "safer",
+      "bolder"
+    ]
+  },
+  "buildPath": {
+    "value": "comp",
+    "toggle": true
+  },
+  "steer": true
+}

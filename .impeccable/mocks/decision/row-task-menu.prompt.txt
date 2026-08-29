@@ -1,0 +1,33 @@
+A pixel-crisp, full-fidelity desktop web application UI concept comp, rendered flat at 1440x900 with no browser chrome, no device frame, no annotations, no watermark. This is the first viewport of the authenticated "Mars Bank" banking overview for a fictional Mars retail bank. Money is measured in model tokens (MT).
+
+REFERENCE USE: The two Macquarie online-banking screenshots supply only the interaction pattern (an account row that lifts an open task menu) and the calm, low-density table rhythm. The dark graphite "MARS BANK" screenshot supplies only the orbital-arc mark shape and the account data; ignore its dark palette, its condensed all-caps type, and its layout entirely. Do not copy Macquarie blue, Macquarie logos, or any Macquarie wording.
+
+TYPOGRAPHY: one calm, soft humanist grotesk throughout, in the character of Hanken Grotesk — open apertures, gentle curves, tabular lining figures for money. Absolutely no condensed type, no all-caps headings, no oversized display numerals, no serifs, no italics. Sentence case everywhere except the 11px column labels.
+
+PALETTE: #F4F5F3 page canvas, #FFFFFF ledger sheet, #101518 graphite for ink and the left rail, #E4623F oxide for the single primary action only, #356CFF signal blue for available balances and the one selected menu item, #7C8683 muted grey for metadata, #ECEEEA hairline rules.
+
+REGIONS, in order, largest to smallest:
+
+1. LEFT RAIL — a narrow graphite (#101518) vertical rail about 76px wide, full height, no labels. At the top, the Mars Bank orbital mark: a small circular lockup of two thin rotated ellipses with one small oxide (#E4623F) node dot on the arc. Below it, five small 1.5px-stroke line icons stacked with generous spacing: a four-square grid, a bank column building, a card rectangle, two opposing transfer arrows, a gear. The grid icon is active, marked by a 2px oxide bar on the rail's inner edge and brighter white stroke; the others are soft grey (#8A9694). At the very bottom, a small 26px circular grey avatar.
+
+2. PAGE CANVAS — everything right of the rail sits on #F4F5F3, with generous 40px outer margins.
+
+3. TOP UTILITY ROW — a thin 44px row across the canvas top. On the left, a quiet control reading "Primary account set" in 13px graphite with a small chevron. On the right, three plain 13px graphite text actions with tiny line icons: "Security", "Support", "Log out".
+
+4. GREETING BLOCK — left aligned: "Good evening, Cameron" in sentence case, 30px, medium weight, graphite, no all-caps. Directly beneath it a small 13px muted line: "Sol 21 · Your banking". On the same baseline at the far right, the single primary action: a square-cornered oxide (#E4623F) filled button, 48px tall, white 14px sentence-case label "Make a transfer" with a small right arrow.
+
+5. DOMINANT LEDGER SHEET — one large pure white (#FFFFFF) table sheet spanning the full content width and occupying roughly two thirds of the viewport height. Square corners (at most 2px), a single 1px #E2E5E1 outline, and no drop shadow. Inside, from top:
+   a. A 60px header strip: on the left a small 14px square unchecked checkbox, then "Accounts" in 17px sentence-case graphite; on the right a quiet batch action, plain 13px graphite text "Download statements" with a small download icon, reading as newly enabled because a row is selectable.
+   b. A column label row in 11px uppercase, letterspaced, muted grey: PRODUCT, ACCOUNT NAME, ACCOUNT NUMBER, AVAILABLE (MT), BALANCE (MT). The last two are right aligned. These labels are the only uppercase text in the entire image.
+   c. Four account rows, each about 76px tall, separated by 1px #ECEEEA hairline rules. Each row: a small square checkbox at the left, then the product name in 16px sentence-case graphite with a 12px muted second line beneath it, then the account holder name, then the account number in tabular figures, then the available amount right aligned in #356CFF signal blue 17px tabular figures, then the balance right aligned in graphite 17px tabular figures. Row contents in order:
+      Row 1: "Everyday" / "Spend · Daily access" / "Olympus Mons Branch" / "Cameron Vale" / "OMS-1001-0001" / available "184,220" / balance "186,400". This row is hovered: a very subtle #F7F8F6 wash across it and a 2px oxide bar on its left edge. Its checkbox is ticked in graphite. At the right end of this row sits a small square-cornered graphite-outline trigger button, 32px tall, 13px sentence-case label "Task menu" with a small down chevron.
+      Row 2: "Crater Reserve" / "Savings · Long term" / "Valles Marineris Branch" / "Cameron Vale" / "VMB-2001-0002" / available "1,840,000" / balance "1,840,000".
+      Row 3: "Habitat Offset" / "Sustainability · Projects" / "Cydonia Branch" / "Cameron Vale" / "CYD-3001-0003" / available "620,400" / balance "625,000".
+      Row 4: "Mars Bank Credit" / "Revolving · Credit" / "Olympus Mons Branch" / "Cameron Vale" / "OMS-4001-0004" / available shown as a muted em dash / balance "82,640" in graphite with a tiny 11px muted "Owed" label directly above it.
+   d. A footer strip inside the sheet, right aligned, two small 13px lines of label plus tabular amount: "Total available 2,644,620" and "Total balance 2,651,400".
+
+6. ANCHORED TASK MENU — the hovered first row lifts an open task menu, clearly anchored to that row and overlapping the rows beneath it. A graphite (#101518) panel about 280px wide with square corners and one soft realistic shadow, its top edge tucked just under the row's "Task menu" trigger. Four items, each 44px tall, in 14px sentence-case near-white type, left aligned with comfortable padding: "View account transactions", "View statements and reports", "View account details", "Send tokens". The third item, "View account details", is the highlighted item: a full-width #356CFF signal blue fill with white text. A faint 1px separator above the final item. A small cursor arrow rests on the highlighted item.
+
+MOOD AND CONSTRAINTS: calm, exact, paper-like, low ornament, generous whitespace, hairline structure instead of nested cards. Crisp 1px rules, perfectly aligned columns, real tabular numerals. No dark page background, no gradients, no glow, no sci-fi or HUD styling, no planet imagery, no rounded pill cards, no drop shadows other than the one menu shadow, no charts. No invented commercial claims, interest rates, fees, awards, or dates beyond those listed. No lorem ipsum and no misspelled words.
+
+POST-PROCESS: generator returned 1536x1024 (3:2). Reframed to 1440x900 (16:10) by removing 64 pixel-identical horizontal rows (worst seam delta = 1/255, no visible seam, no content clipped), then resampling with Lanczos.

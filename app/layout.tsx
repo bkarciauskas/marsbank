@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import "@fontsource-variable/hanken-grotesk";
 import "@fontsource/saira/400.css";
 import "@fontsource/saira/600.css";
 import "@fontsource/saira-extra-condensed/600.css";
