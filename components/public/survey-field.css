@@ -1,0 +1,100 @@
+.survey-stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  --survey-x: 0px;
+  --survey-y: 0px;
+}
+
+.survey-track {
+  position: absolute;
+  inset: 0;
+  transform: translate3d(var(--survey-x), var(--survey-y), 0);
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.survey-bed {
+  position: absolute;
+  inset: -8%;
+}
+
+.survey-stage.is-surveying .survey-bed {
+  animation: survey-plot 42s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  will-change: transform;
+}
+
+.survey-plate {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+.survey-read {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: url("/assets/images/survey-sheet.jpg") center 35% / cover no-repeat;
+  mix-blend-mode: screen;
+  opacity: 0;
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(16 21 24 / 0.18) 46%,
+    #101518 50%,
+    rgb(16 21 24 / 0.18) 54%,
+    transparent 100%
+  );
+  mask-repeat: no-repeat;
+  mask-size: 100% 42%;
+  mask-position: 0% -50%;
+}
+
+.survey-stage.is-surveying .survey-read {
+  opacity: 0.3;
+  animation: survey-read 16s linear infinite;
+}
+
+@keyframes survey-plot {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.045);
+  }
+
+  35% {
+    transform: translate3d(1.4%, -0.9%, 0) scale(1.045);
+  }
+
+  68% {
+    transform: translate3d(-1.1%, 0.7%, 0) scale(1.045);
+  }
+}
+
+@keyframes survey-read {
+  from {
+    mask-position: 0% -50%;
+  }
+
+  to {
+    mask-position: 0% 150%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .survey-stage.is-surveying .survey-bed,
+  .survey-stage.is-surveying .survey-read {
+    animation: none;
+    will-change: auto;
+  }
+
+  .survey-read {
+    opacity: 0;
+  }
+
+  .survey-track {
+    transform: none;
+    transition: none;
+  }
+}

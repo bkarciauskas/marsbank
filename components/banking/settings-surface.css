@@ -1,0 +1,101 @@
+a.registry-identity {
+  padding: 8px 10px;
+}
+
+a.registry-identity:hover {
+  background: var(--ink-soft);
+}
+
+a.registry-identity.is-current {
+  background: var(--sheet);
+  color: var(--ink);
+}
+
+a.registry-identity.is-current span {
+  color: var(--ink);
+}
+
+.bank-section .restore-register {
+  margin-top: 4px;
+}
+
+.settings-register {
+  margin: 0;
+}
+
+.settings-register > div {
+  display: grid;
+  min-height: 48px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  gap: 16px;
+  grid-template-columns: 140px minmax(0, 1fr);
+}
+
+.settings-register dt,
+.settings-register dd {
+  margin: 0;
+}
+
+.settings-register dt {
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.settings-register dd {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px;
+  text-overflow: ellipsis;
+}
+
+.settings-note {
+  margin: 16px 0 0;
+  font-size: 16px;
+}
+
+.reset-confirmation {
+  display: grid;
+  gap: 16px;
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+
+.reset-confirmation > p {
+  max-width: 60ch;
+  margin: 0;
+}
+
+.reset-confirmation > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.bank-utility .bank-settings-link {
+  display: none;
+}
+
+@media (max-width: 850px) {
+  .bank-utility .bank-settings-link {
+    display: inline-flex;
+    min-height: 38px;
+    align-items: center;
+    gap: 8px;
+    padding: 0 10px;
+    color: var(--paper);
+    font-family: var(--display);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .bank-settings-link .customer-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+}

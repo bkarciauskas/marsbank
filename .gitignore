@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+.DS_Store
+*.log
+coverage
+.env*
+!.env.example
+.cursor/hooks/.edited-files
+tsconfig.tsbuildinfo
+tsconfig.tsbuildinfo

@@ -1,0 +1,120 @@
+.login-card {
+  width: min(640px, calc(100% - 48px));
+}
+
+.demo-roster {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.demo-roster legend {
+  color: var(--paper);
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.demo-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 12px;
+  background: var(--line);
+}
+
+.demo-roster-grid label {
+  position: relative;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 72px;
+  padding: 10px 12px;
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  font-family: var(--body-font);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.demo-roster-grid label.is-selected {
+  background: var(--mint);
+  color: var(--ink);
+}
+
+.demo-roster-grid label:hover:not(.is-selected) {
+  background: var(--nav-hover);
+}
+
+.demo-roster-grid input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.demo-roster-grid label:has(:focus-visible) {
+  outline: 2px solid var(--blue);
+  outline-offset: 3px;
+  z-index: 1;
+}
+
+.demo-roster-grid .customer-avatar {
+  width: 34px;
+  height: 34px;
+  font-size: 11px;
+}
+
+.demo-roster-grid label.is-selected .customer-avatar {
+  background: var(--oxide);
+  color: #fff;
+}
+
+.demo-roster-grid strong,
+.demo-roster-grid em {
+  display: block;
+  min-width: 0;
+}
+
+.demo-roster-grid strong {
+  overflow: hidden;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.demo-roster-grid em {
+  color: var(--muted);
+  font-family: var(--body-font);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.3;
+}
+
+.demo-roster-grid label.is-selected em {
+  color: var(--ink);
+  opacity: 0.72;
+}
+
+@media (max-width: 560px) {
+  .login-card {
+    width: min(640px, calc(100% - 32px));
+  }
+
+  .demo-roster-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,126 @@
+.heading-links {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+}
+
+.bank-section-heading .heading-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--paper);
+  font-family: var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.flow-totals {
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.flow-totals > div {
+  border-bottom: 1px solid var(--line);
+}
+
+.flow-totals a {
+  display: grid;
+  min-height: 52px;
+  align-items: center;
+  grid-template-columns: 1fr auto;
+}
+
+.flow-totals dt,
+.flow-totals dd {
+  margin: 0;
+}
+
+.flow-totals dt {
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.flow-totals dd {
+  color: var(--blue);
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.habit-register {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--line);
+}
+
+.habit-register a {
+  display: grid;
+  min-height: 56px;
+  align-items: end;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0 10px;
+  grid-template-columns: 1fr auto;
+  border-radius: 0;
+}
+
+.habit-register span:first-child {
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.habit-register strong {
+  color: var(--blue);
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.habit-share {
+  grid-column: 1 / -1;
+  height: 1px;
+  background: var(--line);
+  border-radius: 0;
+}
+
+.habit-share > span {
+  display: block;
+  height: 1px;
+  background: var(--blue);
+  border-radius: 0;
+}
+
+.reports-ledger-link {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  background: var(--oxide);
+  color: var(--ink);
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 0;
+}
+
+.reports-ledger-link:hover {
+  background: var(--oxide-dark);
+  color: var(--sheet);
+}
+
+.reports-pending {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+}
