@@ -10,7 +10,7 @@ const ticks = [
 
 export function Hero() {
   return (
-    <section className="hero" aria-label="Mars Bank">
+    <section className="hero public-width" aria-label="Mars Bank">
       <div className="hero-copy">
         <h1>The only bank on Mars</h1>
         <p className="hero-body">

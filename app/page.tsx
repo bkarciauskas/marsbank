@@ -45,7 +45,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="token-story" id="saving">
+        <section className="token-story public-width" id="saving">
           <div className="token-story-image">
             <TokenStorySlides />
           </div>

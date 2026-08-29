@@ -302,8 +302,7 @@ html[data-theme="light"] .mobile-bank-nav {
   min-height: 650px;
   flex-direction: column;
   justify-content: center;
-  padding: 72px max(48px, calc((100vw - 1240px) / 2));
-  padding-right: 64px;
+  padding: 72px 64px 72px 0;
   color: var(--paper);
 }
 
@@ -1978,7 +1977,7 @@ html[data-theme="light"] .survey-select-list li.is-active {
   }
 
   .hero-copy {
-    padding-left: 40px;
+    padding-left: 0;
     padding-right: 44px;
   }
 
