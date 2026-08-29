@@ -276,7 +276,7 @@ The public palette is mineral and theme-responsive; the desk palette is cool, li
 
 Public IA remains Macquarie-like: a 36px utility row, 78px primary nav, and `min(1240px, calc(100% - 48px))` public width. The split hero and token-story images sit in that same column, not the viewport. The four-cell explore grid and three-column service band follow it. It changes at 1100px, 850px, and 560px.
 
-The authenticated shell is a 60px full-width top bar above a 118px sticky icon rail and a fluid stage. Content is `min(1180px, calc(100% - 64px))` with 30px top and 64px bottom padding. The overview is a vertical 20px rhythm: greeting band, one account ledger, recent movements, then the three-up sol summary. Account rows share six visible tracks: account, branch and number, available, held, total, and arrow.
+The authenticated shell is a 60px full-width top bar above a 118px sticky icon rail and a fluid stage. Register content is left-aligned to the rail, fills the stage up to 1180px, and uses 32px inline padding with 30px top and 64px bottom padding. It is not a centered column. The overview is a vertical 20px rhythm: greeting band, one account ledger, recent movements, then the three-up sol summary. Account rows share six visible tracks: account, branch and number, available, held, total, and arrow.
 
 At 1080px the desk content tightens. At 900px the customer control collapses to its avatar. At 850px the rail hides, the top bar wraps search to a full second row, the fixed four-tab mobile bar appears, and account rows preserve the available amount while hiding held and total. The 850px mobile transition is structural, not merely a scale reduction.
 

@@ -1002,9 +1002,11 @@ html[data-theme="light"] .mobile-bank-nav {
 }
 
 .bank-content {
-  width: min(1120px, calc(100% - 64px));
-  margin: 0 auto;
-  padding: 58px 0 90px;
+  width: 100%;
+  max-width: 1680px;
+  min-width: 0;
+  margin: 0;
+  padding: 32px 30px 72px;
 }
 
 .page-intro {
@@ -1998,7 +2000,7 @@ html[data-theme="light"] .survey-select-list li.is-active {
   }
 
   .bank-content {
-    width: min(100% - 44px, 1080px);
+    width: auto;
   }
 }
 
@@ -2166,8 +2168,8 @@ html[data-theme="light"] .survey-select-list li.is-active {
   }
 
   .bank-content {
-    width: min(100% - 30px, 700px);
-    padding: 36px 0 60px;
+    width: auto;
+    padding: 28px 16px 60px;
   }
 
   .mobile-bank-nav {
@@ -2376,7 +2378,6 @@ html[data-theme="light"] .survey-select-list li.is-active {
   }
 }
 
-/* Authenticated coordinate register */
 .banking-shell {
   grid-template-columns: 228px minmax(0, 1fr);
   background: var(--ink);
@@ -2540,8 +2541,11 @@ html[data-theme="light"] .survey-select-list li.is-active {
 }
 
 .bank-content {
-  width: min(1280px, calc(100% - 48px));
-  padding: 32px 0 72px;
+  width: 100%;
+  max-width: 1680px;
+  min-width: 0;
+  margin: 0;
+  padding: 32px 30px 72px;
 }
 
 .page-intro {
@@ -3068,8 +3072,9 @@ html[data-theme="light"] .survey-select-list li.is-active {
   }
 
   .bank-content {
-    width: min(100% - 28px, 760px);
-    padding-top: 28px;
+    width: auto;
+    margin: 0;
+    padding: 28px 16px 60px;
   }
 
   .position-panel {
@@ -3493,9 +3498,11 @@ html[data-theme="light"] .survey-select-list li.is-active {
 }
 
 .banking-shell .bank-content {
-  width: min(1180px, calc(100% - 64px));
-  margin: 0 auto;
-  padding: 30px 0 64px;
+  width: 100%;
+  max-width: 1180px;
+  min-width: 0;
+  margin: 0;
+  padding: 30px 32px 64px;
 }
 
 .desk {
@@ -4045,7 +4052,9 @@ html[data-theme="light"] .survey-select-list li.is-active {
 
 @media (max-width: 1080px) {
   .banking-shell .bank-content {
-    width: min(100% - 40px, 900px);
+    width: 100%;
+    max-width: 900px;
+    margin: 0;
   }
 
   .desk-search {
@@ -4101,8 +4110,10 @@ html[data-theme="light"] .survey-select-list li.is-active {
   }
 
   .banking-shell .bank-content {
-    width: min(100% - 28px, 720px);
-    padding: 20px 0 48px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 20px 14px 48px;
   }
 
   .desk {
