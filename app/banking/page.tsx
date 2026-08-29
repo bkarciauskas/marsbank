@@ -12,7 +12,6 @@ import {
   solsBeforeLatest,
 } from "@/lib/sol";
 import { useBank } from "@/lib/store";
-import "@/components/banking/reports-surface.css";
 
 export default function BankingOverview() {
   const { snapshot } = useBank();

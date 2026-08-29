@@ -12,7 +12,7 @@ import {
   type DrillView,
   type FlowDirection,
 } from "@/lib/flow-report";
-import { formatTokens } from "@/lib/money";
+import { formatTokens, groupTokens } from "@/lib/money";
 import { latestPostedTime, solNumberFromLatest } from "@/lib/sol";
 import { useBank } from "@/lib/store";
 import "@/components/banking/reports-surface.css";
@@ -37,9 +37,19 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
   );
 
   return (
-    <>
-      <section className="bank-section">
-        <div className="bank-section-heading">
+    <div className="desk">
+      <div className="desk-intro">
+        <div>
+          <h1>Posted movement</h1>
+          <p>Mars-local ledger</p>
+        </div>
+        <Link className="desk-primary-action" href="/banking/activity">
+          Open full ledger <ArrowRight />
+        </Link>
+      </div>
+
+      <section className="desk-card">
+        <div className="desk-card-heading">
           <div>
             <h2>Flow totals</h2>
             <p>
@@ -47,27 +57,32 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
               available tokens.
             </p>
           </div>
-          <Link className="reports-ledger-link" href="/banking/activity">
-            Open full ledger <ArrowRight />
-          </Link>
         </div>
-        <dl className="flow-totals">
+        <dl className="desk-glance">
           <div>
             <Link href="/banking/reports?view=flow&flow=in">
               <dt>{FLOW_LABEL.in}</dt>
-              <dd>{formatTokens(page.report.totals.in)}</dd>
+              <dd className={page.report.totals.in > 0 ? "credit" : undefined}>
+                {page.report.totals.in > 0 ? "+" : ""}
+                {groupTokens(page.report.totals.in)} <small>MT</small>
+              </dd>
             </Link>
           </div>
           <div>
             <Link href="/banking/reports?view=flow&flow=out">
               <dt>{FLOW_LABEL.out}</dt>
-              <dd>−{formatTokens(page.report.totals.out)}</dd>
+              <dd>
+                {page.report.totals.out > 0 ? "−" : ""}
+                {groupTokens(page.report.totals.out)} <small>MT</small>
+              </dd>
             </Link>
           </div>
           <div>
             <Link href="/banking/reports?view=flow&flow=internal">
               <dt>{FLOW_LABEL.internal}</dt>
-              <dd>{formatTokens(page.report.totals.internalDebit)}</dd>
+              <dd>
+                {groupTokens(page.report.totals.internalDebit)} <small>MT</small>
+              </dd>
             </Link>
           </div>
         </dl>
@@ -86,8 +101,8 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
       />
 
       {page.slice.kind === "flow" ? (
-        <section className="bank-section">
-          <div className="bank-section-heading">
+        <section className="desk-card">
+          <div className="desk-card-heading">
             <div>
               <h2>{FLOW_LABEL[page.slice.flow]}</h2>
               <p>{formatTokens(page.slice.total)} posted on this flow.</p>
@@ -99,8 +114,8 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
       ) : null}
 
       {page.slice.kind === "habit" ? (
-        <section className="bank-section">
-          <div className="bank-section-heading">
+        <section className="desk-card">
+          <div className="desk-card-heading">
             <div>
               <h2>{page.slice.row.label}</h2>
               <p>
@@ -116,8 +131,8 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
       ) : null}
 
       {page.slice.kind === "movement" ? (
-        <section className="bank-section">
-          <div className="bank-section-heading">
+        <section className="desk-card">
+          <div className="desk-card-heading">
             <div>
               <h2>{page.slice.movement.transaction.description}</h2>
               <p>
@@ -135,8 +150,8 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
       ) : null}
 
       {page.slice.kind === "missing" ? (
-        <section className="bank-section">
-          <div className="bank-section-heading">
+        <section className="desk-card">
+          <div className="desk-card-heading">
             <div>
               <h2>Not on this register</h2>
               <p>That slice is not in the posted lines for this resident.</p>
@@ -145,6 +160,6 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
           </div>
         </section>
       ) : null}
-    </>
+    </div>
   );
 }

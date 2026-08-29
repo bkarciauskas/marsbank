@@ -21,12 +21,16 @@ export default function SettingsPage() {
   }
 
   return (
-    <div>
-      <div className="page-intro">
-        <h1>Settings</h1>
+    <div className="desk">
+      <div className="desk-intro">
+        <div>
+          <h1>Settings</h1>
+          <p>Profile, appearance, and the shared demo balances.</p>
+        </div>
       </div>
-      <section className="bank-section">
-        <div className="bank-section-heading">
+
+      <section className="desk-card">
+        <div className="desk-card-heading">
           <div>
             <h2>Profile</h2>
           </div>
@@ -46,18 +50,22 @@ export default function SettingsPage() {
           </div>
         </dl>
       </section>
-      <section className="bank-section">
-        <div className="bank-section-heading">
+
+      <section className="desk-card">
+        <div className="desk-card-heading">
           <div>
             <h2>Appearance</h2>
           </div>
         </div>
-        <ThemeToggle />
+        <div className="settings-appearance">
+          <ThemeToggle />
+        </div>
       </section>
-      <section className="bank-section">
-        <div className="bank-section-heading">
+
+      <section className="desk-card">
+        <div className="desk-card-heading">
           <div>
-            <h2>Demo register</h2>
+            <h2>Shared demo</h2>
             <p>
               Balances and transfers are shared across every signed-in demo
               resident. Restore all six registers to their seeded balances.
@@ -72,7 +80,7 @@ export default function SettingsPage() {
             </p>
             <div>
               <button
-                className="restore-register"
+                className="desk-primary-action"
                 disabled={resetting}
                 onClick={() => void restoreDemo()}
                 type="button"
@@ -81,7 +89,7 @@ export default function SettingsPage() {
                 {resetting ? "Restoring all registers" : "Restore all registers"}
               </button>
               <button
-                className="secondary-action"
+                className="desk-quiet-action"
                 disabled={resetting}
                 onClick={() => setConfirmingReset(false)}
                 type="button"
@@ -91,16 +99,18 @@ export default function SettingsPage() {
             </div>
           </div>
         ) : (
-          <button
-            className="restore-register"
-            onClick={() => {
-              setRestored(false);
-              setConfirmingReset(true);
-            }}
-            type="button"
-          >
-            <RotateCcw /> Restore shared demo
-          </button>
+          <div className="settings-actions">
+            <button
+              className="desk-primary-action"
+              onClick={() => {
+                setRestored(false);
+                setConfirmingReset(true);
+              }}
+              type="button"
+            >
+              <RotateCcw /> Restore shared demo
+            </button>
+          </div>
         )}
         {restored ? (
           <p className="settings-note">All six registers restored.</p>

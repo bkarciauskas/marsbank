@@ -1,35 +1,19 @@
-a.registry-identity {
-  padding: 8px 10px;
-}
-
-a.registry-identity:hover {
-  background: var(--ink-soft);
-}
-
-a.registry-identity.is-current {
-  background: var(--sheet);
-  color: var(--ink);
-}
-
-a.registry-identity.is-current span {
-  color: var(--ink);
-}
-
-.bank-section .restore-register {
-  margin-top: 4px;
-}
-
 .settings-register {
   margin: 0;
 }
 
 .settings-register > div {
   display: grid;
-  min-height: 48px;
+  min-height: 62px;
   align-items: center;
-  border-top: 1px solid var(--line);
   gap: 16px;
+  border-bottom: 1px solid var(--desk-rule);
+  padding: 0 22px;
   grid-template-columns: 140px minmax(0, 1fr);
+}
+
+.settings-register > div:last-child {
+  border-bottom: 0;
 }
 
 .settings-register dt,
@@ -38,35 +22,63 @@ a.registry-identity.is-current span {
 }
 
 .settings-register dt {
-  color: var(--muted);
-  font-family: var(--display);
-  font-size: 11px;
-  letter-spacing: 0.1em;
+  color: var(--desk-ink-soft);
+  font-family: inherit;
+  font-size: var(--desk-text-xs);
+  font-weight: 500;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
 .settings-register dd {
   min-width: 0;
   overflow: hidden;
-  font-size: 16px;
+  color: var(--desk-ink);
+  font-size: var(--desk-text-lg);
+  font-weight: 600;
   text-overflow: ellipsis;
 }
 
-.settings-note {
-  margin: 16px 0 0;
-  font-size: 16px;
+.settings-appearance,
+.settings-actions,
+.reset-confirmation {
+  padding: 18px 22px;
+}
+
+.desk .theme-toggle {
+  min-width: 168px;
+  max-width: 220px;
+  overflow: hidden;
+  border: 1px solid var(--desk-rule);
+  border-radius: 3px;
+  background: var(--desk-shade);
+}
+
+.desk .theme-toggle button {
+  min-height: 38px;
+  color: var(--desk-ink-soft);
+  font-family: inherit;
+  font-size: var(--desk-text-md);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.desk .theme-toggle button[aria-pressed="true"] {
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
 }
 
 .reset-confirmation {
   display: grid;
   gap: 16px;
-  border-top: 1px solid var(--line);
-  padding-top: 16px;
 }
 
 .reset-confirmation > p {
   max-width: 60ch;
   margin: 0;
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-md);
 }
 
 .reset-confirmation > div {
@@ -75,27 +87,46 @@ a.registry-identity.is-current span {
   gap: 12px;
 }
 
-.bank-utility .bank-settings-link {
-  display: none;
+.desk-quiet-action {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--desk-rule);
+  border-radius: 3px;
+  padding: 0 20px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--desk-text-lg);
+  font-weight: 500;
 }
 
-@media (max-width: 850px) {
-  .bank-utility .bank-settings-link {
-    display: inline-flex;
-    min-height: 38px;
-    align-items: center;
-    gap: 8px;
-    padding: 0 10px;
-    color: var(--paper);
-    font-family: var(--display);
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
+.desk-quiet-action:hover {
+  background: var(--desk-shade);
+}
 
-  .bank-settings-link .customer-avatar {
-    width: 28px;
-    height: 28px;
-    font-size: 11px;
+.desk-quiet-action:disabled,
+button.desk-primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.settings-note {
+  margin: 0;
+  border-top: 1px solid var(--desk-rule);
+  padding: 14px 22px 16px;
+  background: var(--desk-shade);
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+@media (max-width: 560px) {
+  .settings-register > div {
+    min-height: 0;
+    gap: 4px;
+    padding: 14px 22px;
+    grid-template-columns: 1fr;
   }
 }

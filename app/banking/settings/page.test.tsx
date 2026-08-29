@@ -80,4 +80,21 @@ describe("SettingsPage", () => {
     expect(screen.getByRole("button", { name: "Dark" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Light" })).toBeInTheDocument();
   });
+
+  it("uses desk cards instead of the public register chrome", () => {
+    const { container } = render(
+      <BankProvider>
+        <SettingsPage />
+      </BankProvider>,
+    );
+
+    expect(container.querySelector(".desk")).not.toBeNull();
+    expect(container.querySelectorAll(".desk-card").length).toBeGreaterThanOrEqual(
+      3,
+    );
+    expect(container.querySelector(".desk-primary-action")).not.toBeNull();
+    expect(container.querySelector(".page-intro")).toBeNull();
+    expect(container.querySelector(".bank-section")).toBeNull();
+    expect(container.querySelector(".restore-register")).toBeNull();
+  });
 });

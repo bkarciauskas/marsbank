@@ -25,13 +25,5 @@ export default async function ReportsPage({
     id: firstParam(query.id),
   });
 
-  return (
-    <div>
-      <div className="page-intro">
-        <h1>Posted movement</h1>
-        <p className="mars-time">Mars-local ledger</p>
-      </div>
-      <ReportsRegister drill={drill} />
-    </div>
-  );
+  return <ReportsRegister drill={drill} />;
 }

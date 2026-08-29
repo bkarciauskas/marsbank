@@ -35,4 +35,42 @@ describe("ReportsRegister", () => {
     ).toBeInTheDocument();
     expect(document.querySelectorAll(".spend-plot")).toHaveLength(2);
   });
+
+  it("uses desk cards instead of the public register chrome", () => {
+    const { container } = render(
+      <BankProvider>
+        <ReportsRegister drill={{ kind: "overview" }} />
+      </BankProvider>,
+    );
+
+    expect(container.querySelector(".desk")).not.toBeNull();
+    expect(container.querySelectorAll(".desk-card").length).toBeGreaterThanOrEqual(
+      3,
+    );
+    expect(container.querySelector(".desk-glance")).not.toBeNull();
+    expect(container.querySelector(".desk-primary-action")).toHaveAttribute(
+      "href",
+      "/banking/activity",
+    );
+    expect(container.querySelector(".reports-ledger-link")).toBeNull();
+    expect(container.querySelector(".bank-section")).toBeNull();
+  });
+
+  it("opens a flow slice as another desk card", () => {
+    render(
+      <BankProvider>
+        <ReportsRegister drill={{ kind: "flow", flow: "out" }} />
+      </BankProvider>,
+    );
+
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Tokens out" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "All posted movement" }),
+    ).toHaveAttribute("href", "/banking/reports");
+    expect(document.querySelectorAll(".desk-card").length).toBeGreaterThanOrEqual(
+      4,
+    );
+  });
 });

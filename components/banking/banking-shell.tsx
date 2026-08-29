@@ -17,7 +17,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { MarsMark } from "@/components/brand/wordmark";
 import { useBank } from "@/lib/store";
-import "./settings-surface.css";
 
 const nav = [
   { href: "/banking", label: "Position", icon: House, onTabBar: true },

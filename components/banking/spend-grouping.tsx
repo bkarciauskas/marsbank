@@ -1,19 +1,19 @@
 import Link from "next/link";
 import type { SpendGrouping, SpendSeries } from "@/lib/flow-report";
-import { formatTokens } from "@/lib/money";
+import { groupTokens } from "@/lib/money";
 
 const HABIT_SWATCH = {
   habitat: "var(--blue)",
   food: "var(--oxide)",
-  transit: "var(--paper)",
-  unclassified: "var(--muted)",
+  transit: "var(--desk-ink-soft)",
+  unclassified: "var(--desk-ink-faint)",
 } as const;
 
 const AXIS_SWATCH = [
   "var(--blue)",
   "var(--oxide)",
-  "var(--paper)",
-  "var(--muted)",
+  "var(--desk-ink-soft)",
+  "var(--desk-ink-faint)",
 ] as const;
 
 function habitSwatch(key: string): string | undefined {
@@ -55,7 +55,7 @@ function plotLabel(grouping: SpendGrouping): string {
 }
 
 function seriesName(row: SpendSeries): string {
-  return `${row.label}, ${shareLabel(row.share)}, −${formatTokens(row.amount)}`;
+  return `${row.label}, ${shareLabel(row.share)}, −${groupTokens(row.amount)} MT`;
 }
 
 export function SpendGroupingPanel({
@@ -68,12 +68,12 @@ export function SpendGroupingPanel({
   copy: string;
 }) {
   return (
-    <section className="bank-section">
-      <div className="bank-section-heading">
+    <section className="desk-card">
+      <div className="desk-card-heading">
         <div>
           <h2>{title}</h2>
           <p>
-            {copy} {formatTokens(grouping.total)} posted out.
+            {copy} {groupTokens(grouping.total)} MT posted out.
           </p>
         </div>
       </div>
@@ -104,11 +104,8 @@ export function SpendGroupingPanel({
                   <Link href={row.href} aria-label={seriesName(row)}>
                     <span className="spend-swatch" style={{ background: ink }} />
                     <span>{row.label}</span>
-                    <strong>−{formatTokens(row.amount)}</strong>
+                    <strong>−{groupTokens(row.amount)} <small>MT</small></strong>
                     <span className="spend-share">{shareLabel(row.share)}</span>
-                    <span className="spend-row-bar" aria-hidden="true">
-                      <span style={{ width: `${row.share / 100}%`, background: ink }} />
-                    </span>
                   </Link>
                 </li>
               );

@@ -2902,31 +2902,6 @@ html[data-theme="light"] .survey-select-list li.is-active {
   font-weight: 600;
 }
 
-.restore-register {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  gap: 8px;
-  margin-top: 28px;
-  border: 1px solid var(--line);
-  border-radius: 0;
-  padding: 0 14px;
-  background: transparent;
-  color: var(--paper);
-  cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-}
-
-.restore-register:hover {
-  background: var(--paper);
-  color: var(--ink);
-}
-
-.restore-register svg {
-  width: 15px;
-}
-
 .account-detail-hero {
   min-height: 230px;
   border-top: 1px solid var(--line);
@@ -3602,6 +3577,13 @@ html[data-theme="light"] .survey-select-list li.is-active {
   width: 17px;
 }
 
+button.desk-primary-action {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  color: var(--desk-sheet);
+}
+
 /* Cards */
 .desk-card {
   overflow: hidden;
@@ -3665,6 +3647,7 @@ html[data-theme="light"] .survey-select-list li.is-active {
   text-transform: none;
 }
 
+.desk-card-heading p,
 .banking-shell .desk-card .bank-section-heading p {
   margin: 4px 0 0;
   color: var(--desk-ink-soft);
