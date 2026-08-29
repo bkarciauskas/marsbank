@@ -89,6 +89,23 @@ export type FlowPage = {
   slice: DrillSlice;
 };
 
+export type SpendAxis = "habit" | "account";
+
+export type SpendSeries = {
+  key: string;
+  label: string;
+  href: string;
+  amount: TokenAmount;
+  share: ShareBps;
+  count: number;
+};
+
+export type SpendGrouping = {
+  axis: SpendAxis;
+  total: TokenAmount;
+  series: readonly SpendSeries[];
+};
+
 const HABIT_SET: ReadonlySet<string> = new Set(HABITS);
 
 const HABIT_LABEL = {
@@ -159,6 +176,74 @@ export function flowPage(snapshot: BankSnapshot, drill: DrillView): FlowPage {
   return { report, slice: selectSlice(report, drill) };
 }
 
+export function spendGrouping(
+  report: FlowReport,
+  axis: SpendAxis,
+): SpendGrouping {
+  const outgoing = report.movements.filter(
+    (movement) => movement.flow === "out",
+  );
+  const buckets = new Map<
+    string,
+    { label: string; href: string; amount: number; count: number }
+  >();
+
+  for (const movement of outgoing) {
+    const key =
+      axis === "habit" ? movement.habit : movement.transaction.accountId;
+    const existing = buckets.get(key);
+    if (existing) {
+      existing.amount += movement.transaction.amount;
+      existing.count += 1;
+      continue;
+    }
+    buckets.set(key, {
+      label:
+        axis === "habit" ? HABIT_LABEL[movement.habit] : movement.accountName,
+      href:
+        axis === "habit"
+          ? `/banking/reports?view=habit&habit=${movement.habit}`
+          : `/banking/accounts/${movement.transaction.accountId}`,
+      amount: movement.transaction.amount,
+      count: 1,
+    });
+  }
+
+  const ranked = [...buckets.entries()].sort((left, right) => {
+    const byAmount = right[1].amount - left[1].amount;
+    return byAmount !== 0
+      ? byAmount
+      : left[1].label.localeCompare(right[1].label);
+  });
+  const total = ranked.reduce((sum, [, bucket]) => sum + bucket.amount, 0);
+  const shares = allocateShares(
+    ranked.map(([, bucket]) => bucket.amount),
+    total,
+  );
+
+  const series: SpendSeries[] = [];
+  for (let index = 0; index < ranked.length; index += 1) {
+    const rankedRow = ranked[index];
+    const share = shares[index];
+    if (!rankedRow || share === undefined) continue;
+    const [key, bucket] = rankedRow;
+    series.push({
+      key,
+      label: bucket.label,
+      href: bucket.href,
+      amount: tokens(bucket.amount),
+      share,
+      count: bucket.count,
+    });
+  }
+
+  return {
+    axis,
+    total: tokens(total),
+    series,
+  };
+}
+
 function shareBps(value: number): ShareBps {
   if (!Number.isInteger(value) || value < 0 || value > 10_000) {
     throw new Error("ShareBps must be an integer from 0 to 10000.");
@@ -171,6 +256,32 @@ function shareOf(part: number, whole: number): ShareBps {
   return shareBps(
     Math.min(10_000, Math.max(0, Math.round((part / whole) * 10_000))),
   );
+}
+
+function allocateShares(
+  amounts: readonly number[],
+  total: number,
+): ShareBps[] {
+  if (total <= 0 || amounts.length === 0) {
+    return amounts.map(() => shareBps(0));
+  }
+  const shares = amounts.map((amount) => shareOf(amount, total));
+  const drift = 10_000 - shares.reduce((sum, share) => sum + share, 0);
+  if (drift === 0) return shares;
+
+  let adjustAt = 0;
+  let largest = shares[0] ?? shareBps(0);
+  for (let index = 1; index < shares.length; index += 1) {
+    const share = shares[index];
+    if (share !== undefined && share >= largest) {
+      largest = share;
+      adjustAt = index;
+    }
+  }
+  const current = shares[adjustAt];
+  if (current === undefined) return shares;
+  shares[adjustAt] = shareBps(Math.min(10_000, Math.max(0, current + drift)));
+  return shares;
 }
 
 function outgoingHabit(description: string): OutgoingHabit {

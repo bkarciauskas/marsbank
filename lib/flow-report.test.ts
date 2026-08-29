@@ -4,7 +4,12 @@ import { seedSnapshot } from "./fixtures";
 import { accountId, txnId } from "./ids";
 import { applyTransfer } from "./ledger";
 import { tokens } from "./money";
-import { drillFromQuery, flowPage, type ClassifiedMovement } from "./flow-report";
+import {
+  drillFromQuery,
+  flowPage,
+  spendGrouping,
+  type ClassifiedMovement,
+} from "./flow-report";
 
 function movementById(
   movements: readonly ClassifiedMovement[],
@@ -184,5 +189,70 @@ describe("flowPage", () => {
       expect(row.outShare).toBeGreaterThanOrEqual(0);
       expect(row.outShare).toBeLessThanOrEqual(10_000);
     }
+  });
+});
+
+describe("spendGrouping", () => {
+  it("groups outgoing spend by habit and excludes income and transfers", () => {
+    const { report } = flowPage(seedSnapshot, { kind: "overview" });
+    const grouping = spendGrouping(report, "habit");
+    const outgoing = report.movements.filter(
+      (movement) => movement.flow === "out",
+    );
+
+    expect(grouping.total).toBe(report.totals.out);
+    expect(grouping.total).toBe(
+      outgoing.reduce((sum, movement) => sum + movement.transaction.amount, 0),
+    );
+    expect(grouping.series.map((row) => row.key)).toEqual(
+      expect.arrayContaining(["habitat", "food", "transit", "unclassified"]),
+    );
+    expect(grouping.series.some((row) => row.key === "work")).toBe(false);
+    expect(grouping.series.some((row) => row.key === "transfer")).toBe(false);
+    expect(grouping.series[0]?.href).toMatch(/view=habit/);
+  });
+
+  it("groups outgoing spend by account and ranks the largest first", () => {
+    const { report } = flowPage(seedSnapshot, { kind: "overview" });
+    const grouping = spendGrouping(report, "account");
+
+    expect(grouping.total).toBe(report.totals.out);
+    expect(grouping.series.length).toBeGreaterThan(1);
+    expect(
+      grouping.series.every((row, index, rows) => {
+        const previous = rows[index - 1];
+        return !previous || previous.amount >= row.amount;
+      }),
+    ).toBe(true);
+    expect(grouping.series[0]?.href).toMatch(/^\/banking\/accounts\//);
+  });
+
+  it("keeps spend shares as integers that fill the plot", () => {
+    const { report } = flowPage(seedSnapshot, { kind: "overview" });
+    const grouping = spendGrouping(report, "habit");
+    const shareTotal = grouping.series.reduce(
+      (sum, row) => sum + row.share,
+      0,
+    );
+
+    expect(shareTotal).toBe(10_000);
+    for (const row of grouping.series) {
+      expect(Number.isInteger(row.share)).toBe(true);
+      expect(row.share).toBeGreaterThan(0);
+      expect(row.share).toBeLessThanOrEqual(10_000);
+    }
+  });
+
+  it("returns an empty series when nothing has gone out", () => {
+    const empty = flowPage(
+      { ...seedSnapshot, transactions: [] },
+      { kind: "overview" },
+    );
+
+    expect(spendGrouping(empty.report, "habit")).toEqual({
+      axis: "habit",
+      total: 0,
+      series: [],
+    });
   });
 });

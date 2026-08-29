@@ -27,5 +27,12 @@ describe("ReportsRegister", () => {
         /posted movement, not a reconstruction of available tokens/i,
       ),
     ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Spend by habit" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "Spend by account" }),
+    ).toBeInTheDocument();
+    expect(document.querySelectorAll(".spend-plot")).toHaveLength(2);
   });
 });

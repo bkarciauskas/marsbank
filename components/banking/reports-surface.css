@@ -52,32 +52,51 @@
   letter-spacing: 0.02em;
 }
 
-.habit-register {
+.spend-plot {
+  display: flex;
+  height: 32px;
+  margin: 0 0 8px;
+  border: 1px solid var(--line);
+}
+
+.spend-plot-seg {
+  display: block;
+  min-width: 2px;
+  height: 100%;
+  flex-basis: 0;
+}
+
+.spend-series {
   margin: 0;
   padding: 0;
   list-style: none;
   border-top: 1px solid var(--line);
 }
 
-.habit-register a {
+.spend-series a {
   display: grid;
   min-height: 56px;
   align-items: end;
   gap: 8px;
   border-bottom: 1px solid var(--line);
   padding: 12px 0 10px;
-  grid-template-columns: 1fr auto;
-  border-radius: 0;
+  grid-template-columns: 10px 1fr auto auto;
 }
 
-.habit-register span:first-child {
+.spend-swatch {
+  width: 10px;
+  height: 10px;
+  margin-bottom: 8px;
+}
+
+.spend-series a > span:nth-child(2) {
   font-family: var(--display);
   font-size: 22px;
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
-.habit-register strong {
+.spend-series strong {
   color: var(--blue);
   font-family: var(--display);
   font-size: 28px;
@@ -85,18 +104,22 @@
   letter-spacing: 0.02em;
 }
 
-.habit-share {
-  grid-column: 1 / -1;
-  height: 1px;
-  background: var(--line);
-  border-radius: 0;
+.spend-share {
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 22px;
+  letter-spacing: 0.03em;
 }
 
-.habit-share > span {
+.spend-row-bar {
+  grid-column: 1 / -1;
+  height: 8px;
+  background: var(--line);
+}
+
+.spend-row-bar > span {
   display: block;
-  height: 1px;
-  background: var(--blue);
-  border-radius: 0;
+  height: 100%;
 }
 
 .reports-ledger-link {

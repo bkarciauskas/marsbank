@@ -2,14 +2,15 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { SpendGroupingPanel } from "@/components/banking/spend-grouping";
 import { TransactionList } from "@/components/banking/transaction-list";
 import type { Transaction } from "@/lib/domain";
 import {
   flowPage,
+  spendGrouping,
   type ClassifiedMovement,
   type DrillView,
   type FlowDirection,
-  type HabitRow,
 } from "@/lib/flow-report";
 import { formatTokens } from "@/lib/money";
 import { latestPostedTime, solNumberFromLatest } from "@/lib/sol";
@@ -21,14 +22,6 @@ const FLOW_LABEL = {
   out: "Tokens out",
   internal: "Internal",
 } as const satisfies Record<FlowDirection, string>;
-
-function habitFigures(row: HabitRow): string {
-  if (row.out > 0 && row.in > 0) {
-    return `−${formatTokens(row.out)}  +${formatTokens(row.in)}`;
-  }
-  if (row.out > 0) return `−${formatTokens(row.out)}`;
-  return `+${formatTokens(row.in)}`;
-}
 
 function movementsOf(
   classified: readonly ClassifiedMovement[],
@@ -80,26 +73,17 @@ export function ReportsRegister({ drill }: { drill: DrillView }) {
         </dl>
       </section>
 
-      <section className="bank-section">
-        <div className="bank-section-heading">
-          <div>
-            <h2>Habits</h2>
-          </div>
-        </div>
-        <ul className="habit-register">
-          {page.report.habits.map((row) => (
-            <li key={row.habit}>
-              <Link href={`/banking/reports?view=habit&habit=${row.habit}`}>
-                <span>{row.label}</span>
-                <strong>{habitFigures(row)}</strong>
-                <span className="habit-share" aria-hidden="true">
-                  <span style={{ width: `${row.outShare / 100}%` }} />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <SpendGroupingPanel
+        grouping={spendGrouping(page.report, "habit")}
+        title="Spend by habit"
+        copy="Outgoing posted tokens, grouped by what they paid for."
+      />
+
+      <SpendGroupingPanel
+        grouping={spendGrouping(page.report, "account")}
+        title="Spend by account"
+        copy="The same outgoing tokens, grouped by the account that paid."
+      />
 
       {page.slice.kind === "flow" ? (
         <section className="bank-section">
