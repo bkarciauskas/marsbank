@@ -1,0 +1,10 @@
+{
+  "approved": true,
+  "surface": "app/banking/page.tsx",
+  "direction": "Cross-account Coordinate Register",
+  "promptSummary": "Authenticated desktop banking overview with retained left navigation, a broad total-position band, continuous account ledger rows, and a compact recent-movement annotation rail.",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  }
+}

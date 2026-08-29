@@ -1,0 +1,415 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-27T04:43:00.000Z",
+  "title": "Design System: Mars Bank",
+  "extensions": {
+    "colorMeta": {
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "#101518",
+        "tonalRamp": [
+          "#0B1012",
+          "#101518",
+          "#1C2428",
+          "#273135",
+          "#3A464A",
+          "#8A9694",
+          "#DCE8E6",
+          "#F4F8F7"
+        ]
+      },
+      "mint": {
+        "role": "neutral",
+        "displayName": "Survey mint",
+        "canonical": "#DCE8E6",
+        "tonalRamp": [
+          "#3A464A",
+          "#5C6B68",
+          "#8A9694",
+          "#A9B8B5",
+          "#CFD9D7",
+          "#DCE8E6",
+          "#EEF3F2",
+          "#F7FAF9"
+        ]
+      },
+      "oxide": {
+        "role": "primary",
+        "displayName": "Oxide",
+        "canonical": "#E4623F",
+        "tonalRamp": [
+          "#6F2F1F",
+          "#8F3A28",
+          "#C44B2C",
+          "#E4623F",
+          "#EA7A5C",
+          "#F1A08A",
+          "#F6C4B6",
+          "#FBE8E2"
+        ]
+      },
+      "oxide-dark": {
+        "role": "primary",
+        "displayName": "Oxide dark",
+        "canonical": "#C44B2C",
+        "tonalRamp": [
+          "#6F2F1F",
+          "#8F3A28",
+          "#C44B2C",
+          "#E4623F",
+          "#EA7A5C",
+          "#F1A08A",
+          "#F6C4B6",
+          "#FBE8E2"
+        ]
+      },
+      "signal": {
+        "role": "secondary",
+        "displayName": "Signal",
+        "canonical": "#356CFF",
+        "tonalRamp": [
+          "#16306A",
+          "#1E4194",
+          "#2454D6",
+          "#356CFF",
+          "#5B88FF",
+          "#8AADFF",
+          "#C2D4FF",
+          "#E8EEFF"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted ink",
+        "canonical": "#8A9694",
+        "tonalRamp": [
+          "#3A464A",
+          "#5C6B68",
+          "#8A9694",
+          "#A9B8B5",
+          "#B7C4C1",
+          "#CFD9D7",
+          "#DCE8E6",
+          "#EEF3F2"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Survey line",
+        "canonical": "#3A464A",
+        "tonalRamp": [
+          "#101518",
+          "#1C2428",
+          "#273135",
+          "#3A464A",
+          "#5C6B68",
+          "#8A9694",
+          "#DCE8E6",
+          "#EEF3F2"
+        ]
+      },
+      "sidebar-rule": {
+        "role": "neutral",
+        "displayName": "Sidebar rule",
+        "canonical": "#273135",
+        "tonalRamp": [
+          "#101518",
+          "#182126",
+          "#1C2428",
+          "#273135",
+          "#3A464A",
+          "#8A9694",
+          "#A9B8B5",
+          "#DCE8E6"
+        ]
+      },
+      "nav-hover": {
+        "role": "neutral",
+        "displayName": "Nav hover",
+        "canonical": "#182126",
+        "tonalRamp": [
+          "#101518",
+          "#182126",
+          "#1C2428",
+          "#273135",
+          "#3A464A",
+          "#8A9694",
+          "#A9B8B5",
+          "#DCE8E6"
+        ]
+      },
+      "nav-idle": {
+        "role": "neutral",
+        "displayName": "Nav idle",
+        "canonical": "#A9B8B5",
+        "tonalRamp": [
+          "#3A464A",
+          "#5C6B68",
+          "#8A9694",
+          "#A9B8B5",
+          "#B7C4C1",
+          "#CFD9D7",
+          "#DCE8E6",
+          "#EEF3F2"
+        ]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper white",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#8A9694",
+          "#A9B8B5",
+          "#CFD9D7",
+          "#DCE8E6",
+          "#EEF3F2",
+          "#F4F8F7",
+          "#FAFCFB",
+          "#FFFFFF"
+        ]
+      },
+      "success": {
+        "role": "tertiary",
+        "displayName": "Success",
+        "canonical": "#176B4B",
+        "tonalRamp": [
+          "#0B3A28",
+          "#114F37",
+          "#176B4B",
+          "#2A8A64",
+          "#4EAA84",
+          "#8FCBB0",
+          "#C5E6D6",
+          "#E2F1E8"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger",
+        "canonical": "#A62929",
+        "tonalRamp": [
+          "#5C1616",
+          "#7A1E1E",
+          "#A62929",
+          "#C44B2C",
+          "#E4623F",
+          "#EA7A5C",
+          "#F6C4B6",
+          "#FBE8E2"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Public coordinate-sheet headlines only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Authenticated page titles such as the greeting line."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "Available total and other register-scale money."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Account register, movement rail, and summary headings."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "Lockup type beside the orbital mark."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Sentences, login copy, transfer help."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Column headers, sol stamps, unit lines."
+      }
+    },
+    "shadows": [
+      {
+        "name": "login-umbra",
+        "value": "0 18px 45px rgba(16, 21, 24, 0.18)",
+        "purpose": "Login card only; not used on authenticated ledgers."
+      },
+      {
+        "name": "bank-card-object",
+        "value": "0 16px 28px rgba(16, 21, 24, 0.16)",
+        "purpose": "Physical card face as an object, never a content container."
+      },
+      {
+        "name": "sidebar-active-inset",
+        "value": "inset 1px 0 0 #E4623F",
+        "purpose": "Oxide inner edge on the active mint sidebar row."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-nav",
+        "value": "180ms ease",
+        "purpose": "Public nav underline and explore-cell invert."
+      },
+      {
+        "name": "ease-fill",
+        "value": "150ms ease",
+        "purpose": "Outline button fill and utility hover wash."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "0.01ms",
+        "purpose": "prefers-reduced-motion collapses transition and animation duration."
+      }
+    ],
+    "breakpoints": [
+      { "name": "register-stack", "value": "1180px" },
+      { "name": "public-tighten", "value": "1100px" },
+      { "name": "mobile-shell", "value": "850px" },
+      { "name": "narrow", "value": "560px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Public outline button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Oxide-stroked Extra Condensed action on graphite.",
+      "html": "<button class=\"ds-btn-outline\">Log in</button>",
+      "css": ".ds-btn-outline { display: inline-flex; min-height: 48px; align-items: center; padding: 0 18px; border: 1px solid var(--oxide); background: transparent; color: var(--paper); font-family: var(--display); font-size: 16px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; } .ds-btn-outline:hover { background: var(--oxide); color: var(--ink); } .ds-btn-outline:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    },
+    {
+      "name": "Primary fill button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Oxide fill for login submit and transfer confirm.",
+      "html": "<button class=\"ds-btn-primary\">Continue</button>",
+      "css": ".ds-btn-primary { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; padding: 0 20px; border: 1px solid var(--oxide); background: var(--oxide); color: #fff; font-family: var(--display); font-size: 18px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; } .ds-btn-primary:hover { background: var(--oxide-dark); } .ds-btn-primary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    },
+    {
+      "name": "Register transfer",
+      "kind": "button",
+      "refersTo": "button-register-transfer",
+      "description": "Oxide action in the position band; graphite type at rest.",
+      "html": "<a class=\"ds-btn-transfer\" href=\"#\">Make a transfer</a>",
+      "css": ".ds-btn-transfer { display: inline-flex; min-height: 52px; align-items: center; padding: 0 22px; border: 1px solid var(--oxide); background: var(--oxide); color: var(--ink); font-family: var(--display); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; } .ds-btn-transfer:hover { background: var(--oxide-dark); color: #fff; } .ds-btn-transfer:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    },
+    {
+      "name": "Sidebar navigation",
+      "kind": "nav",
+      "refersTo": "nav-sidebar-active",
+      "description": "Graphite rail with mint active row and oxide inset.",
+      "html": "<nav class=\"ds-sidebar\"><a href=\"#\">Overview</a><a class=\"is-active\" href=\"#\">Accounts</a><a href=\"#\">Cards</a></nav>",
+      "css": ".ds-sidebar { display: grid; width: 228px; background: var(--ink); } .ds-sidebar a { display: flex; min-height: 58px; align-items: center; padding: 0 22px; border-top: 1px solid #273135; color: #a9b8b5; font-family: var(--display); font-size: 16px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; } .ds-sidebar a:last-child { border-bottom: 1px solid #273135; } .ds-sidebar a:hover { background: #182126; color: var(--paper); } .ds-sidebar a.is-active { background: var(--paper); color: var(--ink); box-shadow: inset 1px 0 0 var(--oxide); } .ds-sidebar a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    },
+    {
+      "name": "Wordmark",
+      "kind": "custom",
+      "refersTo": "wordmark",
+      "description": "Orbital-arc lockup with oxide node and signal ticks.",
+      "html": "<a class=\"ds-wordmark\" href=\"#\"><svg aria-hidden=\"true\" width=\"36\" height=\"36\" fill=\"none\" viewBox=\"0 0 40 40\"><ellipse cx=\"20\" cy=\"20\" rx=\"15.2\" ry=\"9.4\" stroke=\"#dce8e6\" stroke-width=\"1.2\" transform=\"rotate(-28 20 20)\"/><ellipse cx=\"20\" cy=\"20\" rx=\"9.6\" ry=\"15.4\" stroke=\"#dce8e6\" stroke-opacity=\"0.55\" stroke-width=\"1\" transform=\"rotate(-28 20 20)\"/><circle cx=\"20\" cy=\"20\" r=\"1.6\" fill=\"#dce8e6\"/><circle cx=\"31.2\" cy=\"13.2\" r=\"2.35\" fill=\"#e4623f\"/><path d=\"M20 4.8v3.2M20 32v3.2M4.8 20h3.2M32 20h3.2\" stroke=\"#356CFF\" stroke-width=\"1\"/></svg><span>Mars Bank</span></a>",
+      "css": ".ds-wordmark { display: inline-flex; align-items: center; gap: 10px; color: var(--paper); font-family: var(--display); font-size: 22px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; white-space: nowrap; } .ds-wordmark:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    },
+    {
+      "name": "Position band",
+      "kind": "custom",
+      "refersTo": "button-register-transfer",
+      "description": "Full-width ruled total in signal with oxide transfer.",
+      "html": "<section class=\"ds-position\"><div><span>Available total</span><strong>128,400 <small>Model tokens</small></strong></div><a href=\"#\">Make a transfer</a></section>",
+      "css": ".ds-position { display: flex; min-height: 168px; align-items: center; justify-content: space-between; gap: 32px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 24px 28px; background: transparent; color: var(--ink); } .ds-position span { color: var(--blue); font-family: var(--display); font-size: 15px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; } .ds-position strong { color: var(--blue); font-family: var(--display); font-size: clamp(58px, 7vw, 88px); font-weight: 600; letter-spacing: -0.02em; line-height: 1; } .ds-position small { margin-left: 8px; font-size: 16px; letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap; } .ds-position a { display: inline-flex; min-height: 52px; align-items: center; padding: 0 22px; border: 1px solid var(--oxide); background: var(--oxide); color: var(--ink); font-family: var(--display); font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; } .ds-position a:hover { background: var(--oxide-dark); color: #fff; }"
+    },
+    {
+      "name": "Account register row",
+      "kind": "custom",
+      "refersTo": "nav-sidebar-idle",
+      "description": "Shared-column ledger row; available amount in signal.",
+      "html": "<a class=\"ds-account\" href=\"#\"><span class=\"ds-ref\">01</span><span class=\"ds-name\"><strong>Everyday</strong><small>Transaction</small></span><span class=\"ds-coord\"><small>Jezero</small><span>032-001 12844021</span></span><strong class=\"ds-avail\">24,180</strong></a>",
+      "css": ".ds-account { display: grid; min-height: 86px; align-items: center; gap: 14px; grid-template-columns: 42px minmax(135px, 1.3fr) minmax(110px, 0.9fr) auto; border-bottom: 1px solid rgba(16, 21, 24, 0.3); color: var(--ink); text-decoration: none; } .ds-account:hover { background: rgba(255, 255, 255, 0.3); } .ds-ref { color: var(--oxide); font-family: var(--display); font-weight: 600; } .ds-name { display: grid; } .ds-name strong { font-family: var(--display); font-size: 19px; letter-spacing: 0.03em; text-transform: uppercase; } .ds-name small, .ds-coord small { color: var(--muted); font-size: 11px; } .ds-coord { display: grid; font-size: 11px; } .ds-avail { color: var(--blue); font-family: var(--display); font-size: 20px; font-weight: 600; letter-spacing: 0.02em; justify-self: end; }"
+    },
+    {
+      "name": "Login underline field",
+      "kind": "input",
+      "refersTo": "input-underline",
+      "description": "Bottom-rule field on the white login card.",
+      "html": "<label class=\"ds-field\">Customer ID<input type=\"text\" value=\"cameron@marsbank.mars\" /></label>",
+      "css": ".ds-field { display: grid; gap: 7px; color: #393939; font-size: 13px; font-weight: 700; } .ds-field input { width: 100%; border: 0; border-bottom: 1px solid #8d8d8d; border-radius: 0; padding: 10px 2px 11px; background: transparent; color: var(--ink); font-size: 16px; } .ds-field input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    },
+    {
+      "name": "Register field",
+      "kind": "input",
+      "refersTo": "input-register",
+      "description": "Square boxed transfer control on mint paper.",
+      "html": "<label class=\"ds-reg-field\">Amount<input type=\"text\" value=\"250\" /></label>",
+      "css": ".ds-reg-field { display: grid; gap: 7px; color: #393939; font-size: 13px; font-weight: 700; } .ds-reg-field input { width: 100%; min-height: 48px; border: 1px solid #aaa8a2; border-radius: 0; padding: 0 13px; background: #fff; color: var(--ink); font-size: 16px; } .ds-reg-field input:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    },
+    {
+      "name": "Mobile banking tabs",
+      "kind": "nav",
+      "refersTo": "nav-sidebar-idle",
+      "description": "Fixed four-tab bar; oxide marks the active route.",
+      "html": "<nav class=\"ds-mobile\"><a class=\"is-active\" href=\"#\">Overview</a><a href=\"#\">Accounts</a><a href=\"#\">Cards</a><a href=\"#\">Transfer</a></nav>",
+      "css": ".ds-mobile { display: grid; min-height: 68px; border-top: 1px solid #d0cec8; background: #fff; grid-template-columns: repeat(4, 1fr); } .ds-mobile a { display: grid; align-content: center; justify-items: center; color: var(--muted); font-size: 10px; text-decoration: none; } .ds-mobile a.is-active { color: var(--oxide); font-weight: 700; } .ds-mobile a:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Orbital Registry",
+    "overview": "Mars Bank plots frontier finance as survey work, not as a conservative card stack and not as a space-game HUD. Public pages sit on graphite like a coordinate sheet: Macquarie-like information architecture, film-balanced hero, orbital-arc lockup. Authenticated pages invert the ground to survey mint paper and keep graphite as retained left navigation and ink. Both surfaces share one palette, one condensed display face, and one-pixel rules.\n\nThe memorable banking moment is a single plotted register. The available total, every account column, and the movement rail use the same numeral language, so the customer reads the whole bank as one exact coordinate instead of a pile of product cards.",
+    "keyCharacteristics": [
+      "Graphite public ground; mint authenticated paper; oxide for action; signal for coordinates, totals, and focus",
+      "One-pixel survey rules instead of nested cards and soft elevation",
+      "Saira Extra Condensed for lockup, headings, and money; Saira for body and metadata",
+      "Orbital-arc ellipse lockup with an oxide node and signal ticks",
+      "Sharp corners on register surfaces; the only circles are the mark and small avatars"
+    ],
+    "rules": [
+      {
+        "name": "The Signal Coordinate Rule",
+        "body": "Signal is for plotted values and focus. Oxide is for doing. Mint and graphite are for ground. Do not reintroduce Macquarie blue fills.",
+        "section": "colors"
+      },
+      {
+        "name": "The Survey Ink Rule",
+        "body": "Structure the register with 1px graphite (or line) rules. Do not nest white cards, drop shadows, or 8–10px content radii on authenticated ledgers.",
+        "section": "colors"
+      },
+      {
+        "name": "The Condensed Money Rule",
+        "body": "Money, page titles, and column headers use Extra Condensed. Do not set balances in italic serif or in regular Saira at display size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Shared Column Rule",
+        "body": "Every visible account on a register view shares one column set. Do not give each product its own card layout.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Flat Register Rule",
+        "body": "Ledger surfaces do not lift. If a control needs emphasis, change fill (oxide) or ink (signal), not shadow.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Circle Rule",
+        "body": "Circles belong to the lockup and avatars. Do not round the register, the position band, or form controls.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep public IA Macquarie-like and swap identity to Mars Bank + orbital lockup.",
+      "Do put authenticated work on mint paper with a graphite rail and 1px survey rules.",
+      "Do plot totals and available money in signal Extra Condensed.",
+      "Do use oxide for the only primary action on a view (login, transfer, freeze secondary stays outline).",
+      "Do label synthetic balances as model tokens.",
+      "Do stack the account register above the movement rail below 1180px; keep the mobile tab bar."
+    ],
+    "donts": [
+      "Don't use sci-fi HUD glow, planet globes, or game chrome.",
+      "Don't put a kicker or eyebrow above a headline.",
+      "Don't rebuild the overview as a stack of conservative bank-product cards.",
+      "Don't fill public or register fields with Macquarie-like blue blocks.",
+      "Don't round register containers or rely on card shadows for hierarchy.",
+      "Don't set display type in italic serif."
+    ]
+  }
+}

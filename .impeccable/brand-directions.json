@@ -1,0 +1,120 @@
+{
+  "title": "Choose the Mars Bank visual world",
+  "question": "Mars Bank should feel like the financial institution of a new world: credible, familiar to use, and unmistakably forward. Keep the proposed world, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Orbital Registry",
+      "kicker": "PROPOSED WORLD",
+      "lineage": "spacecraft ephemerides, planetary survey charts, and precision civic registries",
+      "thesis": "Mars Bank makes frontier finance legible as a trusted planetary coordinate system.",
+      "palette": [
+        "#101518",
+        "#E4623F",
+        "#DCE8E6",
+        "#356CFF"
+      ],
+      "materials": [
+        "anodized graphite",
+        "survey ink",
+        "translucent plotting film"
+      ],
+      "viewport": "A vast plotted horizon crosses the homepage while live account coordinates and one decisive banking action lock to its grid.",
+      "risk": "It can drift toward an aerospace contractor unless balances and banking actions remain the clearest signals.",
+      "sketch": ".impeccable/sketches/orbital-registry.webp"
+    },
+    {
+      "id": "challenger-provenance",
+      "label": "Custody Ribbon",
+      "kicker": "ALTERNATE",
+      "lineage": "museum provenance ribbons translated into a financial ledger",
+      "thesis": "Every token has a visible, continuous path through accounts, transfers, and time.",
+      "palette": [
+        "#E9E2D4",
+        "#B94232",
+        "#202322",
+        "#8B918C"
+      ],
+      "materials": [
+        "archival stock",
+        "woven signal ribbon",
+        "fading registry stamps"
+      ],
+      "viewport": "A single red custody line enters from the edge, folds through current balances, and ends at a clear transfer action.",
+      "risk": "It identifies strongly with trust and traceability but less strongly with life on Mars.",
+      "case": "Strong product clarity, but weaker new-world identification than Orbital Registry.",
+      "sketch": ".impeccable/sketches/custody-ribbon.webp",
+      "hero": "https://impeccable.style/worlds/cards/exhibition-museum-curation-provenance-ribbon-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/exhibition-museum-curation-provenance-ribbon.webp"
+    },
+    {
+      "id": "challenger-cathode",
+      "label": "Struck Balance",
+      "kicker": "ALTERNATE",
+      "lineage": "cathode numeral stacks and bronze instrument gauze",
+      "thesis": "Every possible value waits in the dark until the customer strikes one financial state into focus.",
+      "palette": [
+        "#081822",
+        "#FF6328",
+        "#D6B06B",
+        "#F3EFE2"
+      ],
+      "materials": [
+        "blue-black bench felt",
+        "bronze wire gauze",
+        "cathode glow"
+      ],
+      "viewport": "A monumental token balance burns through a fine gauze plane while account states remain as quiet ghost numerals behind it.",
+      "risk": "Highly distinctive and frontier-ready, but dense instrument language could overpower everyday banking tasks.",
+      "case": "Exceptional audience identification, with less immediate banking clarity than Orbital Registry.",
+      "sketch": ".impeccable/sketches/struck-balance.webp",
+      "hero": "https://impeccable.style/worlds/cards/operate-b-struck-cathode-gauze-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/operate-b-struck-cathode-gauze.webp"
+    },
+    {
+      "id": "challenger-skin",
+      "label": "Signal Mantle",
+      "kicker": "WILD CARD",
+      "lineage": "living chromatophore skin used as an adaptive institutional signal",
+      "thesis": "The bank changes its visual signal with financial context while keeping one stable body.",
+      "palette": [
+        "#EEE9DA",
+        "#9E3E2C",
+        "#167B78",
+        "#272728"
+      ],
+      "materials": [
+        "pale mantle",
+        "expanding pigment cells",
+        "iridophore flash"
+      ],
+      "viewport": "A calm pale banking surface carries one living field whose pigment expands around balances, alerts, and active actions.",
+      "risk": "It fuses poorly with premium-bank expectations when the living texture becomes spectacle rather than information.",
+      "case": "Memorable and adaptive, but weaker on product clarity and institutional trust.",
+      "sketch": ".impeccable/sketches/signal-mantle.webp",
+      "hero": "https://impeccable.style/worlds/cards/reefs-bioluminescent-nocturnal-chromatophore-skin-language-hero.webp",
+      "board": "https://impeccable.style/worlds/cards/reefs-bioluminescent-nocturnal-chromatophore-skin-language.webp"
+    }
+  ],
+  "reroll": true,
+  "canon": true,
+  "canonCard": {
+    "label": "Premium banking, played straight",
+    "thesis": "A restrained institutional bank identity, executed at the craft level of the category leaders.",
+    "palette": [
+      "#101010",
+      "#FFFFFF",
+      "#C45436",
+      "#E8E6E0"
+    ],
+    "materials": [
+      "polished stone",
+      "fine print",
+      "editorial photography"
+    ],
+    "viewport": "A conventional split-image banking hero with a refined wordmark, clear proposition, and primary login action.",
+    "risk": "Credible and familiar, but unlikely to feel like the first financial institution of a new world.",
+    "sketch": ".impeccable/sketches/canon-bank.webp"
+  },
+  "steer": true
+}

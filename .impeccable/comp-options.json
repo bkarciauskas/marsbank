@@ -1,0 +1,36 @@
+{
+  "title": "Choose the Orbital Registry composition",
+  "question": "The world is locked. Which first-viewport composition should govern the Mars Bank logo, tokens, and site-wide theme?",
+  "options": [
+    {
+      "id": "horizon",
+      "label": "Plotted Horizon",
+      "kicker": "SEEDED FROM SKETCH",
+      "thesis": "The bank is a survey station: balances lock to a plotted horizon.",
+      "viewport": "Nav lockup, left headline and login, right film registry, horizon grid across the fold.",
+      "risk": "The plotted field can overwhelm the logo if the lockup stays too small.",
+      "sketch": ".impeccable/mocks/horizon.jpg"
+    },
+    {
+      "id": "plate",
+      "label": "Civic Plate",
+      "kicker": "LOGO-LED",
+      "thesis": "The mark is the institution: a civic registry plate that banking actions stamp.",
+      "viewport": "Oversized lockup and monogram plate own the first screen; services sit as hairline cells below.",
+      "risk": "Strong identity, weaker immediate account-management story.",
+      "sketch": ".impeccable/mocks/plate.jpg"
+    },
+    {
+      "id": "sheet",
+      "label": "Coordinate Sheet",
+      "kicker": "FAMILIAR IA",
+      "thesis": "Keep the split banking page, recast as one survey sheet.",
+      "viewport": "Graphite copy column, plotted right field, oxide login on the seam.",
+      "risk": "Closest to the old Macquarie split, so the new world has to work harder in details.",
+      "sketch": ".impeccable/mocks/sheet.jpg"
+    }
+  ],
+  "reroll": false,
+  "canon": false,
+  "steer": true
+}

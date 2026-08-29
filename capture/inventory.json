@@ -1,0 +1,105 @@
+{
+  "source": "https://www.macquarie.com.au/",
+  "capturedAt": "2026-08-26T12:18:36.616Z",
+  "stack": "next-app-router",
+  "pages": [
+    {
+      "url": "https://www.macquarie.com.au/",
+      "route": "/",
+      "title": "Macquarie Bank | Bank with Macquarie | Macquarie",
+      "screenshot": "capture/screenshots/macquarie-home-1440.png"
+    },
+    {
+      "url": "https://online.macquarie.com.au/personal/#/",
+      "route": "/login",
+      "title": "Log in to Macquarie Online Banking",
+      "screenshot": "capture/screenshots/macquarie-login-1440.png"
+    }
+  ],
+  "assets": [
+    {
+      "url": "https://www.macquarie.com.au/assets/bfs/global/Macquarie-logo.svg",
+      "kind": "image",
+      "path": "public/assets/images/macquarie-logo-reference.svg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/static/bfs/clientlibs/clientlib-site/resources/images/icon_error.svg",
+      "kind": "icon",
+      "path": "public/assets/icons/icon-error.svg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/_jcr_content/hero-home/desktop-image-0.coreimg.90.2080.jpeg/1778460750816/business-woman-white-suit-looking-at-camera-3-4.jpeg",
+      "kind": "image",
+      "path": "public/assets/images/hero-savings.jpeg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/_jcr_content/hero-home/desktop-image-1.coreimg.90.2080.jpeg/1786073279714/confident-woman-holding-balloons-above-city-1-1.jpeg",
+      "kind": "image",
+      "path": "public/assets/images/hero-home-loans.jpeg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/_jcr_content/hero-home/desktop-image-2.coreimg.90.2080.jpeg/1770587557300/kerrie-anne-phillip-backyard-signature-3-4.jpeg",
+      "kind": "image",
+      "path": "public/assets/images/hero-private-bank.jpeg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/_jcr_content/hero-home/desktop-image-3.coreimg.90.2080.jpeg/1786073209753/q-middle-aged-man-holding-phone-light-4-3.jpeg",
+      "kind": "image",
+      "path": "public/assets/images/hero-digital-banking.jpeg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/_jcr_content/parsys/card_grid/image-1.coreimg.90.768.jpeg/1757042671240/business-woman-white-suit-walking-outside-4-3.jpeg",
+      "kind": "image",
+      "path": "public/assets/images/card-savings.jpeg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/assets/bfs/icons/favicon.ico",
+      "kind": "icon",
+      "path": "public/assets/icons/source-favicon.ico"
+    },
+    {
+      "url": "https://www.macquarie.com.au/assets/bfs/images/imported/bespoke/geoff_lianne.jpg",
+      "kind": "image",
+      "path": "public/assets/images/card-private-bank.jpg"
+    },
+    {
+      "url": "https://www.macquarie.com.au/static/bfs/clientlibs/clientlib-site/resources/images/250-50-5-monochrome.png",
+      "kind": "image",
+      "path": "public/assets/images/source-award.png"
+    },
+    {
+      "url": "https://www.macquarie.com.au/static/bfs/clientlibs/clientlib-site/resources/images/icon_chevron-right_light.svg",
+      "kind": "icon",
+      "path": "public/assets/icons/chevron-right-light.svg"
+    }
+  ],
+  "fonts": [
+    {
+      "family": "MCQGlobal Regular",
+      "url": "https://www.macquarie.com.au/static/bfs/clientlibs/clientlib-site/resources/fonts/MCQGlobal-Regular/MCQGlobal_W_Rg.woff2",
+      "path": "public/assets/fonts/mcq-global-regular.woff2",
+      "weight": 400,
+      "style": "normal"
+    },
+    {
+      "family": "MCQGlobal Medium",
+      "url": "https://www.macquarie.com.au/static/bfs/clientlibs/clientlib-site/resources/fonts/MCQGlobal-Medium/MCQGlobal_W_Md.woff2",
+      "path": "public/assets/fonts/mcq-global-medium.woff2",
+      "weight": 500,
+      "style": "normal"
+    },
+    {
+      "family": "MCQGlobal Display",
+      "url": "https://www.macquarie.com.au/static/bfs/clientlibs/clientlib-site/resources/fonts/MCQGlobal-Display/MCQGlobal_W_Display.woff2",
+      "path": "public/assets/fonts/mcq-global-display.woff2",
+      "weight": 400,
+      "style": "normal"
+    }
+  ],
+  "apis": [],
+  "gaps": [
+    "The build covers the focused homepage and login chosen by the user instead of the wider Macquarie site.",
+    "The authenticated Macquarie application was not accessed. Mars Bank uses a purpose-built mock banking app.",
+    "Third-party analytics, tag managers, anti-bot calls, CSRF calls, and production authentication were excluded."
+  ]
+}
