@@ -1273,120 +1273,6 @@ html[data-theme="light"] .mobile-bank-nav {
   color: var(--success);
 }
 
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 24px;
-  color: var(--paper);
-  font-family: var(--display);
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.back-link svg {
-  width: 17px;
-}
-
-.account-detail-hero {
-  display: flex;
-  min-height: 270px;
-  align-items: end;
-  justify-content: space-between;
-  gap: 35px;
-  padding: 44px;
-  background: transparent;
-  color: var(--paper);
-}
-
-.account-detail-hero p {
-  margin: 0;
-  color: var(--muted);
-}
-
-.account-detail-hero h1 {
-  margin: 7px 0 26px;
-  font-size: clamp(38px, 5vw, 58px);
-  font-weight: 500;
-  letter-spacing: -0.035em;
-}
-
-.account-detail-hero > div:first-child > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.account-detail-hero svg {
-  width: 14px;
-}
-
-.detail-balance {
-  display: grid;
-  justify-items: end;
-}
-
-.detail-balance span,
-.detail-balance small {
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.detail-balance strong {
-  font-size: clamp(30px, 4vw, 44px);
-  font-weight: 500;
-  letter-spacing: -0.03em;
-}
-
-.detail-actions {
-  display: flex;
-  gap: 12px;
-  margin: 18px 0 34px;
-}
-
-.detail-actions a {
-  display: inline-flex;
-  min-height: 46px;
-  align-items: center;
-  gap: 9px;
-  border: 1px solid var(--line);
-  border-radius: 0;
-  padding: 0 16px;
-  background: transparent;
-  color: var(--paper);
-  font-family: var(--display);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.detail-actions svg {
-  width: 18px;
-  color: var(--oxide);
-}
-
-.offset-callout {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  border-radius: 0;
-  padding: 22px;
-  background: transparent;
-  color: var(--paper);
-}
-
-.offset-callout > svg {
-  width: 25px;
-}
-
-.offset-callout div {
-  display: grid;
-}
-
 .cards-grid {
   display: grid;
   gap: 28px;
@@ -2220,16 +2106,6 @@ html[data-theme="light"] .survey-select-list li.is-active {
   .transfer-panel-heading h2 {
     margin-top: 26px;
   }
-
-  .account-detail-hero {
-    align-items: flex-start;
-    flex-direction: column;
-    padding: 30px;
-  }
-
-  .detail-balance {
-    justify-items: start;
-  }
 }
 
 @media (max-width: 560px) {
@@ -2893,42 +2769,11 @@ html[data-theme="light"] .survey-select-list li.is-active {
   font-weight: 600;
 }
 
-.account-detail-hero {
-  min-height: 230px;
-  border-top: 1px solid var(--line);
-  border-bottom: 1px solid var(--line);
-  padding: 32px 28px;
-  background: transparent;
-  color: var(--paper);
-}
-
-.account-detail-hero p,
-.account-detail-hero > div:first-child > span,
-.detail-balance span,
-.detail-balance small {
-  color: var(--muted);
-}
-
-.account-detail-hero h1,
-.detail-balance strong {
-  font-family: var(--display);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-}
-
-.detail-balance strong {
-  color: var(--blue);
-  font-size: clamp(42px, 5vw, 64px);
-}
-
-.detail-actions a,
 .freeze-button {
   border-radius: 0;
   background: transparent;
 }
 
-.offset-callout,
 .card-security-note {
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
@@ -3476,6 +3321,25 @@ html[data-theme="light"] .survey-select-list li.is-active {
   gap: 20px;
 }
 
+.desk-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-md);
+  font-weight: 500;
+}
+
+.desk-back:hover {
+  color: var(--desk-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.desk-back svg {
+  width: 16px;
+}
+
 .desk-intro {
   display: flex;
   align-items: flex-end;
@@ -3484,6 +3348,17 @@ html[data-theme="light"] .survey-select-list li.is-active {
   margin: 0;
   border: 0;
   padding: 4px 4px 2px;
+}
+
+.desk-intro > div:first-child p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 6px;
+}
+
+.desk-intro > div:first-child p svg {
+  width: 14px;
 }
 
 .desk-intro h1,
@@ -3531,7 +3406,7 @@ html[data-theme="light"] .survey-select-list li.is-active {
 
 .desk-position strong {
   margin: 2px 0 0;
-  color: var(--blue);
+  color: var(--desk-ink);
   font-family: inherit;
   font-size: var(--desk-text-figure);
   font-weight: 500;
@@ -3540,9 +3415,44 @@ html[data-theme="light"] .survey-select-list li.is-active {
   line-height: 1.05;
 }
 
+.desk-position.spendable strong {
+  color: var(--blue);
+}
+
 .desk-position small {
   color: var(--desk-ink-soft);
   font-size: var(--desk-text-sm);
+}
+
+.desk-account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.desk-offset-note {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+}
+
+.desk-offset-note svg {
+  width: 20px;
+  color: var(--desk-ink-soft);
+}
+
+.desk-offset-note span {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-md);
+}
+
+.desk-offset-note strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--desk-ink);
+  font-size: var(--desk-text-lg);
+  font-weight: 600;
 }
 
 .desk-primary-action {
@@ -4059,9 +3969,15 @@ button.desk-primary-action {
   padding: 40px 22px;
 }
 
+.banking-shell .empty-state h1,
 .banking-shell .empty-state h3 {
   font-size: var(--desk-text-2xl);
   font-weight: 600;
+}
+
+.banking-shell .empty-state .desk-primary-action {
+  justify-self: center;
+  margin-top: 16px;
 }
 
 .banking-shell .empty-state p {
