@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { TransferForm } from "@/components/banking/transfer-form";
+import "@/components/banking/transfer-surface.css";
 
 export default function TransferPage() {
   return (

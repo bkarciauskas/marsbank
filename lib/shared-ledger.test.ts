@@ -41,8 +41,8 @@ describe("shared resident transfers", () => {
     const recipientSol = result.recipient.accounts.find(
       (account) => account.id === "acc-everyday",
     );
-    expect(senderSol && availableBalance(senderSol)).toBe(174_220);
-    expect(recipientSol && availableBalance(recipientSol)).toBe(106_410);
+    expect(senderSol && availableBalance(senderSol)).toBe(1_000_174_220);
+    expect(recipientSol && availableBalance(recipientSol)).toBe(1_000_106_410);
     expect(result.recipient.transactions[0]).toMatchObject({
       id: "transfer-001-in",
       amount: 10_000,

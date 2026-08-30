@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { seedSnapshot } from "./fixtures";
+import { DEMO_CREDIT_LIMIT, seedSnapshot } from "./fixtures";
 import { accountId, cardId } from "./ids";
 import {
   applyPayIdTransfer,
@@ -33,8 +33,8 @@ describe("Mars Bank ledger", () => {
     const reserve = result.snapshot.accounts.find(
       (account) => account.id === "acc-reserve",
     );
-    expect(everyday && availableBalance(everyday)).toBe(174_220);
-    expect(reserve && availableBalance(reserve)).toBe(1_850_000);
+    expect(everyday && availableBalance(everyday)).toBe(1_000_174_220);
+    expect(reserve && availableBalance(reserve)).toBe(2_001_850_000);
     expect(result.snapshot.transactions.slice(0, 2)).toMatchObject([
       { direction: "debit", amount: 10_000 },
       { direction: "credit", amount: 10_000 },
@@ -57,7 +57,7 @@ describe("Mars Bank ledger", () => {
     const tooLarge = applyTransfer(structuredClone(seedSnapshot), {
       from: accountId("acc-everyday"),
       to: accountId("acc-reserve"),
-      amount: tokens(999_999_999),
+      amount: tokens(2_000_000_000),
       description: "",
     });
 
@@ -80,7 +80,7 @@ describe("Mars Bank ledger", () => {
       (account) => account.id === "acc-habitat-loan",
     );
     expect(loan?.kind).toBe("loan");
-    if (loan?.kind === "loan") expect(loan.remaining).toBe(36_380_000);
+    if (loan?.kind === "loan") expect(loan.remaining).toBe(36_399_980_000);
   });
 
   it("reports display balance by account kind", () => {
@@ -94,9 +94,9 @@ describe("Mars Bank ledger", () => {
     const loan = snapshot.accounts.find(
       (account) => account.id === "acc-habitat-loan",
     );
-    expect(everyday && displayBalance(everyday)).toBe(184_220);
+    expect(everyday && displayBalance(everyday)).toBe(1_000_184_220);
     expect(credit && displayBalance(credit)).toBe(82_640);
-    expect(loan && displayBalance(loan)).toBe(36_400_000);
+    expect(loan && displayBalance(loan)).toBe(36_400_000_000);
   });
 
   it("treats deposit accounts as offsets on the property loan", () => {
@@ -108,14 +108,14 @@ describe("Mars Bank ledger", () => {
       "Long Horizon Reserve",
       "Habitat Offset",
     ]);
-    expect(offsetTotal(seedSnapshot, loanId)).toBe(2_644_620);
+    expect(offsetTotal(seedSnapshot, loanId)).toBe(4_002_644_620);
   });
 
   it("rejects a credit draw that exceeds the limit", () => {
     const result = applyTransfer(structuredClone(seedSnapshot), {
       from: accountId("acc-credit"),
       to: accountId("acc-everyday"),
-      amount: tokens(500_000),
+      amount: tokens(DEMO_CREDIT_LIMIT),
       description: "",
     });
     expect(result).toEqual({ kind: "credit-limit" });
@@ -158,7 +158,7 @@ describe("Mars Bank ledger", () => {
     const everyday = result.snapshot.accounts.find(
       (account) => account.id === "acc-everyday",
     );
-    expect(everyday && availableBalance(everyday)).toBe(181_720);
+    expect(everyday && availableBalance(everyday)).toBe(1_000_181_720);
     expect(result.snapshot.transactions[0]).toMatchObject({
       direction: "debit",
       amount: 2_500,

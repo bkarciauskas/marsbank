@@ -56,16 +56,9 @@ export default function BankingOverview() {
             Mars sol {LEDGER_SOL} · Client {snapshot.customer.memberId}
           </p>
         </div>
-        <div className="desk-position">
-          <div>
-            <span>Available total</span>
-            <strong>{grouped.format(totalAvailable)}</strong>
-            <small>model tokens</small>
-          </div>
-          <Link className="desk-primary-action" href="/banking/transfer">
-            Make a transfer <ArrowRight />
-          </Link>
-        </div>
+        <Link className="desk-primary-action" href="/banking/transfer">
+          Make a transfer <ArrowRight />
+        </Link>
       </div>
 
       <section aria-label="Accounts" className="desk-card">
@@ -75,7 +68,7 @@ export default function BankingOverview() {
       <div className="desk-columns">
         <section aria-labelledby="desk-movements" className="desk-card">
           <div className="desk-card-heading">
-            <h2 id="desk-movements">Recent movements</h2>
+            <h2 id="desk-movements">Recent transactions</h2>
             <Link href="/banking/activity">
               View all <ChevronRight />
             </Link>

@@ -1,0 +1,67 @@
+.banking-shell .cards-page {
+  color-scheme: light;
+  color: var(--desk-ink);
+}
+
+.banking-shell .card-meta span {
+  color: var(--desk-ink-soft);
+  font-family: inherit;
+}
+
+.banking-shell .card-meta strong {
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-lg);
+  font-weight: 600;
+}
+
+.banking-shell .status-badge {
+  border: 1px solid var(--desk-ink);
+  border-radius: 3px;
+  background: var(--desk-ink);
+  color: var(--desk-sheet) !important;
+  font-family: inherit;
+  font-size: var(--desk-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+}
+
+.banking-shell .status-badge.frozen {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: var(--desk-sheet) !important;
+}
+
+.banking-shell .freeze-button {
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-sm);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .freeze-button:hover {
+  background: var(--desk-shade);
+}
+
+.banking-shell .card-security-note {
+  border: 1px solid var(--desk-rule);
+  border-radius: var(--desk-radius);
+  background: var(--desk-shade);
+  color: var(--desk-ink);
+}
+
+.banking-shell .card-security-note h2 {
+  font-family: inherit;
+  font-size: var(--desk-text-2xl);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.banking-shell .card-security-note p {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-md);
+}

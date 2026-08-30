@@ -25,17 +25,18 @@ describe("BankingOverview", () => {
     ).toHaveAttribute("href", "/banking/reports");
   });
 
-  it("reconciles the headline available total with the table footer", () => {
+  it("keeps the available total on the ledger, not the greeting band", () => {
     const { container } = renderOverview();
 
-    const headline = container.querySelector(".desk-position strong");
     const footer = container.querySelector(
       ".account-list-totals > span:nth-child(2) strong",
     );
+    const note = container.querySelector(".desk-glance-note");
 
-    expect(headline).not.toBeNull();
+    expect(screen.queryByText("Available total")).not.toBeInTheDocument();
+    expect(container.querySelector(".desk-position")).toBeNull();
     expect(footer).not.toBeNull();
-    expect(footer?.textContent).toContain(headline?.textContent ?? "");
+    expect(note?.textContent).toContain(footer?.textContent ?? "");
   });
 
   it("greets the customer in sentence case with the sol and client id", () => {

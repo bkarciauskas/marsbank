@@ -42,7 +42,7 @@ describe("reset route", () => {
         accounts: expect.arrayContaining([
           expect.objectContaining({
             id: "acc-everyday",
-            available: 96_410,
+            available: 1_000_096_410,
           }),
         ]),
       },

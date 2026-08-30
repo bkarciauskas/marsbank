@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
+import { defaultDemoResident } from "@/lib/fixtures";
 import { accountId } from "@/lib/ids";
 import { tokens } from "@/lib/money";
 import { BankProvider, useBank } from "@/lib/store";
@@ -52,11 +53,15 @@ describe("SettingsPage", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Drain" }));
-    expect(await screen.findByText("174220")).toBeInTheDocument();
+    expect(
+      await screen.findByText(String(defaultDemoResident.everyday - 10_000)),
+    ).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Restore shared demo" }));
     fireEvent.click(screen.getByRole("button", { name: "Restore all registers" }));
-    expect(await screen.findByText("184220")).toBeInTheDocument();
+    expect(
+      await screen.findByText(String(defaultDemoResident.everyday)),
+    ).toBeInTheDocument();
     expect(screen.getByText("All six registers restored.")).toBeInTheDocument();
   });
 

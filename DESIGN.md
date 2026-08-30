@@ -263,7 +263,7 @@ The public palette is mineral and theme-responsive; the desk palette is cool, li
 - **Desk micro:** 10px for the Demo data chip, mobile tab labels, and restated row words when the ledger compresses.
 - **Desk XS / SM / Base / MD / LG / XL:** 11, 12, 13, 14, 15, and 16px for labels through account figures.
 - **Desk 2XL / 3XL:** 18 and 21px for card headings and summary values.
-- **Desk display / figure:** 32 and 40px for the greeting and available-total figure.
+- **Desk display / figure:** 32px for the greeting; 40px for large desk figures.
 - **Desk labels:** 11px tracked uppercase is reserved for column headers, metric labels, and totals labels; 10px micro covers the Demo data chip, mobile tabs, and compressed restated row words. Ordinary navigation and prose remain sentence case.
 - **Financial figures:** Use tabular numerals. Units belong in headers or compact suffixes rather than being repeated as visual noise.
 
@@ -276,14 +276,14 @@ The public palette is mineral and theme-responsive; the desk palette is cool, li
 
 Public IA remains Macquarie-like: a 36px utility row, 78px primary nav, and `min(1240px, calc(100% - 48px))` public width. The split hero, token-story images, and mint security plate sit in that same column, not the viewport. The security row keeps lock, copy, and login link as one group. The four-cell explore grid and three-column service band follow the column. It changes at 1100px, 850px, and 560px.
 
-The authenticated shell is a 60px full-width top bar above a 118px sticky icon rail and a fluid stage. Register content is left-aligned to the rail, fills the stage up to 1180px, and uses 32px inline padding with 30px top and 64px bottom padding. It is not a centered column. The overview is a vertical 20px rhythm: greeting band, one account ledger, recent movements, then the three-up sol summary. Account rows share six visible tracks: account, branch and number, available, held, total, and arrow.
+The authenticated shell is a 60px full-width top bar above a 118px sticky icon rail and a fluid stage. Register content is left-aligned to the rail, fills the stage up to 1180px, and uses 32px inline padding with 30px top and 64px bottom padding. It is not a centered column. The overview is a vertical 20px rhythm: greeting band, one account ledger, recent transactions, then the three-up sol summary. Account rows share six visible tracks: account, branch and number, available, held, total, and arrow.
 
 At 1080px the desk content tightens. At 900px the customer control collapses to its avatar. At 850px the rail hides, the top bar wraps search to a full second row, the fixed four-tab mobile bar appears, and account rows preserve the available amount while hiding held and total. The 850px mobile transition is structural, not merely a scale reduction.
 
 ### Named Rules
 **The Shared Column Rule.** Every visible account uses one common ledger grid. If a product changes the meaning of a shared column, keep the grid and restate the row's words.
 
-**The Reconciled Total Rule.** The headline available total and ledger totals row are computed from the same spendable set and must match. Deposit balance excludes unused credit; loans count toward neither figure.
+**The Reconciled Total Rule.** The ledger totals row is the available total. It is computed from the spendable set: deposit balance excludes unused credit; loans count toward neither figure. The sol glance note uses that same spendable figure.
 
 ## Elevation & Depth
 
@@ -316,7 +316,7 @@ Public registry containers, buttons, and fields remain square; 2px corners are r
 - **Desk ledger card:** White sheet, one-pixel desk rule, 6px radius, clipped overflow, no shadow.
 - **Desk shaded band:** The shade neutral distinguishes headers, explanatory totals, and notes without introducing elevation.
 - **Public containers:** Ruled, square cells on graphite or dust.
-- **Physical bank card:** 2px radius, 1.58 ratio, faint orbital ring, object shadow.
+- **Physical bank card:** 2px radius, 1.58 ratio, faint orbital ring, object shadow. The plastic face stays dark; status badges, freeze controls, and the security note beside it use desk ink on the light sheet.
 
 ### Inputs / Fields
 - **Desk search:** White 38px field in graphite top bar, 3px radius, search icon, flexible input, and a rule-separated scope selector. Scope hides below 850px.
@@ -328,6 +328,9 @@ Public registry containers, buttons, and fields remain square; 2px corners are r
 - **Desk top bar:** 60px graphite band with orbital lockup, universal search, Demo data status, notifications, customer, and logout.
 - **Desk rail:** 118px graphite, labels below 21px icons, 68px route rows, muted idle ink, graphite hover, white active ink, and a 3px oxide active edge.
 - **Desk mobile:** Fixed four-tab graphite bar below 850px; active type is white while inactive type uses chrome-muted.
+
+### Transfer
+The send form is a desk sheet. Labels, fields, chips, and review copy use desk ink on the white sheet, not public paper or mint. Native controls inherit a light color-scheme so placeholders stay readable in both themes.
 
 ### Account Ledger
 The account ledger is one sheet with shared columns. Transaction, savings, and offset accounts use Available / Held / Total. Credit rows restate Available credit / Owing / Limit; loan rows restate Remaining / Offset / Original. Restated words stay visible at every width. Only genuinely spendable available values receive signal blue. The strong-rule totals footer explains and reconciles the available and deposit figures.
@@ -344,7 +347,7 @@ The orbital-arc mark, oxide node, and signal ticks are shared across both worlds
 - **Do** use signal only for spendable or positive movement semantics in the desk.
 - **Do** restate product-specific column meanings without breaking the shared ledger.
 - **Do** keep the Demo data chip visible on every authenticated view.
-- **Do** keep the headline and ledger available totals reconciled from the same account set.
+- **Do** keep the ledger available total computed from the spendable account set.
 
 ### Don't:
 - **Don't** present the Account Desk as a replacement for the public Orbital Registry.

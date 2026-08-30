@@ -7,6 +7,7 @@ import {
   seedSnapshot,
   snapshotForResident,
 } from "./fixtures";
+import { availableBalance } from "./ledger";
 import { latestPostedTime, solNumberFromLatest } from "./sol";
 
 describe("demo residents", () => {
@@ -68,6 +69,16 @@ describe("demo residents", () => {
     const newest = seedSnapshot.transactions[0]?.postedOn;
     const oldest = seedSnapshot.transactions.at(-1)?.postedOn;
     expect(newest && oldest && newest >= oldest).toBe(true);
+  });
+
+  it("makes every resident a token billionaire", () => {
+    for (const resident of demoResidents) {
+      const snapshot = snapshotForResident(resident);
+      const spendable = snapshot.accounts
+        .filter((account) => account.kind !== "loan")
+        .reduce((total, account) => total + availableBalance(account), 0);
+      expect(spendable).toBeGreaterThanOrEqual(1_000_000_000);
+    }
   });
 
   it("seeds a distinct habitat register per resident", () => {

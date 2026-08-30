@@ -39,14 +39,22 @@ describe("shared ledger repository", () => {
     expect(duplicate).toEqual(first);
     const ben = await repository.getRegister("ben");
     const sol = ben.accounts.find((account) => account.id === "acc-everyday");
-    expect(sol && availableBalance(sol)).toBe(322_750);
+    expect(sol && availableBalance(sol)).toBe(1_000_322_750);
   });
 
   it("serializes concurrent transfers against the latest balance", async () => {
     const repository = createMemoryLedgerRepository();
     const results = await Promise.all([
-      repository.transfer("aaron", "concurrent-request-1", sendToBen(60_000)),
-      repository.transfer("aaron", "concurrent-request-2", sendToBen(60_000)),
+      repository.transfer(
+        "aaron",
+        "concurrent-request-1",
+        sendToBen(600_000_000),
+      ),
+      repository.transfer(
+        "aaron",
+        "concurrent-request-2",
+        sendToBen(600_000_000),
+      ),
     ]);
 
     expect(results.filter((result) => result.kind === "ok")).toHaveLength(1);
@@ -62,6 +70,6 @@ describe("shared ledger repository", () => {
 
     const ben = await repository.getRegister("ben");
     const sol = ben.accounts.find((account) => account.id === "acc-everyday");
-    expect(sol && availableBalance(sol)).toBe(312_750);
+    expect(sol && availableBalance(sol)).toBe(1_000_312_750);
   });
 });

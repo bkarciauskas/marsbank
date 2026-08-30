@@ -42,7 +42,7 @@ describe("transfers route", () => {
     expect(response.status).toBe(200);
     const ben = await getLedgerRepository().getRegister("ben");
     const sol = ben.accounts.find((account) => account.id === "acc-everyday");
-    expect(sol && availableBalance(sol)).toBe(322_750);
+    expect(sol && availableBalance(sol)).toBe(1_000_322_750);
   });
 
   it("rejects malformed and unauthenticated transfers", async () => {

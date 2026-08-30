@@ -3,12 +3,13 @@
 import { Snowflake, Sun, Wifi } from "lucide-react";
 import { MarsMark } from "@/components/brand/wordmark";
 import { useBank } from "@/lib/store";
+import "@/components/banking/cards-surface.css";
 
 export default function CardsPage() {
   const { snapshot, updateCardStatus } = useBank();
 
   return (
-    <div>
+    <div className="cards-page">
       <div className="page-intro">
         <h1>Cards for every airlock</h1>
       </div>
