@@ -898,7 +898,6 @@ html[data-theme="light"] .mobile-bank-nav {
 .banking-shell {
   display: grid;
   min-height: 100vh;
-  grid-template-columns: 248px minmax(0, 1fr);
   background: var(--ink);
   color: var(--paper);
 }
@@ -964,10 +963,6 @@ html[data-theme="light"] .mobile-bank-nav {
   padding-top: 18px;
 }
 
-.bank-stage {
-  min-width: 0;
-}
-
 .bank-topbar {
   display: flex;
   min-height: 72px;
@@ -999,14 +994,6 @@ html[data-theme="light"] .mobile-bank-nav {
   font-size: 13px;
   font-weight: 700;
   place-items: center;
-}
-
-.bank-content {
-  width: 100%;
-  max-width: 1680px;
-  min-width: 0;
-  margin: 0;
-  padding: 32px 30px 72px;
 }
 
 .page-intro {
@@ -1881,13 +1868,6 @@ html[data-theme="light"] .survey-select-list li.is-active {
     padding-inline: 26px;
   }
 
-  .banking-shell {
-    grid-template-columns: 210px minmax(0, 1fr);
-  }
-
-  .bank-content {
-    width: auto;
-  }
 }
 
 @media (max-width: 850px) {
@@ -2246,7 +2226,6 @@ html[data-theme="light"] .survey-select-list li.is-active {
 }
 
 .banking-shell {
-  grid-template-columns: 228px minmax(0, 1fr);
   background: var(--ink);
 }
 
@@ -2405,14 +2384,6 @@ html[data-theme="light"] .survey-select-list li.is-active {
   color: #101518;
   font-family: var(--display);
   letter-spacing: 0.08em;
-}
-
-.bank-content {
-  width: 100%;
-  max-width: 1680px;
-  min-width: 0;
-  margin: 0;
-  padding: 32px 30px 72px;
 }
 
 .page-intro {
@@ -3012,6 +2983,9 @@ html[data-theme="light"] .survey-select-list li.is-active {
   --desk-chrome-button: #2a3236;
   --desk-chrome-button-hover: #3a4348;
   --desk-radius: 6px;
+  --desk-measure-ledger: 1640px;
+  --desk-measure-register: 1100px;
+  --desk-measure-task: 760px;
   --desk-font: "Hanken Grotesk Variable", "Hanken Grotesk", var(--body-font);
 
   --desk-text-micro: 10px;
@@ -3309,11 +3283,23 @@ html[data-theme="light"] .survey-select-list li.is-active {
 }
 
 .banking-shell .bank-content {
-  width: 100%;
-  max-width: 1180px;
+  width: min(var(--desk-measure-ledger), 100%);
   min-width: 0;
-  margin: 0;
+  margin-inline: auto;
   padding: 30px 32px 64px;
+}
+
+/* A movement register is three sparse tracks, so extra width only pushes the
+   amount away from its description. It stops short of the ledger measure. */
+.banking-shell .desk-register {
+  width: min(var(--desk-measure-register), 100%);
+  margin-inline: auto;
+}
+
+.banking-shell .transfer-page,
+.banking-shell .desk-task {
+  width: min(var(--desk-measure-task), 100%);
+  margin-inline: auto;
 }
 
 .desk {
@@ -3568,6 +3554,12 @@ button.desk-primary-action {
 .desk-columns {
   display: grid;
   gap: 20px;
+}
+
+@media (min-width: 1200px) {
+  .desk-columns {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  }
 }
 
 .desk-card-heading,
@@ -3985,12 +3977,6 @@ button.desk-primary-action {
 }
 
 @media (max-width: 1080px) {
-  .banking-shell .bank-content {
-    width: 100%;
-    max-width: 900px;
-    margin: 0;
-  }
-
   .desk-search {
     max-width: none;
   }
@@ -4044,9 +4030,6 @@ button.desk-primary-action {
   }
 
   .banking-shell .bank-content {
-    width: 100%;
-    max-width: none;
-    margin: 0;
     padding: 20px 14px 48px;
   }
 

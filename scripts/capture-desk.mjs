@@ -6,6 +6,10 @@ const outDir = process.env.CAPTURE_DIR ?? ".impeccable/review";
 
 const viewports = [
   { name: "desktop", width: 1440, height: 900 },
+  // Capping review at 1440 hid a left-pinned fixed-width stage on large
+  // displays. Wide shots keep the centred measure under visual review.
+  { name: "wide", width: 1920, height: 1080 },
+  { name: "ultrawide", width: 2560, height: 1200 },
   { name: "mobile", width: 390, height: 844 },
   // Matches the approved comp's own pixel dimensions so the hero can be
   // compared against it without rescaling.

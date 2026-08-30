@@ -19,7 +19,7 @@ function ActivityRegister() {
         );
 
   return (
-    <div>
+    <div className="desk-register">
       <div className="page-intro">
         <div>
           <h1>Token movement</h1>

@@ -21,7 +21,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="desk">
+    <div className="desk desk-task">
       <div className="desk-intro">
         <div>
           <h1>Settings</h1>

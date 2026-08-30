@@ -69,7 +69,7 @@ describe("BankingOverview", () => {
     ).toBeGreaterThan(1);
   });
 
-  it("stacks the support panels full width beneath the ledger", () => {
+  it("puts exactly two support panels beneath the ledger", () => {
     const { container } = renderOverview();
 
     const columns = container.querySelector(".desk-columns");

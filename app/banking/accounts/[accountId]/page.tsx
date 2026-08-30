@@ -65,7 +65,7 @@ export default function AccountDetailPage() {
   const canOpenLoan = account.kind === "offset" && linkedLoan;
 
   return (
-    <div className="desk">
+    <div className="desk desk-register">
       <Link className="desk-back" href="/banking/accounts">
         <ArrowLeft aria-hidden="true" /> Token register
       </Link>
