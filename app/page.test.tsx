@@ -37,4 +37,13 @@ describe("HomePage", () => {
     );
     expect(container.querySelector("#saving")).toHaveClass("public-width");
   });
+
+  it("keeps the security plate on the public width column", () => {
+    const { container } = render(<HomePage />);
+
+    expect(container.querySelector("#support")).toHaveClass("public-width");
+    expect(container.querySelector(".security-inner")).not.toHaveClass(
+      "public-width",
+    );
+  });
 });

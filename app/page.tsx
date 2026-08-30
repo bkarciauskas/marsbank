@@ -90,8 +90,8 @@ export default function HomePage() {
           </article>
         </section>
 
-        <section className="security-section" id="support">
-          <div className="public-width security-inner">
+        <section className="security-section public-width" id="support">
+          <div className="security-inner">
             <LockKeyhole />
             <div>
               <h2>Earth is minutes away. Your bank is here.</h2>

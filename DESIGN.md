@@ -274,7 +274,7 @@ The public palette is mineral and theme-responsive; the desk palette is cool, li
 
 ## Layout
 
-Public IA remains Macquarie-like: a 36px utility row, 78px primary nav, and `min(1240px, calc(100% - 48px))` public width. The split hero and token-story images sit in that same column, not the viewport. The four-cell explore grid and three-column service band follow it. It changes at 1100px, 850px, and 560px.
+Public IA remains Macquarie-like: a 36px utility row, 78px primary nav, and `min(1240px, calc(100% - 48px))` public width. The split hero, token-story images, and mint security plate sit in that same column, not the viewport. The security row keeps lock, copy, and login link as one group. The four-cell explore grid and three-column service band follow the column. It changes at 1100px, 850px, and 560px.
 
 The authenticated shell is a 60px full-width top bar above a 118px sticky icon rail and a fluid stage. Register content is left-aligned to the rail, fills the stage up to 1180px, and uses 32px inline padding with 30px top and 64px bottom padding. It is not a centered column. The overview is a vertical 20px rhythm: greeting band, one account ledger, recent movements, then the three-up sol summary. Account rows share six visible tracks: account, branch and number, available, held, total, and arrow.
 

@@ -626,11 +626,11 @@ html[data-theme="light"] .mobile-bank-nav {
 }
 
 .security-inner {
-  display: grid;
+  display: flex;
   min-height: 220px;
   align-items: center;
+  flex-wrap: wrap;
   gap: 30px;
-  grid-template-columns: auto 1fr auto;
 }
 
 .security-inner > svg {
@@ -2147,11 +2147,6 @@ html[data-theme="light"] .survey-select-list li.is-active {
 
   .security-inner {
     padding-block: 42px;
-    grid-template-columns: auto 1fr;
-  }
-
-  .security-inner a {
-    grid-column: 2;
   }
 
   .banking-shell {
@@ -2285,11 +2280,7 @@ html[data-theme="light"] .survey-select-list li.is-active {
   }
 
   .security-inner {
-    grid-template-columns: 1fr;
-  }
-
-  .security-inner a {
-    grid-column: auto;
+    align-items: flex-start;
   }
 
   .footer-top {
