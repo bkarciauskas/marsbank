@@ -6,6 +6,12 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { hookActivityPath } from "@/lib/demo/hook-activity";
 import { hookStampPath } from "@/lib/demo/hook-stamp";
+import {
+  demoHookScriptFiles,
+  demoHooksInstallPaths,
+  demoHooksInstalled,
+  uninstallDemoHooks,
+} from "@/lib/demo/install-hooks";
 import { DEMO_SCENARIO_COOKIE } from "@/lib/demo/scenarios";
 import { accountId } from "@/lib/ids";
 import { availableBalance } from "@/lib/ledger";
@@ -36,10 +42,12 @@ function post(body: unknown, cookie = "") {
 
 describe("demo route", () => {
   beforeEach(async () => {
+    uninstallDemoHooks();
     await getLedgerRepository().resetAll("cameron");
   });
 
   afterEach(() => {
+    uninstallDemoHooks();
     try {
       fs.unlinkSync(hookStampPath);
     } catch {
@@ -55,7 +63,10 @@ describe("demo route", () => {
   it("reports an idle console when no walk is staged", async () => {
     const response = await get();
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ active: null });
+    expect(await response.json()).toEqual({
+      active: null,
+      hooksInstalled: false,
+    });
   });
 
   it("stages a walk, restores registers, and clears the hook stamp", async () => {
@@ -94,10 +105,20 @@ describe("demo route", () => {
     try {
       const response = await post({ action: "setup", scenario: "hooks" });
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual({ active: "hooks" });
+      expect(await response.json()).toEqual({
+        active: "hooks",
+        hooksInstalled: true,
+      });
       expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("hooks");
       expect(fs.existsSync(hookStampPath)).toBe(false);
       expect(fs.existsSync(hookActivityPath)).toBe(false);
+      expect(demoHooksInstalled()).toBe(true);
+      expect(fs.existsSync(demoHooksInstallPaths.hooksJson)).toBe(true);
+      for (const file of demoHookScriptFiles) {
+        expect(
+          fs.existsSync(path.join(demoHooksInstallPaths.hooksDir, file)),
+        ).toBe(true);
+      }
       expect(fs.readFileSync(transferForm, "utf8")).not.toContain(
         "demo-route-restore-marker",
       );
@@ -121,8 +142,27 @@ describe("demo route", () => {
       `${DEMO_SCENARIO_COOKIE}=debug-mode`,
     );
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ active: null });
+    expect(await response.json()).toEqual({
+      active: null,
+      hooksInstalled: false,
+    });
     expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("");
+  });
+
+  it("uninstalls hooks when the hooks walk is reset", async () => {
+    await post({ action: "setup", scenario: "hooks" });
+    expect(demoHooksInstalled()).toBe(true);
+
+    const response = await post(
+      { action: "reset", scenario: "hooks" },
+      `${DEMO_SCENARIO_COOKIE}=hooks`,
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      active: null,
+      hooksInstalled: false,
+    });
+    expect(demoHooksInstalled()).toBe(false);
   });
 
   it("resets one walk without clearing a different staged walk", async () => {
@@ -131,7 +171,10 @@ describe("demo route", () => {
       `${DEMO_SCENARIO_COOKIE}=debug-mode`,
     );
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ active: "debug-mode" });
+    expect(await response.json()).toEqual({
+      active: "debug-mode",
+      hooksInstalled: false,
+    });
     expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("debug-mode");
   });
 

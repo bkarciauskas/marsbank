@@ -39,7 +39,7 @@ export const demoScenarioCatalog: readonly DemoScenario[] = [
     id: "hooks",
     title: "Cursor Hooks",
     pitch:
-      "Each card is a pasteable prompt. The bar is what you should see; the text underneath is what you paste into Cursor.",
+      "Setup installs project hooks from demo/cursor-hooks. Each card is a pasteable prompt — bar is the expected outcome, body is what you paste. Reload Cursor after Setup/Reset.",
     prompts: [
       {
         id: "edit",

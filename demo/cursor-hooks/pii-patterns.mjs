@@ -48,8 +48,9 @@ const secretRisks = [
   {
     id: "generic-api-key-assignment",
     label: "API key assignment",
+    // Allow env prefixes (STRIPE_SECRET_KEY) — bare word-boundary misses those.
     pattern:
-      /\b(api[_-]?key|secret[_-]?key|access[_-]?token)\b\s*[=:]\s*['"`]?[A-Za-z0-9_\-]{16,}/i,
+      /\b(?:[A-Za-z0-9]+_)*(?:api[_-]?key|secret[_-]?key|access[_-]?token)\b\s*[=:]\s*['"`]?[A-Za-z0-9_\-]{16,}/i,
   },
   {
     id: "bearer-token",

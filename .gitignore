@@ -7,9 +7,13 @@ out
 coverage
 .env*
 !.env.example
+# Installed by /demo Setup from demo/cursor-hooks/ (Reset removes these).
+.cursor/hooks.json
+.cursor/hooks/*.mjs
 .cursor/hooks/.edited-files
 .cursor/hooks/demo-activity.jsonl
 .cursor/hooks/demo-activity.test.jsonl
+.cursor/hooks-vitest/
 tsconfig.tsbuildinfo
 tsconfig.tsbuildinfo
 .impeccable/widths*

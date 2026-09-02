@@ -7,7 +7,10 @@ function jsonResponse(body: unknown): Response {
   return Response.json(body);
 }
 
-function mockDemoFetch(active: "hooks" | "debug-mode" | null = null) {
+function mockDemoFetch(
+  active: "hooks" | "debug-mode" | null = null,
+  hooksInstalled = false,
+) {
   return vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     if (url.includes("/api/demo/hook-activity")) {
@@ -19,16 +22,19 @@ function mockDemoFetch(active: "hooks" | "debug-mode" | null = null) {
         scenario?: string;
       };
       if (body.action === "setup") {
-        return jsonResponse({ active: body.scenario ?? null });
+        return jsonResponse({
+          active: body.scenario ?? null,
+          hooksInstalled: body.scenario === "hooks",
+        });
       }
       if (body.action === "reset-all") {
-        return jsonResponse({ active: null });
+        return jsonResponse({ active: null, hooksInstalled: false });
       }
       if (body.action === "reset") {
-        return jsonResponse({ active: null });
+        return jsonResponse({ active: null, hooksInstalled: false });
       }
     }
-    return jsonResponse({ active });
+    return jsonResponse({ active, hooksInstalled });
   });
 }
 
@@ -77,7 +83,9 @@ describe("DemoConsole", () => {
         }),
       ),
     );
-    expect((await screen.findAllByText("Staged")).length).toBeGreaterThan(0);
+    expect(
+      (await screen.findAllByText("Staged · hooks installed")).length,
+    ).toBeGreaterThan(0);
   });
 
   it("resets every walk from the console header", async () => {
@@ -97,5 +105,6 @@ describe("DemoConsole", () => {
       ),
     );
     expect(screen.queryAllByText("Staged")).toHaveLength(0);
+    expect(screen.queryAllByText(/hooks installed/i)).toHaveLength(0);
   });
 });

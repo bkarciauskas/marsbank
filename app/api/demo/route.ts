@@ -1,6 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { clearHookActivity } from "@/lib/demo/hook-activity";
 import { clearHookStamp } from "@/lib/demo/hook-stamp";
+import {
+  demoHooksInstalled,
+  installDemoHooks,
+  uninstallDemoHooks,
+} from "@/lib/demo/install-hooks";
 import { restoreDemoSources } from "@/lib/demo/restore-sources";
 import {
   DEMO_SCENARIO_COOKIE,
@@ -13,6 +18,13 @@ import { getLedgerRepository } from "@/lib/server/ledger-repository";
 
 function activeFrom(request: NextRequest): DemoScenarioId | null {
   return scenarioFromCookie(request.cookies.get(DEMO_SCENARIO_COOKIE)?.value);
+}
+
+function demoStatus(active: DemoScenarioId | null) {
+  return {
+    active,
+    hooksInstalled: demoHooksInstalled(),
+  };
 }
 
 function cookieOptions(maxAge: number) {
@@ -49,7 +61,7 @@ async function restoreRegisters(): Promise<void> {
 }
 
 export async function GET(request: NextRequest) {
-  return NextResponse.json({ active: activeFrom(request) });
+  return NextResponse.json(demoStatus(activeFrom(request)));
 }
 
 export async function POST(request: NextRequest) {
@@ -69,7 +81,8 @@ export async function POST(request: NextRequest) {
 
   if (action === "reset-all") {
     await restoreRegisters();
-    return withScenario(NextResponse.json({ active: null }), null);
+    uninstallDemoHooks();
+    return withScenario(NextResponse.json(demoStatus(null)), null);
   }
 
   if (action === "setup") {
@@ -77,7 +90,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Choose a demo walk." }, { status: 400 });
     }
     await restoreRegisters();
-    return withScenario(NextResponse.json({ active: scenario }), scenario);
+    if (scenario === "hooks") {
+      installDemoHooks();
+    }
+    return withScenario(NextResponse.json(demoStatus(scenario)), scenario);
   }
 
   if (action === "reset") {
@@ -85,8 +101,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Choose a demo walk." }, { status: 400 });
     }
     await restoreRegisters();
+    if (scenario === "hooks") {
+      uninstallDemoHooks();
+    }
     const next = activeFrom(request) === scenario ? null : activeFrom(request);
-    return withScenario(NextResponse.json({ active: next }), next);
+    return withScenario(NextResponse.json(demoStatus(next)), next);
   }
 
   return NextResponse.json({ error: "Choose a demo action." }, { status: 400 });

@@ -235,6 +235,19 @@
   gap: 10px;
 }
 
+.demo-hook-reload-hint {
+  margin: 0;
+  color: var(--mineral);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.demo-hook-reload-hint code,
+.demo-console-lead code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.92em;
+}
+
 .demo-primary-action,
 .demo-quiet-action {
   display: inline-flex;

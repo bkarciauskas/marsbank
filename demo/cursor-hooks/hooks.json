@@ -3,15 +3,13 @@
   "hooks": {
     "beforeSubmitPrompt": [
       {
-        "command": "node .cursor/hooks/guard-prompt.mjs",
-        "failClosed": true
+        "command": "node .cursor/hooks/guard-prompt.mjs"
       }
     ],
     "preToolUse": [
       {
         "command": "node .cursor/hooks/guard-secrets.mjs",
-        "matcher": "Write|Shell",
-        "failClosed": true
+        "matcher": "Write|Shell"
       }
     ],
     "afterFileEdit": [

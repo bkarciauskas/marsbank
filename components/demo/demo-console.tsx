@@ -14,13 +14,21 @@ import "./demo-console.css";
 
 type DemoStatus = {
   active: DemoScenarioId | null;
+  hooksInstalled: boolean;
 };
 
 function isDemoStatus(value: unknown): value is DemoStatus {
-  if (typeof value !== "object" || value === null || !("active" in value)) {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("active" in value) ||
+    !("hooksInstalled" in value)
+  ) {
     return false;
   }
-  return value.active === null || isDemoScenario(value.active);
+  const activeOk =
+    value.active === null || isDemoScenario(value.active);
+  return activeOk && typeof value.hooksInstalled === "boolean";
 }
 
 function isHookActivityPayload(
@@ -68,6 +76,7 @@ function formatClock(iso: string): string {
 
 export function DemoConsole() {
   const [active, setActive] = useState<DemoScenarioId | null>(null);
+  const [hooksInstalled, setHooksInstalled] = useState(false);
   const [tab, setTab] = useState<DemoScenarioId>("hooks");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -81,6 +90,7 @@ export function DemoConsole() {
         const status = await readStatus(await fetch("/api/demo", { cache: "no-store" }));
         if (cancelled) return;
         setActive(status.active);
+        setHooksInstalled(status.hooksInstalled);
         if (status.active) setTab(status.active);
       } catch {
         if (!cancelled) setError("Could not read the staged walk.");
@@ -133,6 +143,7 @@ export function DemoConsole() {
         }),
       );
       setActive(status.active);
+      setHooksInstalled(status.hooksInstalled);
       if (action === "setup" && scenario) setTab(scenario);
       if (action === "reset" || action === "reset-all" || action === "setup") {
         setHookLog([]);
@@ -163,9 +174,11 @@ export function DemoConsole() {
           <p>Presenter control</p>
           <h1>Demos</h1>
           <p className="demo-console-lead">
-            Each demo has its own tab. Setup restores the shared registers. Reset
-            returns that demo&apos;s source files, ledger, faults, and the hooks
-            activity log to baseline.
+            Each demo has its own tab. On Hooks, Setup copies the kit from{" "}
+            <code>demo/cursor-hooks</code> into <code>.cursor</code>; Reset
+            removes those installed files. Reload Cursor after Setup or Reset so
+            hook changes take effect. Reset also restores transfer-form sources,
+            the ledger, and the activity log.
           </p>
         </div>
         <button
@@ -209,6 +222,7 @@ export function DemoConsole() {
         busy={busy}
         copied={copied}
         hookLog={showsHookActivity(selected.id) ? hookLog : null}
+        hooksInstalled={hooksInstalled}
         onCopy={copyPrompt}
         onReset={() => void postAction("reset", selected.id)}
         onSetup={() => void postAction("setup", selected.id)}
@@ -223,6 +237,7 @@ function ScenarioPanel({
   busy,
   copied,
   hookLog,
+  hooksInstalled,
   onCopy,
   onReset,
   onSetup,
@@ -232,6 +247,7 @@ function ScenarioPanel({
   busy: string | null;
   copied: string | null;
   hookLog: HookActivityEntry[] | null;
+  hooksInstalled: boolean;
   onCopy: (id: string, prompt: string) => Promise<void>;
   onReset: () => void;
   onSetup: () => void;
@@ -240,6 +256,18 @@ function ScenarioPanel({
 }) {
   const setupKey = `setup:${scenario.id}`;
   const resetKey = `reset:${scenario.id}`;
+  const statusLabel =
+    scenario.id === "hooks"
+      ? hooksInstalled
+        ? staged
+          ? "Staged · hooks installed"
+          : "Hooks installed"
+        : staged
+          ? "Staged · hooks not installed"
+          : "Idle"
+      : staged
+        ? "Staged"
+        : "Idle";
   return (
     <section
       aria-labelledby={`demo-tab-${scenario.id}`}
@@ -253,7 +281,7 @@ function ScenarioPanel({
           <p>{scenario.pitch}</p>
         </div>
         <p className="demo-walk-status" data-staged={staged ? "true" : "false"}>
-          {staged ? "Staged" : "Idle"}
+          {statusLabel}
         </p>
       </div>
       <div className="demo-walk-actions">
@@ -275,6 +303,12 @@ function ScenarioPanel({
           {busy === resetKey ? "Resetting" : "Reset"}
         </button>
       </div>
+      {scenario.id === "hooks" ? (
+        <p className="demo-hook-reload-hint">
+          After Setup or Reset, reload the Cursor window so{" "}
+          <code>.cursor/hooks.json</code> is picked up.
+        </p>
+      ) : null}
       {scenario.prompts.map((block) => (
         <PromptBlock
           copied={copied === `${scenario.id}:${block.id}`}
@@ -286,7 +320,11 @@ function ScenarioPanel({
       ))}
       {hookLog ? (
         <HookActivityLog
-          emptyHint="Waiting for hook events. Paste a prompt above — Reset clears this log."
+          emptyHint={
+            hooksInstalled
+              ? "Waiting for hook events. Paste a prompt above — Reset clears this log and uninstalls hooks."
+              : "Setup installs hooks from demo/cursor-hooks into .cursor, then reload Cursor."
+          }
           entries={hookLog}
         />
       ) : null}
