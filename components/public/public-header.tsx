@@ -27,6 +27,7 @@ export function PublicHeader() {
             <Link href="/#business">Settlement business</Link>
             <Link href="/#support">Help and security</Link>
             <Link href="/login">Mars Bank online</Link>
+            <Link href="/demo">Demos</Link>
           </nav>
         </div>
       </div>
@@ -48,6 +49,9 @@ export function PublicHeader() {
                 {label}
               </Link>
             ))}
+            <Link className="mobile-demo-link" href="/demo" onClick={() => setOpen(false)}>
+              Demos
+            </Link>
           </nav>
           <div className="nav-end">
             <button aria-label="Search" className="search-button" type="button">

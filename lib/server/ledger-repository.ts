@@ -14,12 +14,17 @@ import type { CardId } from "../ids";
 import { setCardStatus } from "../ledger";
 import { applySharedTransfer } from "../shared-ledger";
 
+export type TransferOptions = {
+  holdReserve?: boolean;
+};
+
 export type LedgerRepository = {
   getRegister: (slug: string) => Promise<BankSnapshot>;
   transfer: (
     slug: string,
     requestId: string,
     command: HostedTransferCommand,
+    options?: TransferOptions,
   ) => Promise<TransferResult>;
   updateCardStatus: (
     slug: string,
@@ -82,6 +87,7 @@ class MemoryLedgerRepository implements LedgerRepository {
     slug: string,
     requestId: string,
     command: HostedTransferCommand,
+    options?: TransferOptions,
   ): Promise<TransferResult> {
     return this.exclusive(() => {
       const prior = this.processed.get(requestId);
@@ -99,6 +105,7 @@ class MemoryLedgerRepository implements LedgerRepository {
       const target = targetSlug ? this.registers.get(targetSlug) : undefined;
       const result = applySharedTransfer({
         command,
+        holdReserve: options?.holdReserve,
         now: new Date(),
         recipient: target,
         recipientResident: targetResident,
@@ -176,6 +183,7 @@ class PostgresLedgerRepository implements LedgerRepository {
     slug: string,
     requestId: string,
     command: HostedTransferCommand,
+    options?: TransferOptions,
   ): Promise<TransferResult> {
     await this.ensureSeeded();
     return this.sql.begin(async (transaction) => {
@@ -219,6 +227,7 @@ class PostgresLedgerRepository implements LedgerRepository {
         : undefined;
       const result = applySharedTransfer({
         command,
+        holdReserve: options?.holdReserve,
         now: new Date(),
         recipient: target,
         recipientResident: targetSlug

@@ -1,4 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  DEMO_SCENARIO_COOKIE,
+  scenarioFromCookie,
+} from "@/lib/demo/scenarios";
 import { getLedgerRepository } from "@/lib/server/ledger-repository";
 import {
   authenticatedResident,
@@ -27,6 +31,11 @@ export async function POST(request: NextRequest) {
     slug,
     transfer.requestId,
     transfer.command,
+    {
+      holdReserve:
+        scenarioFromCookie(request.cookies.get(DEMO_SCENARIO_COOKIE)?.value) ===
+        "debug-mode",
+    },
   );
   return NextResponse.json(
     result,

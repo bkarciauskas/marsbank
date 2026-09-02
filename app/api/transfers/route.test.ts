@@ -45,6 +45,35 @@ describe("transfers route", () => {
     expect(sol && availableBalance(sol)).toBe(1_000_322_750);
   });
 
+  it("holds reserve available when the debug-mode walk is staged", async () => {
+    const response = await POST(
+      request(
+        {
+          requestId: "route-debug-hold-001",
+          kind: "own",
+          from: "acc-everyday",
+          to: "acc-reserve",
+          amount: 50_000,
+          description: "Reserve contribution",
+        },
+        "marsbank-demo-session=aaron; marsbank-demo-scenario=debug-mode",
+      ),
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as {
+      kind: string;
+      snapshot: {
+        accounts: { id: string; available: number; current: number }[];
+      };
+    };
+    const reserve = payload.snapshot.accounts.find(
+      (account) => account.id === "acc-reserve",
+    );
+    expect(reserve?.available).toBe(2_002_410_000);
+    expect(reserve?.current).toBe(2_002_460_000);
+  });
+
   it("rejects malformed and unauthenticated transfers", async () => {
     expect((await POST(request({ kind: "payid" }))).status).toBe(400);
     expect(

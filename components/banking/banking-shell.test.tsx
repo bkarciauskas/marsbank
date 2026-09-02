@@ -27,6 +27,15 @@ describe("BankingShell", () => {
     push.mockClear();
   });
 
+  it("opens the demo console from the demo data chip", () => {
+    renderShell();
+
+    expect(screen.getByRole("link", { name: "Demo data" })).toHaveAttribute(
+      "href",
+      "/demo",
+    );
+  });
+
   it("opens settings from the customer name", () => {
     renderShell();
 

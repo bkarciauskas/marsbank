@@ -95,7 +95,9 @@ export function BankingShell({ children }: { children: ReactNode }) {
           </label>
         </form>
         <div className="desk-identity">
-          <span className="desk-demo-flag">Demo data</span>
+          <Link className="desk-demo-flag" href="/demo">
+            Demo data
+          </Link>
           <Link
             aria-label="Notifications"
             className="desk-icon-button"

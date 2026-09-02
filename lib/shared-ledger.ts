@@ -3,6 +3,7 @@ import type {
   HostedTransferCommand,
   TransferResult,
 } from "./domain";
+import { holdReserveAvailable } from "./demo/reserve-hold";
 import type { DemoResident } from "./fixtures";
 import { applyIncomingResidentTransfer, applyPayIdTransfer, applyTransfer } from "./ledger";
 
@@ -16,6 +17,7 @@ export type SharedTransferResult =
 
 export function applySharedTransfer({
   command,
+  holdReserve = false,
   now,
   recipient,
   recipientResident,
@@ -23,6 +25,7 @@ export function applySharedTransfer({
   sender,
 }: {
   command: HostedTransferCommand;
+  holdReserve?: boolean;
   now: Date;
   recipient?: BankSnapshot;
   recipientResident?: DemoResident;
@@ -38,17 +41,22 @@ export function applySharedTransfer({
     return senderResult;
   }
 
+  // Debug-mode walk: Reserve posts to current but available stays put.
+  const senderSnapshot = holdReserve
+    ? holdReserveAvailable(sender, senderResult.snapshot)
+    : senderResult.snapshot;
+
   if (
     command.kind !== "payid" ||
     !recipient ||
     !recipientResident
   ) {
-    return { kind: "ok", sender: senderResult.snapshot };
+    return { kind: "ok", sender: senderSnapshot };
   }
 
   return {
     kind: "ok",
-    sender: senderResult.snapshot,
+    sender: senderSnapshot,
     recipient: applyIncomingResidentTransfer(
       recipient,
       {

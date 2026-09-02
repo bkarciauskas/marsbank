@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { demoResidentBySlug, seedSnapshotForSlug } from "./fixtures";
 import { accountId } from "./ids";
-import { availableBalance } from "./ledger";
+import { availableBalance, displayBalance } from "./ledger";
 import { tokens } from "./money";
 import { applySharedTransfer } from "./shared-ledger";
 
@@ -52,5 +52,31 @@ describe("shared resident transfers", () => {
         displayName: "Cameron",
       },
     });
+  });
+
+  it("holds reserve available when the debug-mode walk is staged", () => {
+    const result = applySharedTransfer({
+      command: {
+        kind: "own",
+        command: {
+          from: accountId("acc-everyday"),
+          to: accountId("acc-reserve"),
+          amount: tokens(10_000),
+          description: "Reserve contribution",
+        },
+      },
+      holdReserve: true,
+      now: new Date("2026-08-26T10:00:00.000Z"),
+      requestId: "debug-hold-001",
+      sender: seedSnapshotForSlug("cameron"),
+    });
+
+    expect(result.kind).toBe("ok");
+    if (result.kind !== "ok") return;
+    const reserve = result.sender.accounts.find(
+      (account) => account.id === "acc-reserve",
+    );
+    expect(reserve && availableBalance(reserve)).toBe(2_001_840_000);
+    expect(reserve && displayBalance(reserve)).toBe(2_001_850_000);
   });
 });

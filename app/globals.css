@@ -195,6 +195,10 @@ svg {
   transition: 180ms ease;
 }
 
+.mobile-demo-link {
+  display: none;
+}
+
 .nav-links a:hover::after,
 .nav-links a:focus-visible::after {
   opacity: 1;
@@ -713,7 +717,8 @@ html[data-theme="light"] .mobile-bank-nav {
   margin: 0;
 }
 
-.login-page {
+.login-page,
+.demo-page {
   display: flex;
   min-height: calc(100dvh - 114px);
   flex-direction: column;
@@ -1914,6 +1919,10 @@ html[data-theme="light"] .survey-select-list li.is-active {
     padding: 13px 16px;
   }
 
+  .mobile-demo-link {
+    display: block;
+  }
+
   .nav-links a::after {
     display: none;
   }
@@ -1928,7 +1937,8 @@ html[data-theme="light"] .survey-select-list li.is-active {
     font-size: 13px;
   }
 
-  .login-page {
+  .login-page,
+  .demo-page {
     min-height: calc(100dvh - 66px);
   }
 
@@ -2145,7 +2155,8 @@ html[data-theme="light"] .survey-select-list li.is-active {
     gap: 24px;
   }
 
-  .login-page {
+  .login-page,
+  .demo-page {
     min-height: calc(100dvh - 66px);
   }
 
@@ -3119,6 +3130,12 @@ html[data-theme="light"] .survey-select-list li.is-active {
   letter-spacing: 0.09em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+a.desk-demo-flag:hover,
+a.desk-demo-flag:focus-visible {
+  border-color: var(--desk-chrome-muted);
+  color: var(--desk-chrome-ink);
 }
 
 .desk-icon-button {

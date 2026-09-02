@@ -1,0 +1,236 @@
+.demo-console {
+  width: min(1080px, calc(100% - 48px));
+  margin: 48px auto 72px;
+}
+
+.demo-console-intro {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--line);
+}
+
+.demo-console-intro p:first-child {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.demo-console-intro h1 {
+  margin: 6px 0 0;
+  font-family: var(--display);
+  font-size: clamp(3rem, 7vw, 4.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 0.88;
+  text-transform: uppercase;
+}
+
+.demo-console-lead {
+  max-width: 62ch;
+  margin: 14px 0 0;
+  color: var(--mineral);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.demo-console-error {
+  margin: 0 0 20px;
+  color: var(--error);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.demo-console-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.demo-walk {
+  display: grid;
+  gap: 18px;
+  border: 1px solid var(--line);
+  padding: 22px 22px 20px;
+}
+
+.demo-walk-staged {
+  border-color: var(--oxide);
+}
+
+.demo-walk-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.demo-walk-heading h2 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.demo-walk-heading p {
+  max-width: 48ch;
+  margin: 10px 0 0;
+  color: var(--mineral);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.demo-walk-status {
+  margin: 0;
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.demo-walk-status[data-staged="true"] {
+  border-color: var(--oxide);
+  color: var(--oxide);
+}
+
+.demo-walk-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.demo-primary-action,
+.demo-quiet-action {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.demo-primary-action {
+  border: 1px solid var(--oxide);
+  background: var(--oxide);
+  color: #fff;
+}
+
+.demo-primary-action:hover {
+  background: var(--oxide-dark);
+}
+
+.demo-quiet-action {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--paper);
+}
+
+.demo-quiet-action:hover {
+  background: var(--wash, rgba(220, 232, 230, 0.06));
+}
+
+.demo-primary-action:disabled,
+.demo-quiet-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.demo-quiet-action svg,
+.demo-prompt-bar button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.demo-walk-script {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--paper);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.demo-walk-script li + li {
+  margin-top: 8px;
+}
+
+.demo-prompt {
+  border: 1px solid var(--line);
+}
+
+.demo-prompt-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.demo-prompt-bar p {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.demo-prompt-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  padding: 4px 2px;
+  background: transparent;
+  color: var(--paper);
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.demo-prompt pre {
+  margin: 0;
+  padding: 12px 12px 14px;
+  color: var(--paper);
+  font-family: var(--body-font);
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 860px) {
+  .demo-console {
+    width: min(100% - 32px, 1080px);
+    margin-top: 32px;
+  }
+
+  .demo-console-grid {
+    grid-template-columns: 1fr;
+  }
+}
