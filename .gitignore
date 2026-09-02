@@ -7,6 +7,8 @@ coverage
 .env*
 !.env.example
 .cursor/hooks/.edited-files
+.cursor/hooks/demo-activity.jsonl
+.cursor/hooks/demo-activity.test.jsonl
 tsconfig.tsbuildinfo
 tsconfig.tsbuildinfo
 .impeccable/widths*

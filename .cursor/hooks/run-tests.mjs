@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { appendActivity } from "./append-activity.mjs";
 
 const stamp = path.join(process.cwd(), ".cursor", "hooks", ".edited-files");
 const chunks = [];
@@ -38,9 +39,19 @@ const relevant = files.some((file) =>
 );
 
 if (!relevant) {
+  appendActivity({
+    event: "stop",
+    detail: "Agent stopped · no app/components/lib edits to test",
+    ok: true,
+  });
   process.stdout.write("{}\n");
   process.exit(0);
 }
+
+appendActivity({
+  event: "stop",
+  detail: "Agent stopped · running npm test",
+});
 
 const result = spawnSync("npm", ["test"], {
   encoding: "utf8",
@@ -55,9 +66,23 @@ if (passed) {
     fs.unlinkSync(stamp);
   } catch {
   }
+  appendActivity({
+    event: "stop",
+    detail: "npm test passed",
+    ok: true,
+  });
   process.stdout.write("{}\n");
   process.exit(0);
 }
+
+appendActivity({
+  event: "stop",
+  detail:
+    (input.loop_count ?? 0) === 0
+      ? "npm test failed · sending agent a fix follow-up"
+      : "npm test still failing · loop limit reached",
+  ok: false,
+});
 
 const tail = output.split("\n").slice(-40).join("\n");
 const followup =

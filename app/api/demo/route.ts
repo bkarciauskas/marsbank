@@ -1,5 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { clearHookActivity } from "@/lib/demo/hook-activity";
 import { clearHookStamp } from "@/lib/demo/hook-stamp";
+import { restoreDemoSources } from "@/lib/demo/restore-sources";
 import {
   DEMO_SCENARIO_COOKIE,
   isDemoScenario,
@@ -41,6 +43,8 @@ function withScenario(
 
 async function restoreRegisters(): Promise<void> {
   clearHookStamp();
+  clearHookActivity();
+  restoreDemoSources();
   await getLedgerRepository().resetAll(defaultDemoResident.slug);
 }
 

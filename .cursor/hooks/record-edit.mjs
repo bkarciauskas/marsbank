@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { appendActivity } from "./append-activity.mjs";
 
 const stamp = path.join(process.cwd(), ".cursor", "hooks", ".edited-files");
 const chunks = [];
@@ -17,6 +18,11 @@ try {
 if (filePath) {
   fs.mkdirSync(path.dirname(stamp), { recursive: true });
   fs.appendFileSync(stamp, `${filePath}\n`);
+  const short = filePath.replace(`${process.cwd()}/`, "");
+  appendActivity({
+    event: "afterFileEdit",
+    detail: `Recorded edit · ${short}`,
+  });
 }
 
 process.stdout.write("{}\n");

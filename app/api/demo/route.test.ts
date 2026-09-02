@@ -1,8 +1,10 @@
 // @vitest-environment node
 
 import fs from "node:fs";
+import path from "node:path";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { hookActivityPath } from "@/lib/demo/hook-activity";
 import { hookStampPath } from "@/lib/demo/hook-stamp";
 import { DEMO_SCENARIO_COOKIE } from "@/lib/demo/scenarios";
 import { accountId } from "@/lib/ids";
@@ -43,6 +45,11 @@ describe("demo route", () => {
     } catch {
       // stamp is optional
     }
+    try {
+      fs.unlinkSync(hookActivityPath);
+    } catch {
+      // activity log is optional
+    }
   });
 
   it("reports an idle console when no walk is staged", async () => {
@@ -56,6 +63,14 @@ describe("demo route", () => {
       recursive: true,
     });
     fs.writeFileSync(hookStampPath, "lib/ledger.ts\n");
+    fs.writeFileSync(
+      hookActivityPath,
+      `${JSON.stringify({
+        at: "2026-09-02T03:00:00.000Z",
+        event: "afterFileEdit",
+        detail: "stale",
+      })}\n`,
+    );
     await getLedgerRepository().transfer("cameron", "demo-setup-transfer", {
       kind: "own",
       command: {
@@ -66,17 +81,35 @@ describe("demo route", () => {
       },
     });
 
-    const response = await post({ action: "setup", scenario: "hooks" });
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ active: "hooks" });
-    expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("hooks");
-    expect(fs.existsSync(hookStampPath)).toBe(false);
-
-    const cameron = await getLedgerRepository().getRegister("cameron");
-    const everyday = cameron.accounts.find(
-      (account) => account.id === "acc-everyday",
+    const transferForm = path.join(
+      process.cwd(),
+      "components/banking/transfer-form.tsx",
     );
-    expect(everyday && availableBalance(everyday)).toBe(1_000_184_220);
+    const originalForm = fs.readFileSync(transferForm, "utf8");
+    fs.writeFileSync(
+      transferForm,
+      `${originalForm}\n// demo-route-restore-marker\n`,
+    );
+
+    try {
+      const response = await post({ action: "setup", scenario: "hooks" });
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ active: "hooks" });
+      expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("hooks");
+      expect(fs.existsSync(hookStampPath)).toBe(false);
+      expect(fs.existsSync(hookActivityPath)).toBe(false);
+      expect(fs.readFileSync(transferForm, "utf8")).not.toContain(
+        "demo-route-restore-marker",
+      );
+
+      const cameron = await getLedgerRepository().getRegister("cameron");
+      const everyday = cameron.accounts.find(
+        (account) => account.id === "acc-everyday",
+      );
+      expect(everyday && availableBalance(everyday)).toBe(1_000_184_220);
+    } finally {
+      fs.writeFileSync(transferForm, originalForm);
+    }
   });
 
   it("clears the staged walk on reset-all", async () => {

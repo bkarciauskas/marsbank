@@ -49,10 +49,130 @@
   font-weight: 600;
 }
 
-.demo-console-grid {
+.demo-hook-log {
+  margin: 0;
+  border: 1px solid var(--line);
+  background: var(--wash, rgba(220, 232, 230, 0.04));
+}
+
+.demo-hook-log-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.demo-hook-log-bar p,
+.demo-hook-log-bar span {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.demo-hook-log-bar p {
+  color: var(--paper);
+}
+
+.demo-hook-log-bar span {
+  color: var(--muted);
+}
+
+.demo-hook-log-empty {
+  margin: 0;
+  padding: 16px 14px 18px;
+  color: var(--mineral);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.demo-hook-log-list {
+  margin: 0;
+  padding: 8px 0;
+  list-style: none;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.demo-hook-log-list li {
   display: grid;
-  gap: 18px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 7.5rem 8.5rem minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 14px;
+  color: var(--paper);
+  font-size: 13px;
+  line-height: 1.35;
+  border-bottom: 1px solid color-mix(in srgb, var(--line) 70%, transparent);
+}
+
+.demo-hook-log-list li:last-child {
+  border-bottom: 0;
+}
+
+.demo-hook-log-list time {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.demo-hook-log-list strong {
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.demo-hook-log-list li[data-ok="true"] strong {
+  color: var(--signal, #356cff);
+}
+
+.demo-hook-log-list li[data-ok="false"] strong {
+  color: var(--oxide);
+}
+
+.demo-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
+.demo-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  padding: 0 14px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.demo-tab span {
+  border: 1px solid var(--oxide);
+  padding: 1px 6px;
+  color: var(--oxide);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.demo-tab-selected {
+  border-color: var(--paper);
+  color: var(--paper);
+}
+
+.demo-tab:hover {
+  background: var(--wash, rgba(220, 232, 230, 0.06));
 }
 
 .demo-walk {
@@ -165,10 +285,16 @@
 
 .demo-walk-script {
   margin: 0;
-  padding-left: 18px;
+  padding-left: 1.4rem;
   color: var(--paper);
   font-size: 14px;
   line-height: 1.5;
+  list-style: decimal;
+  list-style-position: outside;
+}
+
+.demo-walk-script li {
+  padding-left: 0.25rem;
 }
 
 .demo-walk-script li + li {
@@ -190,12 +316,14 @@
 
 .demo-prompt-bar p {
   margin: 0;
-  color: var(--muted);
-  font-family: var(--display);
-  font-size: 11px;
+  max-width: 78ch;
+  color: var(--oxide);
+  font-family: var(--body-font);
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.4;
 }
 
 .demo-prompt-bar button {
@@ -230,7 +358,8 @@
     margin-top: 32px;
   }
 
-  .demo-console-grid {
+  .demo-hook-log-list li {
     grid-template-columns: 1fr;
+    gap: 4px;
   }
 }

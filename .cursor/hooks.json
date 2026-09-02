@@ -1,6 +1,19 @@
 {
   "version": 1,
   "hooks": {
+    "beforeSubmitPrompt": [
+      {
+        "command": "node .cursor/hooks/guard-prompt.mjs",
+        "failClosed": true
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "node .cursor/hooks/guard-secrets.mjs",
+        "matcher": "Write|Shell",
+        "failClosed": true
+      }
+    ],
     "afterFileEdit": [
       {
         "command": "node .cursor/hooks/record-edit.mjs"
