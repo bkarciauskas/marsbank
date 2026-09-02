@@ -15,7 +15,7 @@ Primary surface is the web UI. Secondary surfaces are the route handlers under `
 - **Run:** from the repo root, `npm install` then `npm run dev`. README default is `http://localhost:3000`. Local ledger is in-memory and resets on process restart. **Restore shared demo** on Settings restores all six residents. No secrets are required for the local smoke path.
 - **Drive:** Playwright is already a repo dependency (`scripts/capture-desk.mjs` and `package.json`). Prefer role + accessible-name selectors already used in `app/**/*.test.*`.
 - **Observe:** full-page screenshots, `ariaSnapshot()` text, and `/api/register` JSON after a session cookie exists.
-- **Isolate:** start a dedicated `127.0.0.1:4317` instance (`MARSBANK_VERIFY_PORT` to override). Never attach to a `:3000` (or any other) process this run did not start. Isolation is process-local only: one Next process owns one in-memory ledger. Hosted Supabase is not used by `npm run dev`. This cloud image has `lsof`/`netstat` but not `ss`.
+- **Isolate:** start a dedicated `127.0.0.1:4317` instance (`MARSBANK_VERIFY_PORT` to override). Never attach to a `:3000` (or any other) process this run did not start. Isolation is process-local only: one Next process owns one in-memory ledger. Launch sets `MARSBANK_NEXT_DIST_DIR=.next-verify` so Next 16 will start beside a running `:3000`. Hosted Supabase is not used by `npm run dev`. This cloud image has `lsof`/`netstat` but not `ss`.
 
 Demo roster (fictional; from `lib/fixtures.ts` / README):
 

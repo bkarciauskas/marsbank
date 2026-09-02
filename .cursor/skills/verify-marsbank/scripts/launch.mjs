@@ -50,6 +50,7 @@ const child = spawn(
       PORT: String(port),
       BROWSER: "none",
       NEXT_TELEMETRY_DISABLED: "1",
+      MARSBANK_NEXT_DIST_DIR: ".next-verify",
     },
     stdio: ["ignore", logFd, logFd],
     detached: true,
