@@ -31,6 +31,6 @@ Preconditions:
 
 ## Gotchas
 
-- There are two freeze buttons. Target `.first()` or scope to one `article.card-panel`. A loose `getByText("Frozen")` can also match the security note heading `Lost beyond the airlock?` — use the status badge or the button name.
+- There are two freeze buttons. Target `.first()` or scope to one `article.card-panel`. A loose `getByText("Frozen")` can match the status badge and the `FROZEN` overlay on the same panel — not the security heading `Lost beyond the airlock?`. Prefer `{ exact: true }` on the badge or the button name.
 - Freeze is a real mutation on this process's ledger. Unfreeze (or Settings restore) before a later cards proof.
 - `/api/cards` PATCH is the backend for the button. Calling it directly is not cards-desk proof.

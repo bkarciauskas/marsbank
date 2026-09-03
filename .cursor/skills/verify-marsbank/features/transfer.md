@@ -38,7 +38,7 @@ Preconditions:
 
 - Amounts are whole tokens. A blank or zero amount stays on the collect step with `Enter at least one whole token.`
 - The destination toggle is two `aria-pressed` buttons, not radios. **Cursor or PayID** is the default; own-account proof must press **Between my accounts**.
-- Source and destination use `SurveySelect` buttons whose accessible name includes the live balance (`Sol Account · 1,096,410 tokens available` for Aaron). Match on `/Sol Account/`, not a hard-coded balance.
+- Source and destination use `SurveySelect` buttons whose accessible name includes the live balance (`Sol Account · 1,000,096,410 tokens available` for Aaron at seed). Match on `/Sol Account/`, not a hard-coded balance.
 - Own-account default destination is the habitat **loan**, which is what the component tests post. That is a real repayment, not a bug.
 - Transfers mutate this process's in-memory ledger (and would mutate hosted Supabase in a deployed preview). Restore from Settings if a later feature needs seed balances.
 - Do not treat a Vitest `TransferForm` test as this feature's proof.
