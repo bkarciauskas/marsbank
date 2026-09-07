@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-import { writeFileSync } from "node:fs";
+import { renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright";
+import { formatDaypartGreeting } from "../../../../lib/daypart.ts";
 import {
   ensureDir,
   evidenceRoot,
@@ -13,8 +14,8 @@ import {
 const FEATURES = ["login", "accounts", "transfer", "cards", "activity"];
 
 const residents = {
-  cameron: { name: /cameron/i, greeting: "Good evening, Cameron", member: "MB-104821" },
-  aaron: { name: /aaron/i, greeting: "Good evening, Aaron", member: "MB-110274" },
+  cameron: { name: /cameron/i, firstName: "Cameron", member: "MB-104821" },
+  aaron: { name: /aaron/i, firstName: "Aaron", member: "MB-110274" },
 };
 
 function parseArgs(argv) {
@@ -56,13 +57,29 @@ async function selectResident(page, residentKey) {
   await expectVisible(page.getByRole("radio", { name: resident.name }));
 }
 
+async function waitForViewerGreeting(page, firstName) {
+  for (;;) {
+    const hour = await page.evaluate(() => new Date().getHours());
+    const heading = formatDaypartGreeting(firstName, hour);
+    try {
+      await page
+        .getByRole("heading", { level: 1, name: heading })
+        .waitFor({ timeout: 1_000 });
+      return { hour, heading };
+    } catch {
+      const currentHour = await page.evaluate(() => new Date().getHours());
+      if (currentHour === hour) throw new Error("Local greeting did not render");
+    }
+  }
+}
+
 async function loginThroughRoster(page, baseUrl, residentKey) {
   const resident = residents[residentKey];
   await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
   await selectResident(page, residentKey);
   await page.getByRole("button", { name: "Enter Mars Bank" }).click();
   await page.waitForURL("**/banking", { timeout: 15_000 });
-  await page.getByRole("heading", { level: 1, name: resident.greeting }).waitFor();
+  await waitForViewerGreeting(page, resident.firstName);
 }
 
 async function writeRegister(page, dir, name = "register.json") {
@@ -79,8 +96,7 @@ async function driveLogin(page, baseUrl, dir, residentKey) {
   await selectResident(page, residentKey);
   await page.getByRole("button", { name: "Enter Mars Bank" }).click();
   await page.waitForURL("**/banking", { timeout: 15_000 });
-  const greeting = page.getByRole("heading", { level: 1, name: resident.greeting });
-  await greeting.waitFor();
+  const observedGreeting = await waitForViewerGreeting(page, resident.firstName);
   await page.getByText(new RegExp(`Client ${resident.member}`)).waitFor();
   const after = await capture(page, dir, "02-banking-home");
   const register = await writeRegister(page, dir);
@@ -97,7 +113,8 @@ async function driveLogin(page, baseUrl, dir, residentKey) {
     ],
     observed: {
       url: page.url(),
-      heading: resident.greeting,
+      heading: observedGreeting.heading,
+      hour: observedGreeting.hour,
       memberId: resident.member,
       registerEmail: email,
     },
@@ -278,25 +295,42 @@ const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   reducedMotion: "reduce",
   baseURL: instance.baseUrl,
+  ...(args.feature === "login" ? { recordVideo: { dir } } : {}),
 });
 const page = await context.newPage();
+const loginVideoPath = join(dir, "03-login-path.webm");
 
+let result;
+let driveError;
 try {
-  const result = await drivers[args.feature](page, instance.baseUrl, dir, args.resident);
-  const proof = {
-    feature: args.feature,
-    runId: instance.runId,
-    baseUrl: instance.baseUrl,
-    resident: args.resident,
-    startedFrom: "scripts/drive.mjs",
-    ...result,
-  };
-  writeJson(join(dir, "proof.json"), proof);
-  console.log(JSON.stringify({ ok: true, evidenceDir: dir, proof }, null, 2));
+  result = await drivers[args.feature](page, instance.baseUrl, dir, args.resident);
 } catch (error) {
   await capture(page, dir, "failure").catch(() => undefined);
+  driveError = error;
+} finally {
+  const video = args.feature === "login" ? page.video() : null;
+  await context.close();
+  if (video) {
+    renameSync(await video.path(), loginVideoPath);
+  }
   await browser.close();
-  fail(`Drive ${args.feature} failed: ${error instanceof Error ? error.stack ?? error.message : error}`);
 }
 
-await browser.close();
+if (driveError) {
+  fail(`Drive ${args.feature} failed: ${driveError instanceof Error ? driveError.stack ?? driveError.message : driveError}`);
+}
+
+if (args.feature === "login") {
+  result.artifacts.push({ videoPath: loginVideoPath });
+}
+
+const proof = {
+  feature: args.feature,
+  runId: instance.runId,
+  baseUrl: instance.baseUrl,
+  resident: args.resident,
+  startedFrom: "scripts/drive.mjs",
+  ...result,
+};
+writeJson(join(dir, "proof.json"), proof);
+console.log(JSON.stringify({ ok: true, evidenceDir: dir, proof }, null, 2));

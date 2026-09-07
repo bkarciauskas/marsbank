@@ -27,11 +27,11 @@ Preconditions:
 
 - **Open login.** Run `node .cursor/skills/verify-marsbank/scripts/drive.mjs login` (or `page.goto("http://127.0.0.1:4317/login")`). The heading reads `Your accounts can't.` and a radiogroup legend `Demo resident` is visible. Cameron is checked by default.
 - **Pick a resident.** Choose the Aaron roster card. Run `page.locator("label").filter({ has: page.getByRole("radio", { name: /aaron/i }) }).click()`. The Aaron radio is checked and the ID field shows `aaron@marsbank.mars`. The radio input itself is covered by its label — do not click the `input` directly.
-- **Enter.** Choose **Enter Mars Bank**. Run `page.getByRole("button", { name: "Enter Mars Bank" }).click()` and `page.waitForURL("**/banking")`. The heading is `Good evening, Aaron` and the intro includes `Client MB-110274`.
+- **Enter.** Choose **Enter Mars Bank**. Run `page.getByRole("button", { name: "Enter Mars Bank" }).click()` and `page.waitForURL("**/banking")`. Sample `page.evaluate(() => new Date().getHours())` and wait for the heading `formatDaypartGreeting("Aaron", hour)` produces. Retry only if that hour rolls. The intro includes `Client MB-110274`.
 - **Confirm session.** `GET /api/register` with the browser cookies returns 200 and `snapshot.customer.email` is `aaron@marsbank.mars`.
 - **Reject bad password.** On a fresh context, open `/login`, replace the password with `wrong`, and submit. An alert reads `That ID and password do not match the demo access record.` and the URL stays on `/login`.
 - **Log out.** From `/banking`, choose **Log out**. Run `page.getByRole("button", { name: /Log out/i }).click()`. The browser lands on `/` and a later `GET /api/register` is 401.
-- **Proof.** Keep `01-login-form.png`, `01-login-form.aria.txt`, `02-banking-home.png`, `02-banking-home.aria.txt`, `register.json`, and `proof.json` under `evidence/<runId>/login/`.
+- **Proof.** Keep `01-login-form.png`, `01-login-form.aria.txt`, `02-banking-home.png`, `02-banking-home.aria.txt`, `03-login-path.webm`, `register.json`, and `proof.json` under `evidence/<runId>/login/`. `proof.observed.heading` and `proof.observed.hour` come from the same browser sample. The login drive always records video and writes `03-login-path.webm` after the context closes, including failed runs.
 
 ## Gotchas
 

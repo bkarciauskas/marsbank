@@ -3,6 +3,7 @@
 import { ArrowRight, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { AccountList } from "@/components/banking/account-list";
+import { formatDaypartGreeting } from "@/lib/daypart";
 import { availableBalance } from "@/lib/ledger";
 import { formatTokens, tokens } from "@/lib/money";
 import {
@@ -12,9 +13,15 @@ import {
   solsBeforeLatest,
 } from "@/lib/sol";
 import { useBank } from "@/lib/store";
+import { useViewerCivilHour } from "@/lib/use-viewer-civil-hour";
 
 export default function BankingOverview() {
   const { snapshot } = useBank();
+  const localHour = useViewerCivilHour();
+  const greeting =
+    localHour === null
+      ? null
+      : formatDaypartGreeting(snapshot.customer.displayName, localHour);
   const spendableAccounts = snapshot.accounts.filter(
     (account) => account.kind !== "loan",
   );
@@ -51,7 +58,7 @@ export default function BankingOverview() {
     <div className="desk">
       <div className="desk-intro">
         <div>
-          <h1>Good evening, {snapshot.customer.displayName.split(" ")[0]}</h1>
+          <h1 aria-live="polite">{greeting ?? "\u00a0"}</h1>
           <p>
             Mars sol {LEDGER_SOL} · Client {snapshot.customer.memberId}
           </p>

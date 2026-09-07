@@ -1,6 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { formatDaypartGreeting } from "@/lib/daypart";
 import { BankProvider } from "@/lib/store";
 import BankingOverview from "./page";
 
@@ -15,6 +16,10 @@ function renderOverview() {
 describe("BankingOverview", () => {
   beforeEach(() => {
     window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("overflows from the movement rail to posted movement", () => {
@@ -39,11 +44,16 @@ describe("BankingOverview", () => {
     expect(note?.textContent).toContain(footer?.textContent ?? "");
   });
 
-  it("greets the customer in sentence case with the sol and client id", () => {
+  it("greets the customer in sentence case with the sol and client id", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 8, 4, 12, 0, 0));
     renderOverview();
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Good evening, Cameron" }),
+      await screen.findByRole("heading", {
+        level: 1,
+        name: formatDaypartGreeting("Cameron", 12),
+      }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Mars sol 21 · Client/)).toBeInTheDocument();
   });

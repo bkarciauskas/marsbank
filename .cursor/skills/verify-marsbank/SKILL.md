@@ -81,7 +81,7 @@ If you must drive by hand in Playwright, keep these selectors:
 
 - Login roster: click the `label` that wraps `getByRole("radio", { name: /aaron/i })` — the radio itself is covered by the label (same names for cameron, ben, richard, robin, blake)
 - Login submit: `getByRole("button", { name: "Enter Mars Bank" })`
-- Banking home: `waitForURL("**/banking")` then `getByRole("heading", { level: 1, name: "Good evening, Aaron" })`
+- Banking home: `waitForURL("**/banking")` then wait for the heading `formatDaypartGreeting(firstName, hour)` produces from `page.evaluate(() => new Date().getHours())`. Retry that wait only if the hour rolls between the sample and the locator. Login proof records that sample as `proof.observed.heading` and `proof.observed.hour`. The login drive always records video and saves `03-login-path.webm` after the context closes, including failed runs.
 - Sidebar: `getByRole("navigation", { name: "Banking" }).getByRole("link", { name: "Accounts" })` — also `Cards`, `Send`, `Position`, `Reports`
 - Transfer: `getByRole("link", { name: /Make a transfer/i })` → `getByRole("button", { name: "Between my accounts" })` → `getByPlaceholder("0")` → `getByRole("button", { name: "Review route" })` → `getByRole("button", { name: "Send tokens" })` → heading `Tokens dispatched`
 - Cards: `getByRole("button", { name: "Freeze card" })` / `Unfreeze card`
@@ -98,8 +98,9 @@ Each drive writes:
 
 - `01-*.png` / `02-*.png` — full-page screenshots of the action and the resulting state
 - `01-*.aria.txt` / `02-*.aria.txt` — Playwright `ariaSnapshot()` of `body`
+- `03-login-path.webm` — login drive only. Always-on video, finalized when the context closes
 - `register.json` (and before/after variants on mutations) — `GET /api/register` using the session cookie
-- `proof.json` — feature id, entry point, actions, observed values, artifact paths
+- `proof.json` — feature id, entry point, actions, observed values (including `proof.observed.hour` on login), artifact paths
 
 Proof standards:
 

@@ -46,8 +46,8 @@ Light neutral canvas `#F2F3F5`; white cards with 1px `#E3E5E4` rules and 6px cor
 - Signal blue marks spendable money only. A loan's remaining debt and a credit line's limit are never blue.
 - A row whose product means something different under a shared header restates its own words: Remaining / Offset / Original for a loan, Available credit / Owing / Limit for a credit line.
 - The ledger totals row is the available total. Deposit balance excludes credit headroom, and loan balances count toward neither.
+- Greeting copy follows the viewer-local civil hour. Morning is hours 0-11. Afternoon starts at Noon (12). Evening starts at Five o'clock (17). The heading stays a reserved blank until the browser supplies that hour.
 
 ## Unresolved decisions
 
-- The greeting is hardcoded to "Good evening" regardless of local time.
 - The other authenticated routes (reports, settings, account detail) inherit the desk tokens but have not been composed against this direction. Transfer and cards use desk ink on the sheet so status, fields, and notes stay readable in both themes.
