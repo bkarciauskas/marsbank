@@ -2,7 +2,6 @@
 import { renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { chromium } from "playwright";
-import { formatDaypartGreeting } from "../../../../lib/daypart.ts";
 import {
   ensureDir,
   evidenceRoot,
@@ -17,6 +16,11 @@ const residents = {
   cameron: { name: /cameron/i, firstName: "Cameron", member: "MB-104821" },
   aaron: { name: /aaron/i, firstName: "Aaron", member: "MB-110274" },
 };
+
+function expectedGreeting(firstName, hour) {
+  const daypart = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  return `Good ${daypart}, ${firstName}`;
+}
 
 function parseArgs(argv) {
   const args = { feature: "login", resident: "aaron", headed: false };
@@ -60,7 +64,7 @@ async function selectResident(page, residentKey) {
 async function waitForViewerGreeting(page, firstName) {
   for (;;) {
     const hour = await page.evaluate(() => new Date().getHours());
-    const heading = formatDaypartGreeting(firstName, hour);
+    const heading = expectedGreeting(firstName, hour);
     try {
       await page
         .getByRole("heading", { level: 1, name: heading })

@@ -115,7 +115,7 @@ Proof standards:
 node .cursor/skills/verify-marsbank/scripts/cleanup.mjs
 ```
 
-Stops the process group recorded in `instance.json` (and listeners on that port that belong to the run), then deletes `.run/` only after the port is free. If a listener survives, `instance.json` stays so a retry can stop the same run. It never deletes `evidence/`. After cleanup, confirm `ls .cursor/skills/verify-marsbank/evidence/<runId>/<feature>` still lists the screenshots and `proof.json`.
+Stops the process group recorded in `instance.json` (and listeners on that port that belong to the run), then deletes `.run/` and the verification-owned `.next-verify/` only after the port is free. If a listener survives, `instance.json` stays so a retry can stop the same run. It never deletes `evidence/`. Running Cleanup again removes stale `.next-verify/` even when no instance is recorded. After cleanup, confirm `ls .cursor/skills/verify-marsbank/evidence/<runId>/<feature>` still lists the screenshots and `proof.json`.
 
 If a drive fails, run Cleanup before the next Launch so port 4317 is not stranded.
 

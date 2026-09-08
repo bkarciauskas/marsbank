@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
 import { rmSync } from "node:fs";
+import { join } from "node:path";
 import {
   evidenceRoot,
   instancePath,
@@ -12,6 +13,8 @@ import {
   runDir,
 } from "./lib.mjs";
 
+const nextDistDir = join(repoRoot, ".next-verify");
+
 function restoreGeneratedNextTypes() {
   try {
     execFileSync("git", ["checkout", "--", "next-env.d.ts", "tsconfig.json"], {
@@ -21,9 +24,14 @@ function restoreGeneratedNextTypes() {
   } catch {}
 }
 
+function removeGeneratedNextState() {
+  rmSync(nextDistDir, { recursive: true, force: true });
+  restoreGeneratedNextTypes();
+}
+
 const instance = loadInstance();
 if (!instance) {
-  restoreGeneratedNextTypes();
+  removeGeneratedNextState();
   console.log("Cleanup: no recorded verification instance. Nothing to tear down.");
   console.log(`Evidence directory left in place at ${evidenceRoot}`);
   process.exit(0);
@@ -83,7 +91,7 @@ if (leftover.length > 0) {
 
 rmSync(runDir, { recursive: true, force: true });
 removeInstanceFile();
-restoreGeneratedNextTypes();
+removeGeneratedNextState();
 
 console.log(`Cleanup: stopped run ${instance.runId} on ${instance.baseUrl}.`);
 console.log(`Evidence retained at ${evidenceRoot}`);
