@@ -15,11 +15,4 @@
 /secrets/preview/.gitkeep @internalsphere/security
 /secrets/production/.gitkeep @internalsphere/security
 /secrets/inventory.yaml @internalsphere/security
-/.cursor/skills/secrets-operations/SKILL.md @internalsphere/security
-/.cursor/skills/secrets-operations/references/troubleshooting.md @internalsphere/security
-/.cursor/skills/supabase-database/SKILL.md @internalsphere/security
-/.cursor/skills/upstash-redis/SKILL.md @internalsphere/security
-/.cursor/skills/vercel-blob-store/SKILL.md @internalsphere/security
-/.cursor/skills/internalsphere-setup/SKILL.md @internalsphere/security
-/.cursor/skills/external-viewers/SKILL.md @internalsphere/security
 /QUICKSTART.md @internalsphere/security

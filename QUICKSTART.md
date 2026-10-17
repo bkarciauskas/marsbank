@@ -42,24 +42,9 @@ If `git clone` or setup fails with "Permission denied (publickey)" or "Repositor
 
 Every PR gets its own preview URL with the real preview env — iterate on it end-to-end before merging.
 
-## Distributed Cursor skills (dispatched by the orchestrator)
+## Secrets
 
-If you use Cursor, invoke any of these with `@<skill-name>`:
-
-- **`@internalsphere-setup`** — what internalsphere is, first-time setup, FAQs, and common troubleshooting. Start here when an agent is unsure *how the platform works*.
-  - Path: `.cursor/skills/internalsphere-setup/SKILL.md`
-- **`@secrets-operations`** — list/add/update/delete encrypted env vars via `scripts/secrets.py`.
-  - Path: `.cursor/skills/secrets-operations/SKILL.md`
-- **`@supabase-database`** — when the repo uses the Supabase integration.
-  - Path: `.cursor/skills/supabase-database/SKILL.md`
-- **`@upstash-redis`** — when the repo uses the Upstash Redis integration.
-  - Path: `.cursor/skills/upstash-redis/SKILL.md`
-- **`@vercel-blob-store`** — when the repo uses the Vercel Blob integration.
-  - Path: `.cursor/skills/vercel-blob-store/SKILL.md`
-- **`@external-viewers`** — share a protected deployment with someone outside Anysphere.
-  - Path: `.cursor/skills/external-viewers/SKILL.md`
-
-CI writes the remote key inventory to `secrets/inventory.yaml`; do not edit that file manually.
+Manage encrypted env vars with `scripts/secrets.py`. CI writes the remote key inventory to `secrets/inventory.yaml`; do not edit that file manually.
 
 ## Sharing a deployment with someone outside Anysphere
 
@@ -86,12 +71,11 @@ Open a PR — `@internalsphere/security` is tagged automatically for review. Aft
 ## Important guardrails
 
 - Do not bypass hooks with `--no-verify` — CI will catch the same issues and may trigger security monitoring.
-- Do not directly edit policy-managed files (managed workflows, `CODEOWNERS`, `.sops.yaml`, hooks, `scripts/setup-repo.sh`, `scripts/install-secrets-tooling.sh`, `scripts/app-manifest.py`, `scripts/secrets-guard.py`, `scripts/secrets.py`, distributed skill files, `secrets/inventory.yaml`, or this `QUICKSTART.md`). They're overwritten on every orchestrator reconciliation; make policy changes in [`internal-app-orchestrator`](https://github.com/internalsphere/internal-app-orchestrator) and run baseline sync.
+- Do not directly edit policy-managed files (managed workflows, `CODEOWNERS`, `.sops.yaml`, hooks, `scripts/setup-repo.sh`, `scripts/install-secrets-tooling.sh`, `scripts/app-manifest.py`, `scripts/secrets-guard.py`, `scripts/secrets.py`, `secrets/inventory.yaml`, or this `QUICKSTART.md`). They're overwritten on every orchestrator reconciliation; make policy changes in [`internal-app-orchestrator`](https://github.com/internalsphere/internal-app-orchestrator) and run baseline sync.
 - Don't use `vercel env add`, `vercel env pull`, `vercel dev`, or `vercel deploy` — everyone has Viewer access on `anysphere-internal`, which isn't enough for any of those. Iterate via preview deploys instead.
 
 ## Need help?
 
 - Full guide (setup + FAQs + troubleshooting): https://www.notion.so/cursorai/internalsphere-348da74ef0458184af80e67adbcef6b7
-- On-repo cheat sheet: `@internalsphere-setup` (Cursor) or [`.cursor/skills/internalsphere-setup/SKILL.md`](./.cursor/skills/internalsphere-setup/SKILL.md)
 - Runbook: https://github.com/internalsphere/internal-app-orchestrator/blob/main/docs/runbooks/troubleshooting.md
 - Slack: `#proj-internalsphere`
