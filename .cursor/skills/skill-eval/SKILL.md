@@ -37,7 +37,13 @@ From the repo root, with `node_modules` installed.
    - `order` is `test-first` or `fix-first`, taken from the trace.
    - `prodLines` counts the changed production lines.
 7. Spawn one readonly judge on a different model family from yours. Point it at `judge/` only. It never sees `key.json` or a model name.
-8. Read each candidate transcript yourself. `cursor-cloud` `batch-fetch-details` with the agent ids writes them under `/tmp/cursor/cloud-agent-transcripts/`. Check which files each one opened, whether it ran a red test before editing `lib/ledger.ts`, and whether it wandered outside its seat.
+8. Fetch transcripts with `cursor-cloud` `batch-fetch-details`, passing the agent ids and `includeTranscripts: true`. Then run `eval.mjs chain <run> --transcripts <dir>`. It writes `chain.json` with these fields per seat:
+   - `readAgents` says whether the seat read `AGENTS.md`.
+   - `skills` lists each `SKILL.md` it opened.
+   - `outside` lists paths it touched outside its seat.
+   - `beforeFix` is `red`, `green`, `unknown`, or `none`. It describes the test runs that started before the trace's first `lib/ledger.ts` write. `unknown` means the export dropped the run's output.
+
+   The export drops edit and search arguments, so read anything `outside` flags yourself.
 9. Write the judge totals to `.runs/<run>/scores.json` as `{ "<label>": <total> }`, then `eval.mjs unblind <run>`.
 
 ## Adding a scenario

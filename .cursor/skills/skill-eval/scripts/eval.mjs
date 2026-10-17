@@ -112,6 +112,38 @@ export function classifyEditOrder(events, { target, testFiles }) {
   return testAt < fixAt ? "test-first" : "fix-first";
 }
 
+/** Edit arguments are absent from exported transcripts, so the fix time comes from the trace and runs come from here. */
+export function chainFacts(messages, { root, fixAt }) {
+  const startedAt = {};
+  for (const message of messages) {
+    for (const call of message.tool_calls ?? []) startedAt[call.tool_call_id] = call.started_at_ms;
+  }
+  const touched = [];
+  const runs = [];
+  for (const message of messages) {
+    if (message.role !== "tool") continue;
+    const args = message.tool_args ?? {};
+    const text = args.target_file ?? args.command ?? "";
+    if (text) touched.push(text);
+    if (message.tool_name === "run_terminal_cmd" && /vitest|npm (run )?test/.test(args.command ?? "")) {
+      const output = message.tool_result == null ? null : JSON.stringify(message.tool_result);
+      const status = output === null ? "unknown" : /\d+ failed|FAIL /.test(output) ? "red" : "green";
+      runs.push({ at: startedAt[message.tool_call_id], status });
+    }
+  }
+  const before = runs.filter((run) => fixAt !== undefined && run.at < fixAt);
+  const seen = (status) => before.some((run) => run.status === status);
+  const mentions = (pattern) => touched.some((text) => pattern.test(text));
+  const skills = [...new Set(touched.flatMap((text) => text.match(/[\w./~-]*SKILL\.md/g) ?? []))];
+  return {
+    readAgents: mentions(/AGENTS\.md/),
+    skills,
+    outside: touched.filter((text) => /\/(workspace|home\/ubuntu\/work)\//.test(text) && !text.includes(root)),
+    runsBeforeFix: before.length,
+    beforeFix: seen("red") ? "red" : seen("unknown") ? "unknown" : before.length ? "green" : "none",
+  };
+}
+
 export function redact(reply) {
   return reply
     .split("\n")
@@ -306,6 +338,22 @@ async function grade(flags) {
   console.log(JSON.stringify(grades, null, 2));
 }
 
+function chain(flags) {
+  const key = readKey(flags._[0]);
+  const dir = runDir(key.runId);
+  const agents = JSON.parse(readFileSync(join(dir, "agents.json"), "utf8"));
+  const events = readFileSync(join(dir, "trace.jsonl"), "utf8").split("\n").filter(Boolean).map((line) => JSON.parse(line));
+  const facts = {};
+  for (const seat of key.seats) {
+    const transcript = join(flags.transcripts, agents[seat.label], "transcript.json");
+    const { messages } = JSON.parse(readFileSync(transcript, "utf8"));
+    const fixAt = events.find((event) => event.label === seat.label && event.path === "lib/ledger.ts")?.t;
+    facts[seat.label] = chainFacts(messages, { root: seat.root, fixAt });
+  }
+  writeFileSync(join(dir, "chain.json"), JSON.stringify(facts, null, 2));
+  console.log(JSON.stringify(facts, null, 2));
+}
+
 function unblind(flags) {
   const key = readKey(flags._[0]);
   const dir = runDir(key.runId);
@@ -327,7 +375,7 @@ function parseFlags(argv) {
   return flags;
 }
 
-const commands = { setup, check, trace, grade, unblind };
+const commands = { setup, check, trace, grade, chain, unblind };
 const isCli = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(process.argv[1]).href;
 if (isCli) {
   const [name, ...rest] = process.argv.slice(2);

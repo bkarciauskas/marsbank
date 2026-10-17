@@ -7,6 +7,7 @@ import {
   applyEdits,
   applyVariant,
   assignSeats,
+  chainFacts,
   classifyEditOrder,
   findLeaks,
   redact,
@@ -108,6 +109,42 @@ describe("classifyEditOrder", () => {
   it("ignores touches to test files the candidate did not keep", () => {
     const events = [at(1, "lib/scratch.test.ts"), at(2, target), at(3, "lib/ledger.test.ts")];
     expect(classifyEditOrder(events, { target, testFiles: ["lib/ledger.test.ts"] })).toBe("fix-first");
+  });
+});
+
+describe("chainFacts", () => {
+  const root = "/home/ubuntu/work/wren/marsbank";
+  const run = (id: string, at: number, command: string, tool_result: unknown) => [
+    { role: "assistant", tool_calls: [{ tool_call_id: id, started_at_ms: at }] },
+    { role: "tool", tool_call_id: id, tool_name: "run_terminal_cmd", tool_args: { command }, tool_result },
+  ];
+  const read = (target_file: string) => ({ role: "tool", tool_name: "read_file", tool_args: { target_file } });
+
+  it("finds a red run before the fix and the guidance the candidate read", () => {
+    const messages = [
+      read(`${root}/AGENTS.md`),
+      read(`${root}/.cursor/skills/tdd/SKILL.md`),
+      ...run("a", 10, "npx vitest run lib/ledger.test.ts", { output: "Tests  1 failed | 8 passed" }),
+      ...run("b", 30, "npx vitest run", { output: "Tests  9 passed" }),
+    ];
+    expect(chainFacts(messages, { root, fixAt: 20 })).toEqual({
+      readAgents: true,
+      skills: [`${root}/.cursor/skills/tdd/SKILL.md`],
+      outside: [],
+      runsBeforeFix: 1,
+      beforeFix: "red",
+    });
+  });
+
+  it("calls a run with no recorded output unknown, not green", () => {
+    const messages = run("a", 10, "npx vitest run", null);
+    expect(chainFacts(messages, { root, fixAt: 20 }).beforeFix).toBe("unknown");
+    expect(chainFacts(messages, { root, fixAt: 5 }).beforeFix).toBe("none");
+  });
+
+  it("flags reads outside the candidate's own checkout", () => {
+    const messages = [read("/workspace/lib/ledger.ts"), read("/home/ubuntu/work/tern/marsbank/lib/ledger.ts")];
+    expect(chainFacts(messages, { root, fixAt: 1 }).outside).toEqual(messages.map((m) => m.tool_args.target_file));
   });
 });
 
