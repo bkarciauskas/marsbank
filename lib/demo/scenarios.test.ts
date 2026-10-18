@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  agentFriendlyScenarios,
   demoScenarioCatalog,
+  isAgentFriendlyScenario,
   isDemoScenario,
   scenarioFromCookie,
   showsHookActivity,
@@ -12,7 +14,7 @@ describe("demo scenarios", () => {
       "hooks",
       "debug-mode",
     ]);
-    expect(demoScenarioCatalog[0].prompts.map((block) => block.id)).toEqual([
+    expect(demoScenarioCatalog[0]?.prompts.map((block) => block.id)).toEqual([
       "edit",
       "failing-rename",
       "pii-export",
@@ -28,6 +30,9 @@ describe("demo scenarios", () => {
   it("accepts only staged cookie values", () => {
     expect(isDemoScenario("hooks")).toBe(true);
     expect(isDemoScenario("debug-mode")).toBe(true);
+    expect(isDemoScenario("agent-lint")).toBe(true);
+    expect(isDemoScenario("agent-verify")).toBe(true);
+    expect(isDemoScenario("agent-route")).toBe(true);
     expect(isDemoScenario("pii-guard")).toBe(false);
     expect(isDemoScenario("other")).toBe(false);
     expect(scenarioFromCookie("hooks")).toBe("hooks");
@@ -38,5 +43,22 @@ describe("demo scenarios", () => {
   it("shows hook activity on the hooks tab only", () => {
     expect(showsHookActivity("hooks")).toBe(true);
     expect(showsHookActivity("debug-mode")).toBe(false);
+    expect(showsHookActivity("agent-lint")).toBe(false);
+  });
+
+  it("keeps the agent-friendly walks on their own tab", () => {
+    expect(agentFriendlyScenarios.map((scenario) => scenario.id)).toEqual([
+      "agent-lint",
+      "agent-verify",
+      "agent-route",
+    ]);
+    expect(
+      agentFriendlyScenarios.every(
+        (scenario) =>
+          scenario.prompts.length === 1 && !scenario.prompts[0]?.prompt.includes("\n"),
+      ),
+    ).toBe(true);
+    expect(isAgentFriendlyScenario("agent-verify")).toBe(true);
+    expect(isAgentFriendlyScenario("hooks")).toBe(false);
   });
 });

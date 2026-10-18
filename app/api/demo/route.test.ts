@@ -12,6 +12,7 @@ import {
   demoHooksInstalled,
   uninstallDemoHooks,
 } from "@/lib/demo/install-hooks";
+import { revertAgentFriendly } from "@/lib/demo/agent-friendly";
 import { DEMO_SCENARIO_COOKIE } from "@/lib/demo/scenarios";
 import { accountId } from "@/lib/ids";
 import { availableBalance } from "@/lib/ledger";
@@ -47,6 +48,7 @@ describe("demo route", () => {
   });
 
   afterEach(() => {
+    revertAgentFriendly();
     uninstallDemoHooks();
     try {
       fs.unlinkSync(hookStampPath);
@@ -66,6 +68,7 @@ describe("demo route", () => {
     expect(await response.json()).toEqual({
       active: null,
       hooksInstalled: false,
+      guardrail: null,
     });
   });
 
@@ -108,6 +111,7 @@ describe("demo route", () => {
       expect(await response.json()).toEqual({
         active: "hooks",
         hooksInstalled: true,
+        guardrail: null,
       });
       expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("hooks");
       expect(fs.existsSync(hookStampPath)).toBe(false);
@@ -145,6 +149,7 @@ describe("demo route", () => {
     expect(await response.json()).toEqual({
       active: null,
       hooksInstalled: false,
+      guardrail: null,
     });
     expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("");
   });
@@ -161,6 +166,7 @@ describe("demo route", () => {
     expect(await response.json()).toEqual({
       active: null,
       hooksInstalled: false,
+      guardrail: null,
     });
     expect(demoHooksInstalled()).toBe(false);
   });
@@ -174,8 +180,35 @@ describe("demo route", () => {
     expect(await response.json()).toEqual({
       active: "debug-mode",
       hooksInstalled: false,
+      guardrail: null,
     });
     expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("debug-mode");
+  });
+
+  it("plants a ledger import on the lint walk and removes it on reset", async () => {
+    const staged = await post({ action: "setup", scenario: "agent-lint" });
+    const body = (await staged.json()) as {
+      active: string;
+      guardrail: { output: string };
+    };
+    expect(body.active).toBe("agent-lint");
+    expect(body.guardrail.output).toContain("useBank()");
+    expect(
+      fs.existsSync(
+        path.join(process.cwd(), "components/demo/planted-ledger-import.tsx"),
+      ),
+    ).toBe(true);
+
+    const reset = await post(
+      { action: "reset", scenario: "agent-lint" },
+      `${DEMO_SCENARIO_COOKIE}=agent-lint`,
+    );
+    expect((await reset.json()).active).toBeNull();
+    expect(
+      fs.existsSync(
+        path.join(process.cwd(), "components/demo/planted-ledger-import.tsx"),
+      ),
+    ).toBe(false);
   });
 
   it("rejects an unknown action or walk", async () => {

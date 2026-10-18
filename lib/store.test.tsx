@@ -7,7 +7,7 @@ import { createLedgerFetch } from "@/test-utils/ledger-fetch";
 
 function FirstAccountName() {
   const { snapshot } = useBank();
-  return <span>{snapshot.accounts[0].name}</span>;
+  return <span>{snapshot.accounts[0]?.name}</span>;
 }
 
 describe("BankProvider", () => {

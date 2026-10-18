@@ -1,0 +1,14 @@
+---
+description: Mars Bank layers, files to copy, and checks to run before finishing
+alwaysApply: true
+---
+
+# Mars Bank
+
+Token amounts are whole numbers. Use `tokens()`, `addTokens()`, `subtractTokens()`, and `parseTokenInput()` from `lib/money.ts`.
+
+Pages and components read the bank through `useBank()` in `lib/store.tsx`. New writes go through a route under `app/api/`, copied from `app/api/transfers/route.ts`.
+
+Postgres stays in `lib/server/ledger-repository.ts`. Domain files (`lib/money.ts`, `lib/domain.ts`, `lib/ledger.ts`) stay free of React and Next.
+
+Before you finish, run `npx tsc --noEmit`, `npm run lint`, and `npm run test`. For a UI change, follow `.cursor/skills/verify-marsbank/SKILL.md`.

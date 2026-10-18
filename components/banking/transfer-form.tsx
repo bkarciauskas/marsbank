@@ -76,11 +76,16 @@ export function TransferForm() {
     [snapshot.accounts],
   );
   const requestedSource = searchParams.get("from");
+  const fallbackSource = sources[0];
+  if (!fallbackSource) {
+    throw new Error("This register has no account that can send tokens.");
+  }
   const initialSource =
-    sources.find((account) => account.id === requestedSource)?.id ?? sources[0].id;
+    sources.find((account) => account.id === requestedSource)?.id ??
+    fallbackSource.id;
   const initialDestination =
     snapshot.accounts.find((account) => account.id !== initialSource)?.id ??
-    sources[0].id;
+    fallbackSource.id;
   const [state, setState] = useState<TransferState>({
     step: "collect",
     destination: "payid",

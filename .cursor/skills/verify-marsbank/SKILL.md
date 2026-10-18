@@ -9,10 +9,30 @@ Project-local control skill for [Mars Bank](https://github.com/internalsphere/ma
 
 Primary surface is the web UI. Secondary surfaces are the route handlers under `app/api/` (`/api/session`, `/api/register`, `/api/transfers`, `/api/cards`, `/api/reset`). Do not treat Vitest component tests as proof of the running app.
 
+## Start and prove
+
+Start the app:
+
+```bash
+npm run app
+```
+
+That runs `scripts/start.sh`. It installs dependencies when `next` is missing, frees the port, and serves `http://127.0.0.1:3000` (`PORT=3021 npm run app` to use another port).
+
+Prove the sign-in journey:
+
+```bash
+npm run test:e2e
+```
+
+`e2e/sign-in.mjs` starts its own server on `127.0.0.1:4173` (`MARSBANK_E2E_PORT` to override), picks Aaron on `/login`, enters Mars Bank, and opens Accounts. It uses installed Chrome. It does not attach to port 3000. A passing run prints `{"ok":true,...}`.
+
+The rest of this skill is the screenshot harness on port 4317. Use it when a change needs saved screenshots, ARIA snapshots, or a register JSON proof. `npm run test:e2e` is enough for a sign-in or accounts change.
+
 ## Interview snapshot
 
 - **Surface:** public site `/` and `/login`; signed-in desk at `/banking`, `/banking/accounts`, `/banking/cards`, `/banking/transfer`, `/banking/activity`, `/banking/reports`, `/banking/settings`.
-- **Run:** from the repo root, `npm install` then `npm run dev`. README default is `http://localhost:3000`. Local ledger is in-memory and resets on process restart. **Restore shared demo** on Settings restores all six residents. No secrets are required for the local smoke path.
+- **Run:** from the repo root, `npm install` then `npm run app` (serves `http://127.0.0.1:3000`). Prove sign-in with `npm run test:e2e`. Local ledger is in-memory and resets on process restart. **Restore shared demo** on Settings restores all six residents. No secrets are required for the local smoke path.
 - **Drive:** Playwright is already a repo dependency (`scripts/capture-desk.mjs` and `package.json`). Prefer role + accessible-name selectors already used in `app/**/*.test.*`.
 - **Observe:** full-page screenshots, `ariaSnapshot()` text, and `/api/register` JSON after a session cookie exists.
 - **Isolate:** start a dedicated `127.0.0.1:4317` instance (`MARSBANK_VERIFY_PORT` to override). Never attach to a `:3000` (or any other) process this run did not start. Isolation is process-local only: one Next process owns one in-memory ledger. Launch sets `MARSBANK_NEXT_DIST_DIR=.next-verify` so Next 16 will start beside a running `:3000`. Hosted Supabase is not used by `npm run dev`. This cloud image has `lsof`/`netstat` but not `ss`.

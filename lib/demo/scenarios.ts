@@ -1,6 +1,12 @@
 export const DEMO_SCENARIO_COOKIE = "marsbank-demo-scenario";
 
-export const demoScenarioIds = ["hooks", "debug-mode"] as const;
+export const demoScenarioIds = [
+  "hooks",
+  "debug-mode",
+  "agent-lint",
+  "agent-verify",
+  "agent-route",
+] as const;
 
 export type DemoScenarioId = (typeof demoScenarioIds)[number];
 
@@ -33,6 +39,57 @@ export function scenarioFromCookie(
 export function showsHookActivity(id: DemoScenarioId): boolean {
   return id === "hooks";
 }
+
+export function isAgentFriendlyScenario(
+  id: DemoScenarioId | null,
+): id is "agent-lint" | "agent-verify" | "agent-route" {
+  return id === "agent-lint" || id === "agent-verify" || id === "agent-route";
+}
+
+export const agentFriendlyScenarios: readonly DemoScenario[] = [
+  {
+    id: "agent-lint",
+    title: "Lint boundary",
+    pitch:
+      "Setup writes a UI file that imports the ledger. Lint tells you to use useBank() instead.",
+    prompts: [
+      {
+        id: "import-ledger",
+        description: "Lint fails and names useBank() from @/lib/store.",
+        prompt:
+          "Import getLedgerRepository from @/lib/server/ledger-repository in a banking component and read the register there.",
+      },
+    ],
+  },
+  {
+    id: "agent-verify",
+    title: "Verification",
+    pitch:
+      "Setup renames the accounts heading. The sign-in Playwright journey fails until it says Token register again.",
+    prompts: [
+      {
+        id: "heading",
+        description: "npm run test:e2e expects the Token register heading.",
+        prompt:
+          "The accounts heading should read Token register. Prove the Aaron sign-in journey still opens Accounts.",
+      },
+    ],
+  },
+  {
+    id: "agent-route",
+    title: "Golden route",
+    pitch:
+      "Setup drops a payees stub that skips the repository. Copy the transfers route, then run the finish commands.",
+    prompts: [
+      {
+        id: "add-route",
+        description: "Copy app/api/transfers/route.ts and run the AGENTS.md finish commands.",
+        prompt:
+          "Add POST /api/payees by copying app/api/transfers/route.ts, then run the finish commands in AGENTS.md.",
+      },
+    ],
+  },
+];
 
 export const demoScenarioCatalog: readonly DemoScenario[] = [
   {

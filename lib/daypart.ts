@@ -22,7 +22,13 @@ function daypartForHour(localCivilHour: number): Daypart {
       `localCivilHour must be an integer in 0..23, received ${localCivilHour}`,
     );
   }
-  return DAYPART_BY_HOUR[localCivilHour];
+  const daypart = DAYPART_BY_HOUR[localCivilHour];
+  if (!daypart) {
+    throw new RangeError(
+      `localCivilHour must be an integer in 0..23, received ${localCivilHour}`,
+    );
+  }
+  return daypart;
 }
 
 export function formatDaypartGreeting(
