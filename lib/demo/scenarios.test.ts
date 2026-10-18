@@ -12,7 +12,7 @@ describe("demo scenarios", () => {
       "hooks",
       "debug-mode",
     ]);
-    expect(demoScenarioCatalog[0].prompts.map((block) => block.id)).toEqual([
+    expect(demoScenarioCatalog[0]?.prompts.map((block) => block.id)).toEqual([
       "edit",
       "failing-rename",
       "pii-export",
