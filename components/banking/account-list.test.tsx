@@ -91,7 +91,7 @@ describe("AccountList", () => {
     const totals = container.querySelectorAll(".account-list-totals strong");
 
     // 184,220 deposit + 417,360 unused credit
-    expect(totals[0].textContent).toBe("601,580");
-    expect(totals[1].textContent).toBe("184,220");
+    expect(totals[0]?.textContent).toBe("601,580");
+    expect(totals[1]?.textContent).toBe("184,220");
   });
 });

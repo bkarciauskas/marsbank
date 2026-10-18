@@ -12,6 +12,16 @@ import {
 } from "@/lib/demo/scenarios";
 import "./demo-console.css";
 
+function scenarioForTab(tab: DemoScenarioId): DemoScenario {
+  const match = demoScenarioCatalog.find((scenario) => scenario.id === tab);
+  if (match) return match;
+  const fallback = demoScenarioCatalog[0];
+  if (!fallback) {
+    throw new Error("Demo catalog is empty.");
+  }
+  return fallback;
+}
+
 type DemoStatus = {
   active: DemoScenarioId | null;
   hooksInstalled: boolean;
@@ -163,9 +173,7 @@ export function DemoConsole() {
     }, 1600);
   }
 
-  const selected =
-    demoScenarioCatalog.find((scenario) => scenario.id === tab) ??
-    demoScenarioCatalog[0];
+  const selected = scenarioForTab(tab);
 
   return (
     <div className="demo-console">
