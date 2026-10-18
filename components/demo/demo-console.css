@@ -296,6 +296,42 @@
   height: 15px;
 }
 
+.demo-agent-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.demo-guardrail-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-guardrail-label {
+  margin: 0;
+  color: var(--oxide);
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.demo-guardrail {
+  margin: 0;
+  max-height: 520px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #101518;
+  color: #f4f1ea;
+  padding: 14px 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
 .demo-walk-script {
   margin: 0;
   padding-left: 1.4rem;

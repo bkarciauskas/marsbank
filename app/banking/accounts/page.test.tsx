@@ -45,7 +45,7 @@ describe("AccountsPage", () => {
     const rows = container.querySelectorAll(".account-list a");
 
     expect(rows).toHaveLength(1);
-    expect(rows[0].textContent).toMatch(/long horizon reserve/i);
+    expect(rows[0]?.textContent).toMatch(/long horizon reserve/i);
     expect(
       screen.queryByRole("heading", {
         level: 2,
@@ -61,7 +61,7 @@ describe("AccountsPage", () => {
     const rows = container.querySelectorAll(".account-list a");
 
     expect(rows).toHaveLength(1);
-    expect(rows[0].textContent).toMatch(/expedition credit/i);
+    expect(rows[0]?.textContent).toMatch(/expedition credit/i);
   });
 
   it("explains an empty search result", () => {

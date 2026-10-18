@@ -1,6 +1,8 @@
 node_modules
 .next
 .next-verify
+.next-e2e
+.next-shots
 out
 .DS_Store
 *.log
