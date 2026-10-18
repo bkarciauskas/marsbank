@@ -1,7 +1,10 @@
 name: CI
 
+# No branches filter: pull_request runs for main and for a stack parent.
+# edited covers a base-branch change, which synchronize does not.
 on:
   pull_request:
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 
