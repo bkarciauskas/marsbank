@@ -1,4 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  agentGuardrail,
+  plantAgentScenario,
+  revertAgentFriendly,
+  revertAgentScenario,
+  withAgentLock,
+} from "@/lib/demo/agent-friendly";
 import { clearHookActivity } from "@/lib/demo/hook-activity";
 import { clearHookStamp } from "@/lib/demo/hook-stamp";
 import {
@@ -9,6 +16,7 @@ import {
 import { restoreDemoSources } from "@/lib/demo/restore-sources";
 import {
   DEMO_SCENARIO_COOKIE,
+  isAgentFriendlyScenario,
   isDemoScenario,
   scenarioFromCookie,
   type DemoScenarioId,
@@ -20,10 +28,14 @@ function activeFrom(request: NextRequest): DemoScenarioId | null {
   return scenarioFromCookie(request.cookies.get(DEMO_SCENARIO_COOKIE)?.value);
 }
 
-function demoStatus(active: DemoScenarioId | null) {
+function demoStatus(
+  active: DemoScenarioId | null,
+  guardrail: { scenario: DemoScenarioId; output: string } | null = null,
+) {
   return {
     active,
     hooksInstalled: demoHooksInstalled(),
+    guardrail,
   };
 }
 
@@ -57,6 +69,9 @@ async function restoreRegisters(): Promise<void> {
   clearHookStamp();
   clearHookActivity();
   restoreDemoSources();
+  await withAgentLock(() => {
+    revertAgentFriendly();
+  });
   await getLedgerRepository().resetAll(defaultDemoResident.slug);
 }
 
@@ -93,6 +108,18 @@ export async function POST(request: NextRequest) {
     if (scenario === "hooks") {
       installDemoHooks();
     }
+    if (isAgentFriendlyScenario(scenario)) {
+      const output = await withAgentLock(async () => {
+        plantAgentScenario(scenario);
+        return agentGuardrail(scenario);
+      });
+      return withScenario(
+        NextResponse.json(
+          demoStatus(scenario, { scenario, output }),
+        ),
+        scenario,
+      );
+    }
     return withScenario(NextResponse.json(demoStatus(scenario)), scenario);
   }
 
@@ -101,6 +128,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Choose a demo walk." }, { status: 400 });
     }
     await restoreRegisters();
+    revertAgentScenario(scenario);
     if (scenario === "hooks") {
       uninstallDemoHooks();
     }

@@ -67,7 +67,13 @@ const domainFiles = [
 export default defineConfig([
   ...nextVitals,
   ...nextTypeScript,
-  globalIgnores([".next/**", "capture/**", "public/assets/**"]),
+  globalIgnores([
+    ".next/**",
+    ".next-e2e/**",
+    ".next-shots/**",
+    "capture/**",
+    "public/assets/**",
+  ]),
   {
     files: ["**/*.{ts,tsx}"],
     ignores: ["lib/server/ledger-repository.ts"],
