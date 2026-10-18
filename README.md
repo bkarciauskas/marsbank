@@ -34,11 +34,11 @@ Ship changes on a branch and open a PR. Preview deploys land on the PR; producti
 
 ## Required checks
 
-The `CI` workflow runs on every pull request. Require these checks in the `main` branch ruleset before merge:
+The `CI` workflow runs on every pull request. Require these check names in the `main` branch ruleset before merge:
 
-- `CI / typecheck` — `npm run typecheck`
-- `CI / lint` — `npm run lint`
-- `CI / test` — `npm run test`
+- `typecheck` — `npm run typecheck`
+- `lint` — `npm run lint`
+- `test` — `npm run test`
 
 A workflow file cannot mark its own checks required. Set the three names above on the repository ruleset.
 
