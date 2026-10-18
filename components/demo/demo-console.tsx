@@ -4,7 +4,9 @@ import { Check, Copy, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { HookActivityEntry } from "@/lib/demo/hook-activity";
 import {
+  agentFriendlyScenarios,
   demoScenarioCatalog,
+  isAgentFriendlyScenario,
   isDemoScenario,
   showsHookActivity,
   type DemoScenario,
@@ -22,10 +24,24 @@ function scenarioForTab(tab: DemoScenarioId): DemoScenario {
   return fallback;
 }
 
+type DemoGuardrail = {
+  scenario: DemoScenarioId;
+  output: string;
+};
+
 type DemoStatus = {
   active: DemoScenarioId | null;
   hooksInstalled: boolean;
+  guardrail?: DemoGuardrail | null;
 };
+
+type ConsoleTab = "hooks" | "debug-mode" | "agent-friendly";
+
+function consoleTab(active: DemoScenarioId | null): ConsoleTab {
+  if (isAgentFriendlyScenario(active)) return "agent-friendly";
+  if (active === "debug-mode") return "debug-mode";
+  return "hooks";
+}
 
 function isDemoStatus(value: unknown): value is DemoStatus {
   if (
@@ -38,7 +54,16 @@ function isDemoStatus(value: unknown): value is DemoStatus {
   }
   const activeOk =
     value.active === null || isDemoScenario(value.active);
-  return activeOk && typeof value.hooksInstalled === "boolean";
+  if (!activeOk || typeof value.hooksInstalled !== "boolean") return false;
+  if (!("guardrail" in value) || value.guardrail === null) return true;
+  return (
+    typeof value.guardrail === "object" &&
+    value.guardrail !== null &&
+    "scenario" in value.guardrail &&
+    "output" in value.guardrail &&
+    isDemoScenario(value.guardrail.scenario) &&
+    typeof value.guardrail.output === "string"
+  );
 }
 
 function isHookActivityPayload(
@@ -87,11 +112,14 @@ function formatClock(iso: string): string {
 export function DemoConsole() {
   const [active, setActive] = useState<DemoScenarioId | null>(null);
   const [hooksInstalled, setHooksInstalled] = useState(false);
-  const [tab, setTab] = useState<DemoScenarioId>("hooks");
+  const [tab, setTab] = useState<ConsoleTab>("hooks");
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
   const [hookLog, setHookLog] = useState<HookActivityEntry[]>([]);
+  const [guardrails, setGuardrails] = useState<
+    Partial<Record<DemoScenarioId, string>>
+  >({});
 
   useEffect(() => {
     let cancelled = false;
@@ -101,7 +129,10 @@ export function DemoConsole() {
         if (cancelled) return;
         setActive(status.active);
         setHooksInstalled(status.hooksInstalled);
-        if (status.active) setTab(status.active);
+        if (status.active) setTab(consoleTab(status.active));
+        if (status.guardrail) {
+          setGuardrails({ [status.guardrail.scenario]: status.guardrail.output });
+        }
       } catch {
         if (!cancelled) setError("Could not read the staged walk.");
       }
@@ -113,7 +144,7 @@ export function DemoConsole() {
   }, []);
 
   useEffect(() => {
-    if (!showsHookActivity(tab)) return;
+    if (tab !== "hooks") return;
     let cancelled = false;
     async function loadLog() {
       try {
@@ -154,7 +185,22 @@ export function DemoConsole() {
       );
       setActive(status.active);
       setHooksInstalled(status.hooksInstalled);
-      if (action === "setup" && scenario) setTab(scenario);
+      if (action === "setup" && scenario) setTab(consoleTab(scenario));
+      const guardrail = status.guardrail;
+      if (guardrail) {
+        setGuardrails((current) => ({
+          ...current,
+          [guardrail.scenario]: guardrail.output,
+        }));
+      }
+      if (action === "reset" && scenario) {
+        setGuardrails((current) => {
+          const next = { ...current };
+          delete next[scenario];
+          return next;
+        });
+      }
+      if (action === "reset-all") setGuardrails({});
       if (action === "reset" || action === "reset-all" || action === "setup") {
         setHookLog([]);
       }
@@ -173,7 +219,7 @@ export function DemoConsole() {
     }, 1600);
   }
 
-  const selected = scenarioForTab(tab);
+  const selected = tab === "agent-friendly" ? null : scenarioForTab(tab);
 
   return (
     <div className="demo-console">
@@ -185,8 +231,9 @@ export function DemoConsole() {
             Each demo has its own tab. On Hooks, Setup copies the kit from{" "}
             <code>demo/cursor-hooks</code> into <code>.cursor</code>; Reset
             removes those installed files. Reload Cursor after Setup or Reset so
-            hook changes take effect. Reset also restores transfer-form sources,
-            the ledger, and the activity log.
+            hook changes take effect. Agent-friendly Setup plants a lint break, a
+            heading change, or a stub route, and Reset removes that plant. Reset
+            also restores transfer-form sources, the ledger, and the activity log.
           </p>
         </div>
         <button
@@ -216,7 +263,11 @@ export function DemoConsole() {
               }
               id={`demo-tab-${scenario.id}`}
               key={scenario.id}
-              onClick={() => setTab(scenario.id)}
+              onClick={() => {
+                if (scenario.id === "hooks" || scenario.id === "debug-mode") {
+                  setTab(scenario.id);
+                }
+              }}
               role="tab"
               type="button"
             >
@@ -225,25 +276,67 @@ export function DemoConsole() {
             </button>
           );
         })}
+        <button
+          aria-controls="demo-panel-agent-friendly"
+          aria-selected={tab === "agent-friendly"}
+          className={
+            tab === "agent-friendly" ? "demo-tab demo-tab-selected" : "demo-tab"
+          }
+          id="demo-tab-agent-friendly"
+          onClick={() => setTab("agent-friendly")}
+          role="tab"
+          type="button"
+        >
+          Agent-friendly
+          {isAgentFriendlyScenario(active) ? <span>Staged</span> : null}
+        </button>
       </div>
-      <ScenarioPanel
-        busy={busy}
-        copied={copied}
-        hookLog={showsHookActivity(selected.id) ? hookLog : null}
-        hooksInstalled={hooksInstalled}
-        onCopy={copyPrompt}
-        onReset={() => void postAction("reset", selected.id)}
-        onSetup={() => void postAction("setup", selected.id)}
-        scenario={selected}
-        staged={active === selected.id}
-      />
+      {tab === "agent-friendly" ? (
+        <div
+          className="demo-agent-stack"
+          id="demo-panel-agent-friendly"
+          role="tabpanel"
+        >
+          {agentFriendlyScenarios.map((scenario) => (
+            <ScenarioPanel
+              asTabPanel={false}
+              busy={busy}
+              copied={copied}
+              guardrail={guardrails[scenario.id] ?? null}
+              hookLog={null}
+              hooksInstalled={hooksInstalled}
+              key={scenario.id}
+              onCopy={copyPrompt}
+              onReset={() => void postAction("reset", scenario.id)}
+              onSetup={() => void postAction("setup", scenario.id)}
+              scenario={scenario}
+              staged={active === scenario.id}
+            />
+          ))}
+        </div>
+      ) : selected ? (
+        <ScenarioPanel
+          busy={busy}
+          copied={copied}
+          guardrail={guardrails[selected.id] ?? null}
+          hookLog={showsHookActivity(selected.id) ? hookLog : null}
+          hooksInstalled={hooksInstalled}
+          onCopy={copyPrompt}
+          onReset={() => void postAction("reset", selected.id)}
+          onSetup={() => void postAction("setup", selected.id)}
+          scenario={selected}
+          staged={active === selected.id}
+        />
+      ) : null}
     </div>
   );
 }
 
 function ScenarioPanel({
+  asTabPanel = true,
   busy,
   copied,
+  guardrail,
   hookLog,
   hooksInstalled,
   onCopy,
@@ -252,8 +345,10 @@ function ScenarioPanel({
   scenario,
   staged,
 }: {
+  asTabPanel?: boolean;
   busy: string | null;
   copied: string | null;
+  guardrail: string | null;
   hookLog: HookActivityEntry[] | null;
   hooksInstalled: boolean;
   onCopy: (id: string, prompt: string) => Promise<void>;
@@ -278,10 +373,13 @@ function ScenarioPanel({
         : "Idle";
   return (
     <section
-      aria-labelledby={`demo-tab-${scenario.id}`}
+      aria-labelledby={
+        asTabPanel ? `demo-tab-${scenario.id}` : `demo-tab-agent-friendly`
+      }
       className={staged ? "demo-walk demo-walk-staged" : "demo-walk"}
+      data-scenario={scenario.id}
       id={`demo-panel-${scenario.id}`}
-      role="tabpanel"
+      role={asTabPanel ? "tabpanel" : undefined}
     >
       <div className="demo-walk-heading">
         <div>
@@ -326,6 +424,12 @@ function ScenarioPanel({
           prompt={block.prompt}
         />
       ))}
+      {guardrail ? (
+        <div className="demo-guardrail-block">
+          <p className="demo-guardrail-label">Guardrail</p>
+          <pre className="demo-guardrail">{guardrail}</pre>
+        </div>
+      ) : null}
       {hookLog ? (
         <HookActivityLog
           emptyHint={
