@@ -1,11 +1,22 @@
 #!/usr/bin/env node
 // Signs in as Aaron and opens Accounts. Starts its own Next server.
 import { spawn } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join, delimiter } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const trackedWhileDev = ["next-env.d.ts", "tsconfig.json"];
+const snapshots = new Map(
+  trackedWhileDev.map((file) => [file, readFileSync(join(repoRoot, file))]),
+);
+
+function restoreTracked() {
+  for (const [file, contents] of snapshots) {
+    writeFileSync(join(repoRoot, file), contents);
+  }
+}
 const host = "127.0.0.1";
 const port = Number(process.env.MARSBANK_E2E_PORT ?? 4173);
 const baseUrl = `http://${host}:${port}`;
@@ -107,6 +118,7 @@ try {
 } finally {
   if (browser) await browser.close().catch(() => {});
   stop(child);
+  restoreTracked();
 }
 
 process.exit(process.exitCode ?? 0);
