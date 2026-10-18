@@ -32,4 +32,14 @@ registers. Local development uses an in-memory shared ledger that resets when th
 
 Ship changes on a branch and open a PR. Preview deploys land on the PR; production deploys on merge to `main`.
 
+## Required checks
+
+The `CI` workflow runs on every pull request. Require these checks in the `main` branch ruleset before merge:
+
+- `CI / typecheck` — `npm run typecheck`
+- `CI / lint` — `npm run lint`
+- `CI / test` — `npm run test`
+
+A workflow file cannot mark its own checks required. Set the three names above on the repository ruleset.
+
 Laptop setup, access, and FAQs live in [QUICKSTART.md](./QUICKSTART.md). The full internalsphere guide is in [Notion](https://www.notion.so/cursorai/internalsphere-348da74ef0458184af80e67adbcef6b7).

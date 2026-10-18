@@ -10,6 +10,7 @@
     "db:exec-migrations": "node scripts/exec-migrations.mjs",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "repository": {
