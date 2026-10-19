@@ -90,6 +90,7 @@ Use Playwright through the shipped harness. Prefer the helpers over ad-hoc scrip
 ```bash
 node .cursor/skills/verify-marsbank/scripts/drive.mjs login
 node .cursor/skills/verify-marsbank/scripts/drive.mjs accounts
+node .cursor/skills/verify-marsbank/scripts/drive.mjs balances
 node .cursor/skills/verify-marsbank/scripts/drive.mjs transfer
 node .cursor/skills/verify-marsbank/scripts/drive.mjs cards
 node .cursor/skills/verify-marsbank/scripts/drive.mjs activity
@@ -118,7 +119,7 @@ Each drive writes:
 
 - `01-*.png` / `02-*.png` — full-page screenshots of the action and the resulting state
 - `01-*.aria.txt` / `02-*.aria.txt` — Playwright `ariaSnapshot()` of `body`
-- `03-login-path.webm` — login drive only. Always-on video, finalized when the context closes
+- `03-login-path.webm` / `03-balances.webm` — login and balances drives only. Always-on video, finalized when the context closes
 - `register.json` (and before/after variants on mutations) — `GET /api/register` using the session cookie
 - `proof.json` — feature id, entry point, actions, observed values (including `proof.observed.hour` on login), artifact paths
 
@@ -128,6 +129,25 @@ Proof standards:
 - Capture the action **and** the resulting state (login form, then the banking greeting; review, then **Tokens dispatched**).
 - Verify side effects: after login, `/api/register` must return the chosen resident; after an own-account transfer, `acc-everyday.available` must drop by the sent amount.
 - Mocks only at the product's existing boundary: the local in-memory ledger is the real local backend. Do not stub `/api/session` or `/api/transfers` during a UI proof.
+
+## PR evidence
+
+Reviewers should see the change on github.com without reading code. This repo is **private**. A logged-out visitor gets a 404 on the PR, so only signed-in viewers with access can see any image. Embed repo media as `https://github.com/<owner>/<repo>/raw/<sha>/...`. A signed-in browser follows that to a short-lived raw URL, while external images go through camo. GitHub strips `<video>` tags that point at repo files, and inline video only plays from `user-attachments` uploads, which need a browser session (a token gets HTTP 422). Ship motion as an animated GIF image and link the mp4.
+
+```bash
+node .cursor/skills/verify-marsbank/scripts/drive.mjs balances   # or any recipe that records video
+node .cursor/skills/verify-marsbank/scripts/pr-evidence.mjs publish --feature <slug> \
+  --before <evidence>/01-*.png --after <evidence>/02-*.png --video <evidence>/03-*.webm \
+  --title "<what changed>" --append <checks.md>
+# put the printed markdown file into the PR body, then:
+node .cursor/skills/verify-marsbank/scripts/pr-evidence.mjs check --pr <number> --feature <slug> \
+  --screenshot <rendered.png> --logged-out-screenshot <logged-out.png>
+```
+
+- `publish` copies the PNGs to `docs/verification/<slug>/`, converts the recording to `demo.mp4` and a `demo.gif` under 5 MB (it steps the width down until it fits), commits only those files, pushes the branch, and writes `pr-body.md` with URLs pinned to the commit SHA. Pinned URLs keep working after the branch is deleted.
+- `check` reads the PR through `gh api` with `application/vnd.github.html+json`, takes every `<img>` in `body_html`, and requires each to be a 200 response with PNG/GIF/JPEG/WebP bytes. It tries a logged-out fetch first. For this repo's private media it falls back to the contents API at the same ref and path, which returns the bytes a signed-in viewer receives. It also requires `<img>` tags for the slug's `before.png`, `after.png`, and `demo.gif`, and records what a logged-out visitor sees. It exits 1 if anything is missing.
+- Cloud VMs here cannot reach `camo.githubusercontent.com`. If the PR footer adds camo badges, pass `--allow-unreachable-host camo.githubusercontent.com`. The output lists those images as skipped, never as verified.
+- Without Playwright's bundled browser, the scripts use installed Chrome. If Playwright's own ffmpeg is missing, link the system ffmpeg to the path in its error (`~/.cache/ms-playwright/ffmpeg-*/ffmpeg-linux`).
 
 ## Cleanup
 
@@ -149,6 +169,7 @@ All scripts are executable Node ESM and are invoked from the repo root:
 | `.cursor/skills/verify-marsbank/scripts/doctor.mjs` | Read-only health check |
 | `.cursor/skills/verify-marsbank/scripts/drive.mjs <feature>` | Playwright recipe for one mapped feature |
 | `.cursor/skills/verify-marsbank/scripts/cleanup.mjs` | Tear down only this run; keep evidence |
+| `.cursor/skills/verify-marsbank/scripts/pr-evidence.mjs publish\|check` | Commit before/after PNGs + GIF for a PR and prove GitHub renders them |
 | `.cursor/skills/verify-marsbank/scripts/lib.mjs` | Shared paths, instance file, HTTP wait |
 
 ## Feature map
