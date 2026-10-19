@@ -196,9 +196,26 @@ function imageSources(html) {
 
 function repoMediaPath(src, owner, repo) {
   const match = src.match(
-    new RegExp(`^https://github\\.com/${owner}/${repo}/(?:raw|blob)/([0-9a-f]{40}|[^/]+)/(.+?)(?:\\?raw=true)?$`),
+    new RegExp(`^https://github\\.com/${owner}/${repo}/(?:raw|blob)/(.+?)(?:\\?raw=true)?$`),
   );
-  return match ? { ref: match[1], path: match[2] } : null;
+  return match ? match[1] : null;
+}
+
+// Branch names may contain "/", so try each split of "<ref>/<path>" in turn.
+async function fetchRepoMedia(refAndPath, owner, repo) {
+  const parts = refAndPath.split("/");
+  let last = { status: 404, bytes: new Uint8Array() };
+  for (let i = 1; i < parts.length; i += 1) {
+    const ref = parts.slice(0, i).join("/");
+    const path = parts.slice(i).join("/");
+    const response = await api(
+      `repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(ref)}`,
+      "application/vnd.github.raw",
+    );
+    last = { status: response.status, bytes: new Uint8Array(await response.arrayBuffer()) };
+    if (response.status === 200) return last;
+  }
+  return last;
 }
 
 async function verifyImage(src, { owner, repo, isPrivate, allowUnreachable }) {
@@ -229,16 +246,12 @@ async function verifyImage(src, { owner, repo, isPrivate, allowUnreachable }) {
   // A private repo serves github.com/<repo>/raw/... only to a signed-in viewer's
   // browser, which GitHub redirects to a short-lived raw URL. The contents API at
   // the same ref and path returns those exact bytes for a token with read access.
-  const response = await api(
-    `repos/${owner}/${repo}/contents/${media.path}?ref=${media.ref}`,
-    "application/vnd.github.raw",
-  );
-  const bytes = new Uint8Array(await response.arrayBuffer());
+  const { status, bytes } = await fetchRepoMedia(media, owner, repo);
   const type = sniffImage(bytes);
   return {
     src,
-    ok: response.status === 200 && type !== null,
-    status: response.status,
+    ok: status === 200 && type !== null,
+    status,
     type,
     bytes: bytes.length,
     via: "contents API (private repo; signed-in viewers get these bytes)",
@@ -277,6 +290,19 @@ async function screenshotLoggedOut(url, path) {
   const tab = await context.newPage();
   const response = await tab.goto(url, { waitUntil: "domcontentloaded" });
   await tab.waitForTimeout(1_500);
+  const status = response?.status() ?? "no response";
+  const title = await tab.title();
+  // GitHub's stylesheets may be blocked on restricted networks; stamp the facts on top.
+  await tab.evaluate(
+    ({ url, status, title }) => {
+      const banner = document.createElement("div");
+      banner.style.cssText =
+        "position:fixed;inset:0 0 auto 0;z-index:99999;padding:20px 28px;background:#fff8c5;border-bottom:2px solid #d4a72c;font:16px/1.5 system-ui,sans-serif;color:#1f2328";
+      banner.innerHTML = `<strong>Logged-out browser view</strong><br>${url}<br>HTTP ${status} · page title “${title}”`;
+      document.body.prepend(banner);
+    },
+    { url, status, title },
+  );
   await tab.screenshot({ path, fullPage: false });
   await browser.close();
   return response?.status() ?? null;
@@ -297,7 +323,7 @@ async function check(args) {
 
   const failures = [];
   if (sources.length === 0) failures.push("Rendered PR body has no <img> tags.");
-  if (/<video\b/.test(pr.body ?? "") && !/<video\b/.test(bodyHtml)) {
+  if (/<video\s[^>]*src=/i.test(pr.body ?? "") && !/<video\b/i.test(bodyHtml)) {
     failures.push("Body has a <video> tag that GitHub stripped. Use the GIF instead.");
   }
 
@@ -352,11 +378,8 @@ async function check(args) {
     for (const result of results) {
       const media = repoMediaPath(result.src, owner, repo);
       if (!media || !result.ok) continue;
-      const response = await api(
-        `repos/${owner}/${repo}/contents/${media.path}?ref=${media.ref}`,
-        "application/vnd.github.raw",
-      );
-      const buffer = Buffer.from(await response.arrayBuffer());
+      const { bytes } = await fetchRepoMedia(media, owner, repo);
+      const buffer = Buffer.from(bytes);
       images.push({
         htmlSrc: result.src.replace(/&/g, "&amp;"),
         dataUrl: `data:${result.type};base64,${buffer.toString("base64")}`,
