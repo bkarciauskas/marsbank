@@ -9,6 +9,7 @@ Accounts is the token register: every deposit, offset, credit line, and habitat 
 - `accounts-detail` shows available / remaining figures and **Account movement**.
 - `accounts-search` narrows the register from the desk search scoped to Accounts.
 - `accounts-empty` explains when no account matches the query.
+- `accounts-hide-balances` masks every figure (rows, totals, register position) behind **Hide balances** and brings them back with **Show balances**.
 
 ## How to get to it (user POV)
 
@@ -30,6 +31,7 @@ Preconditions:
 - **Open Sol Account.** Choose the **Sol Account** row. Run `page.getByRole("link", { name: /Sol Account/i }).first().click()`. URL ends with `/banking/accounts/acc-everyday`. The heading is `Sol Account` and a second heading reads `Account movement`.
 - **Account-scoped search.** From the desk, set search scope to **Accounts** (`getByRole("combobox")` / `select` in `form.desk-search`), type `long horizon`, and submit. URL is `/banking/accounts?q=long%20horizon` and only **Long Horizon Reserve** remains.
 - **Empty search.** Submit `phobos shipyard` with Accounts scope. Copy includes `No accounts match`.
+- **Hide balances.** Run `node .cursor/skills/verify-marsbank/scripts/drive.mjs balances`. It clicks `getByRole("button", { name: "Hide balances" })`, waits for `Show balances` (`aria-pressed="true"`), and fails if any `.account-value strong` still contains a digit. The heading stays `Token register`. It keeps `01-balances-shown.png`, `02-balances-hidden.png`, and `03-balances.webm` under `evidence/<runId>/balances/`.
 - **Proof.** Keep `01-token-register.png`, `01-token-register.aria.txt`, `02-sol-account.png`, `02-sol-account.aria.txt`, and `proof.json` under `evidence/<runId>/accounts/`.
 
 ## Gotchas

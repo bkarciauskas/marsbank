@@ -3353,6 +3353,14 @@ a.desk-demo-flag:focus-visible {
   padding: 4px 4px 2px;
 }
 
+.desk-intro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .desk-intro > div:first-child p {
   display: flex;
   flex-wrap: wrap;
@@ -4058,6 +4066,11 @@ button.desk-primary-action {
     align-items: flex-start;
     flex-direction: column;
     gap: 18px;
+  }
+
+  .desk-intro-actions {
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .desk-position {

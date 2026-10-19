@@ -132,3 +132,9 @@ export function fail(message) {
   console.error(message);
   process.exit(1);
 }
+
+export async function launchChromium(options = {}) {
+  const { chromium } = await import("playwright");
+  const bundled = existsSync(chromium.executablePath());
+  return chromium.launch({ ...(bundled ? {} : { channel: "chrome" }), ...options });
+}

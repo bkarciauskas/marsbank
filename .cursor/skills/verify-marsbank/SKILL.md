@@ -90,6 +90,7 @@ Use Playwright through the shipped harness. Prefer the helpers over ad-hoc scrip
 ```bash
 node .cursor/skills/verify-marsbank/scripts/drive.mjs login
 node .cursor/skills/verify-marsbank/scripts/drive.mjs accounts
+node .cursor/skills/verify-marsbank/scripts/drive.mjs balances
 node .cursor/skills/verify-marsbank/scripts/drive.mjs transfer
 node .cursor/skills/verify-marsbank/scripts/drive.mjs cards
 node .cursor/skills/verify-marsbank/scripts/drive.mjs activity
@@ -118,7 +119,7 @@ Each drive writes:
 
 - `01-*.png` / `02-*.png` — full-page screenshots of the action and the resulting state
 - `01-*.aria.txt` / `02-*.aria.txt` — Playwright `ariaSnapshot()` of `body`
-- `03-login-path.webm` — login drive only. Always-on video, finalized when the context closes
+- `03-login-path.webm` / `03-balances.webm` — login and balances drives only. Always-on video, finalized when the context closes
 - `register.json` (and before/after variants on mutations) — `GET /api/register` using the session cookie
 - `proof.json` — feature id, entry point, actions, observed values (including `proof.observed.hour` on login), artifact paths
 
@@ -128,6 +129,26 @@ Proof standards:
 - Capture the action **and** the resulting state (login form, then the banking greeting; review, then **Tokens dispatched**).
 - Verify side effects: after login, `/api/register` must return the chosen resident; after an own-account transfer, `acc-everyday.available` must drop by the sent amount.
 - Mocks only at the product's existing boundary: the local in-memory ledger is the real local backend. Do not stub `/api/session` or `/api/transfers` during a UI proof.
+
+## PR evidence
+
+Reviewers should see the change on github.com without reading code, so the only test that counts is a logged-out browser loading each image. Repo media embedded as `https://github.com/<owner>/<repo>/raw/<sha>/...` loads only when the repo is **public**: github.com redirects to `raw.githubusercontent.com`. On a private repo those URLs are 404 to anyone without a session, and they showed as broken icons even to a signed-in viewer on #11. For a private repo, drag and drop the PNGs and GIF into the PR description editor on github.com. That makes `user-attachments` uploads, which work on private repos, and it is also the only way to get inline video. GitHub strips `<video>` tags that point at repo files. A token cannot create user-attachments (HTTP 422). Ship motion as an animated GIF image and link the mp4.
+
+```bash
+node .cursor/skills/verify-marsbank/scripts/drive.mjs balances   # or any recipe that records video
+node .cursor/skills/verify-marsbank/scripts/pr-evidence.mjs publish --feature <slug> \
+  --before <evidence>/01-*.png --after <evidence>/02-*.png --video <evidence>/03-*.webm \
+  --title "<what changed>" --append <checks.md>
+# put the printed markdown file into the PR body, then:
+node .cursor/skills/verify-marsbank/scripts/pr-evidence.mjs check --pr <number> --feature <slug> \
+  --logged-out-screenshot <logged-out.png>
+```
+
+- `publish` copies the PNGs to `docs/verification/<slug>/`, converts the recording to `demo.mp4` and a `demo.gif` under 5 MB (it steps the width down until it fits), commits only those files, pushes the branch, and writes `pr-body.md` with URLs pinned to the commit SHA. Pinned URLs keep working after the branch is deleted.
+- `check` reads the PR through `gh api` with `application/vnd.github.html+json` and loads every `<img src>` in `body_html` like a logged-out browser: plain HTTP, no cookies or token, every redirect followed. Each image must end in a 200 with PNG/GIF/JPEG/WebP bytes. The output lists every hop (for example `github.com 302 -> raw.githubusercontent.com 200`), so a failure names the host. The check also requires `<img>` tags for the slug's `before.png`, `after.png`, and `demo.gif`, and a 200 on the logged-out PR page. There is no fallback. Any miss exits 1. On a private repo it always exits 1, with one line telling you to drag and drop the files into the PR editor.
+- `--logged-out-screenshot` saves a full-page screenshot of the real github.com PR page in a fresh browser with no session, and records which body images actually rendered (`naturalWidth > 0`).
+- The check runs from your machine's network. A host that network blocks fails the check (for example `raw.githubusercontent.com ECONNRESET`). Fix the egress allowlist; do not work around it.
+- Without Playwright's bundled browser, the scripts use installed Chrome. If Playwright's own ffmpeg is missing, link the system ffmpeg to the path in its error (`~/.cache/ms-playwright/ffmpeg-*/ffmpeg-linux`).
 
 ## Cleanup
 
@@ -149,6 +170,7 @@ All scripts are executable Node ESM and are invoked from the repo root:
 | `.cursor/skills/verify-marsbank/scripts/doctor.mjs` | Read-only health check |
 | `.cursor/skills/verify-marsbank/scripts/drive.mjs <feature>` | Playwright recipe for one mapped feature |
 | `.cursor/skills/verify-marsbank/scripts/cleanup.mjs` | Tear down only this run; keep evidence |
+| `.cursor/skills/verify-marsbank/scripts/pr-evidence.mjs publish\|check` | Commit before/after PNGs + GIF for a PR and prove a logged-out browser loads them |
 | `.cursor/skills/verify-marsbank/scripts/lib.mjs` | Shared paths, instance file, HTTP wait |
 
 ## Feature map

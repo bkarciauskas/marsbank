@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 import { renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { chromium } from "playwright";
 import {
   ensureDir,
   evidenceRoot,
   fail,
+  launchChromium,
   loadInstance,
   writeJson,
 } from "./lib.mjs";
 
-const FEATURES = ["login", "accounts", "transfer", "cards", "activity"];
+const FEATURES = ["login", "accounts", "balances", "transfer", "cards", "activity"];
+const RECORDED = { login: "03-login-path.webm", balances: "03-balances.webm" };
 
 const residents = {
   cameron: { name: /cameron/i, firstName: "Cameron", member: "MB-104821" },
@@ -155,6 +156,43 @@ async function driveAccounts(page, baseUrl, dir, residentKey) {
   };
 }
 
+async function driveBalances(page, baseUrl, dir, residentKey) {
+  const pause = () => page.waitForTimeout(1_200);
+  await loginThroughRoster(page, baseUrl, residentKey);
+  await pause();
+  await page.getByRole("navigation", { name: "Banking" }).getByRole("link", { name: "Accounts" }).click();
+  await page.waitForURL("**/banking/accounts");
+  await page.getByRole("heading", { level: 1, name: "Token register" }).waitFor();
+  const firstFigure = page.locator(".account-value strong").first();
+  const shownText = await firstFigure.innerText();
+  if (!/\d/.test(shownText)) throw new Error(`Expected a balance before hiding, saw ${shownText}`);
+  await pause();
+  const shown = await capture(page, dir, "01-balances-shown");
+  await page.getByRole("button", { name: "Hide balances" }).click();
+  await page.getByRole("button", { name: "Show balances" }).waitFor();
+  const figures = await page.locator(".account-value strong").allInnerTexts();
+  if (figures.length === 0 || figures.some((text) => /\d/.test(text))) {
+    throw new Error(`Balances still visible after Hide balances: ${figures.join(" | ")}`);
+  }
+  await page.getByRole("heading", { level: 1, name: "Token register" }).waitFor();
+  await pause();
+  const hidden = await capture(page, dir, "02-balances-hidden");
+  await pause();
+  return {
+    actions: [
+      "login via demo roster",
+      'sidebar link "Accounts"',
+      'button "Hide balances"',
+    ],
+    observed: {
+      heading: "Token register",
+      firstFigureBefore: shownText,
+      figuresAfter: figures,
+    },
+    artifacts: [shown, hidden],
+  };
+}
+
 async function driveTransfer(page, baseUrl, dir, residentKey) {
   await loginThroughRoster(page, baseUrl, residentKey);
   const before = await writeRegister(page, dir, "01-register-before.json");
@@ -280,6 +318,7 @@ async function expectVisible(locator) {
 const drivers = {
   login: driveLogin,
   accounts: driveAccounts,
+  balances: driveBalances,
   transfer: driveTransfer,
   cards: driveCards,
   activity: driveActivity,
@@ -294,15 +333,15 @@ if (!instance) {
 const dir = join(evidenceRoot, instance.runId, args.feature);
 ensureDir(dir);
 
-const browser = await chromium.launch({ headless: !args.headed });
+const browser = await launchChromium({ headless: !args.headed });
 const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },
   reducedMotion: "reduce",
   baseURL: instance.baseUrl,
-  ...(args.feature === "login" ? { recordVideo: { dir } } : {}),
+  ...(RECORDED[args.feature] ? { recordVideo: { dir, size: { width: 1440, height: 900 } } } : {}),
 });
 const page = await context.newPage();
-const loginVideoPath = join(dir, "03-login-path.webm");
+const videoPath = RECORDED[args.feature] ? join(dir, RECORDED[args.feature]) : null;
 
 let result;
 let driveError;
@@ -312,10 +351,10 @@ try {
   await capture(page, dir, "failure").catch(() => undefined);
   driveError = error;
 } finally {
-  const video = args.feature === "login" ? page.video() : null;
+  const video = videoPath ? page.video() : null;
   await context.close();
   if (video) {
-    renameSync(await video.path(), loginVideoPath);
+    renameSync(await video.path(), videoPath);
   }
   await browser.close();
 }
@@ -324,8 +363,8 @@ if (driveError) {
   fail(`Drive ${args.feature} failed: ${driveError instanceof Error ? driveError.stack ?? driveError.message : driveError}`);
 }
 
-if (args.feature === "login") {
-  result.artifacts.push({ videoPath: loginVideoPath });
+if (videoPath) {
+  result.artifacts.push({ videoPath });
 }
 
 const proof = {

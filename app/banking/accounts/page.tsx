@@ -1,11 +1,13 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import { AccountList } from "@/components/banking/account-list";
+import { Suspense, useState } from "react";
+import { AccountList, Figure } from "@/components/banking/account-list";
 import type { Account } from "@/lib/domain";
+import { registerPosition } from "@/lib/ledger";
+import { groupTokens, tokens, type TokenAmount } from "@/lib/money";
 import { useBank } from "@/lib/store";
 
 function matches(account: Account, needle: string): boolean {
@@ -15,6 +17,12 @@ function matches(account: Account, needle: string): boolean {
   return [account.name, account.productName, account.branch, account.number].some(
     (field) => field.toLowerCase().includes(needle),
   );
+}
+
+function signedFigure(amount: TokenAmount): string {
+  const prefix = amount < 0 ? "−" : amount > 0 ? "+" : "";
+  const magnitude = amount < 0 ? tokens(-amount) : amount;
+  return `${prefix}${groupTokens(magnitude)}`;
 }
 
 function AccountsRegister() {
@@ -28,6 +36,9 @@ function AccountsRegister() {
   const lending = visible.filter(
     (account) => account.kind === "credit" || account.kind === "loan",
   );
+  const [positionOpen, setPositionOpen] = useState(false);
+  const [figuresHidden, setFiguresHidden] = useState(false);
+  const position = registerPosition(visible);
 
   return (
     <div className="desk">
@@ -42,18 +53,85 @@ function AccountsRegister() {
                 } for “${query}”.`}
           </p>
         </div>
-        {query.length === 0 ? null : (
-          <Link className="desk-clear-search" href="/banking/accounts">
-            Clear search <X />
-          </Link>
-        )}
+        <div className="desk-intro-actions">
+          {query.length === 0 ? null : (
+            <Link className="desk-clear-search" href="/banking/accounts">
+              Clear search <X />
+            </Link>
+          )}
+          <button
+            type="button"
+            className="desk-quiet-action"
+            aria-pressed={figuresHidden}
+            onClick={() => setFiguresHidden((hidden) => !hidden)}
+          >
+            {figuresHidden ? <Eye /> : <EyeOff />}
+            {figuresHidden ? "Show balances" : "Hide balances"}
+          </button>
+          <button
+            type="button"
+            className="desk-quiet-action"
+            aria-expanded={positionOpen}
+            aria-controls="register-position"
+            onClick={() => setPositionOpen((open) => !open)}
+          >
+            {positionOpen ? "Hide register position" : "Show register position"}
+          </button>
+        </div>
       </div>
+      {positionOpen ? (
+        <section
+          id="register-position"
+          aria-labelledby="register-position-heading"
+          className="desk-card"
+        >
+          <div className="desk-card-heading">
+            <h2 id="register-position-heading">Register position</h2>
+          </div>
+          <dl className="desk-glance">
+            <div>
+              <dt>On hand</dt>
+              <dd>
+                <Figure amount={position.onHand} hidden={figuresHidden} />{" "}
+                <small>MT</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Owing</dt>
+              <dd>
+                <Figure amount={position.owing} hidden={figuresHidden} />{" "}
+                <small>MT</small>
+              </dd>
+            </div>
+            <div>
+              <dt>Net position</dt>
+              <dd className={position.net > 0 ? "credit" : undefined}>
+                {figuresHidden ? (
+                  <Figure amount={position.net} hidden />
+                ) : (
+                  signedFigure(position.net)
+                )}{" "}
+                <small>MT</small>
+              </dd>
+            </div>
+          </dl>
+          <p className="desk-glance-note">
+            {query.length === 0
+              ? "On hand is the balance of offset accounts. Owing is the habitat loan still to pay plus expedition credit. Net position is the difference."
+              : `These figures cover the accounts matching “${query}”.`}
+          </p>
+        </section>
+      ) : null}
       {deposits.length > 0 ? (
         <section aria-labelledby="register-deposits" className="desk-card">
           <div className="desk-card-heading">
             <h2 id="register-deposits">Offset accounts</h2>
           </div>
-          <AccountList accounts={deposits} ledger={snapshot.accounts} />
+          <AccountList
+            accounts={deposits}
+            ledger={snapshot.accounts}
+            hideFigures={figuresHidden}
+          />
         </section>
       ) : null}
       {lending.length > 0 ? (
@@ -61,7 +139,11 @@ function AccountsRegister() {
           <div className="desk-card-heading">
             <h2 id="register-lending">Habitat debt and expedition credit</h2>
           </div>
-          <AccountList accounts={lending} ledger={snapshot.accounts} />
+          <AccountList
+            accounts={lending}
+            ledger={snapshot.accounts}
+            hideFigures={figuresHidden}
+          />
         </section>
       ) : null}
       {visible.length === 0 ? (
