@@ -6,6 +6,7 @@ import {
   applyTransfer,
   availableBalance,
   displayBalance,
+  registerPosition,
   offsetAccounts,
   offsetTotal,
   setCardStatus,
@@ -13,6 +14,29 @@ import {
 import { tokens } from "./money";
 
 describe("Mars Bank ledger", () => {
+  it("tallies on-hand deposits against habitat debt", () => {
+    const position = registerPosition(seedSnapshot.accounts);
+
+    expect(position.onHand).toBe(4_002_644_620);
+    expect(position.owing).toBe(36_400_082_640);
+    expect(position.net).toBe(-32_397_438_020);
+  });
+
+  it("counts a single offset account as on hand", () => {
+    const reserve = seedSnapshot.accounts.find(
+      (account) => account.id === "acc-reserve",
+    );
+    if (!reserve || reserve.kind !== "offset") {
+      throw new Error("missing reserve");
+    }
+
+    expect(registerPosition([reserve])).toEqual({
+      onHand: reserve.current,
+      owing: tokens(0),
+      net: reserve.current,
+    });
+  });
+
   it("moves tokens and adds both transaction sides", () => {
     const result = applyTransfer(
       structuredClone(seedSnapshot),

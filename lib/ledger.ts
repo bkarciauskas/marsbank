@@ -12,6 +12,34 @@ import { txnId } from "./ids";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
 
+export type RegisterPosition = {
+  onHand: TokenAmount;
+  owing: TokenAmount;
+  net: TokenAmount;
+};
+
+/** Deposit balances against habitat-loan remaining and credit owing. */
+export function registerPosition(accounts: readonly Account[]): RegisterPosition {
+  let onHand = tokens(0);
+  let owing = tokens(0);
+  for (const account of accounts) {
+    switch (account.kind) {
+      case "transaction":
+      case "savings":
+      case "offset":
+        onHand = addTokens(onHand, account.current);
+        break;
+      case "credit":
+        owing = addTokens(owing, account.owed);
+        break;
+      case "loan":
+        owing = addTokens(owing, account.remaining);
+        break;
+    }
+  }
+  return { onHand, owing, net: subtractTokens(onHand, owing) };
+}
+
 export function availableBalance(account: Account): TokenAmount {
   switch (account.kind) {
     case "transaction":
