@@ -1,10 +1,10 @@
 "use client";
 
-import { X } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import { AccountList } from "@/components/banking/account-list";
+import { AccountList, Figure } from "@/components/banking/account-list";
 import type { Account } from "@/lib/domain";
 import { registerPosition } from "@/lib/ledger";
 import { groupTokens, tokens, type TokenAmount } from "@/lib/money";
@@ -37,6 +37,7 @@ function AccountsRegister() {
     (account) => account.kind === "credit" || account.kind === "loan",
   );
   const [positionOpen, setPositionOpen] = useState(false);
+  const [figuresHidden, setFiguresHidden] = useState(false);
   const position = registerPosition(visible);
 
   return (
@@ -61,6 +62,15 @@ function AccountsRegister() {
           <button
             type="button"
             className="desk-quiet-action"
+            aria-pressed={figuresHidden}
+            onClick={() => setFiguresHidden((hidden) => !hidden)}
+          >
+            {figuresHidden ? <Eye /> : <EyeOff />}
+            {figuresHidden ? "Show balances" : "Hide balances"}
+          </button>
+          <button
+            type="button"
+            className="desk-quiet-action"
             aria-expanded={positionOpen}
             aria-controls="register-position"
             onClick={() => setPositionOpen((open) => !open)}
@@ -82,19 +92,26 @@ function AccountsRegister() {
             <div>
               <dt>On hand</dt>
               <dd>
-                {groupTokens(position.onHand)} <small>MT</small>
+                <Figure amount={position.onHand} hidden={figuresHidden} />{" "}
+                <small>MT</small>
               </dd>
             </div>
             <div>
               <dt>Owing</dt>
               <dd>
-                {groupTokens(position.owing)} <small>MT</small>
+                <Figure amount={position.owing} hidden={figuresHidden} />{" "}
+                <small>MT</small>
               </dd>
             </div>
             <div>
               <dt>Net position</dt>
               <dd className={position.net > 0 ? "credit" : undefined}>
-                {signedFigure(position.net)} <small>MT</small>
+                {figuresHidden ? (
+                  <Figure amount={position.net} hidden />
+                ) : (
+                  signedFigure(position.net)
+                )}{" "}
+                <small>MT</small>
               </dd>
             </div>
           </dl>
@@ -110,7 +127,11 @@ function AccountsRegister() {
           <div className="desk-card-heading">
             <h2 id="register-deposits">Offset accounts</h2>
           </div>
-          <AccountList accounts={deposits} ledger={snapshot.accounts} />
+          <AccountList
+            accounts={deposits}
+            ledger={snapshot.accounts}
+            hideFigures={figuresHidden}
+          />
         </section>
       ) : null}
       {lending.length > 0 ? (
@@ -118,7 +139,11 @@ function AccountsRegister() {
           <div className="desk-card-heading">
             <h2 id="register-lending">Habitat debt and expedition credit</h2>
           </div>
-          <AccountList accounts={lending} ledger={snapshot.accounts} />
+          <AccountList
+            accounts={lending}
+            ledger={snapshot.accounts}
+            hideFigures={figuresHidden}
+          />
         </section>
       ) : null}
       {visible.length === 0 ? (

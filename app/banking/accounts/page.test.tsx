@@ -105,6 +105,36 @@ describe("AccountsPage", () => {
     expect(rows[0]?.textContent).toMatch(/expedition credit/i);
   });
 
+  it("hides every balance until shown again", () => {
+    const { container } = renderAccounts();
+    const register = () =>
+      Array.from(container.querySelectorAll(".account-value strong, .account-list-totals strong"))
+        .map((cell) => cell.textContent)
+        .join(" ");
+
+    fireEvent.click(screen.getByRole("button", { name: "Show register position" }));
+    expect(register()).toMatch(/\d{1,3},\d{3}/);
+
+    fireEvent.click(screen.getByRole("button", { name: "Hide balances" }));
+
+    expect(register()).not.toMatch(/\d/);
+    expect(register()).toContain("••••••");
+    const position = screen.getByRole("region", { name: "Register position" });
+    expect(position).not.toHaveTextContent("4,002,644,620");
+    expect(position).not.toHaveTextContent("−32,397,438,020");
+    expect(screen.getByRole("button", { name: "Show balances" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Token register" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Show balances" }));
+    expect(register()).toMatch(/\d{1,3},\d{3}/);
+    expect(position).toHaveTextContent("4,002,644,620");
+  });
+
   it("explains an empty search result", () => {
     searchParams.set("q", "phobos shipyard");
     renderAccounts();

@@ -2,7 +2,7 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { Account } from "@/lib/domain";
 import { availableBalance } from "@/lib/ledger";
-import { groupTokens, tokens } from "@/lib/money";
+import { groupTokens, tokens, type TokenAmount } from "@/lib/money";
 
 function registerValues(account: Account, accounts: Account[]) {
   switch (account.kind) {
@@ -61,16 +61,36 @@ function isSpendable(account: Account): boolean {
   return account.kind !== "loan";
 }
 
+export function Figure({
+  amount,
+  hidden,
+}: {
+  amount: TokenAmount;
+  hidden: boolean;
+}) {
+  if (!hidden) {
+    return <>{groupTokens(amount)}</>;
+  }
+  return (
+    <>
+      <span aria-hidden="true">••••••</span>
+      <span className="sr-only">Hidden</span>
+    </>
+  );
+}
+
 export function AccountList({
   accounts,
   ledger = accounts,
   compact = false,
   showTotals = false,
+  hideFigures = false,
 }: {
   accounts: Account[];
   ledger?: Account[];
   compact?: boolean;
   showTotals?: boolean;
+  hideFigures?: boolean;
 }) {
   const spendable = accounts.filter((account) => account.kind !== "loan");
   const totalAvailable = tokens(
@@ -122,19 +142,25 @@ export function AccountList({
               <small className={restated ? "is-restated" : undefined}>
                 {labels.available}
               </small>
-              <strong>{groupTokens(values.available)}</strong>
+              <strong>
+                <Figure amount={values.available} hidden={hideFigures} />
+              </strong>
             </span>
             <span className="account-value">
               <small className={restated ? "is-restated" : undefined}>
                 {labels.held}
               </small>
-              <strong>{groupTokens(values.held)}</strong>
+              <strong>
+                <Figure amount={values.held} hidden={hideFigures} />
+              </strong>
             </span>
             <span className="account-value total">
               <small className={restated ? "is-restated" : undefined}>
                 {labels.total}
               </small>
-              <strong>{groupTokens(values.total)}</strong>
+              <strong>
+                <Figure amount={values.total} hidden={hideFigures} />
+              </strong>
             </span>
             <ChevronRight className="account-arrow" />
           </Link>
@@ -148,11 +174,15 @@ export function AccountList({
           </span>
           <span>
             <small>Total available (MT)</small>
-            <strong>{groupTokens(totalAvailable)}</strong>
+            <strong>
+              <Figure amount={totalAvailable} hidden={hideFigures} />
+            </strong>
           </span>
           <span>
             <small>Deposit balance (MT)</small>
-            <strong>{groupTokens(depositBalance)}</strong>
+            <strong>
+              <Figure amount={depositBalance} hidden={hideFigures} />
+            </strong>
           </span>
         </div>
       ) : null}
