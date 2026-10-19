@@ -4,8 +4,7 @@
 //
 //   pr-evidence.mjs publish --feature <slug> --before <png> --after <png> --video <webm|mp4>
 //                           [--title <text>] [--append <md file>] [--out <md file>] [--no-push]
-//   pr-evidence.mjs check   --pr <number> [--feature <slug>] [--screenshot <png>]
-//                           [--logged-out-screenshot <png>] [--allow-unreachable-host <host>]...
+//   pr-evidence.mjs check   --pr <number> [--feature <slug>] [--logged-out-screenshot <png>]
 import { execFileSync } from "node:child_process";
 import { copyFileSync, existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -13,10 +12,12 @@ import { ensureDir, fail, launchChromium, repoRoot } from "./lib.mjs";
 
 const GIF_LIMIT_BYTES = 5 * 1024 * 1024;
 const GIF_WIDTHS = [960, 800, 640, 480];
+const BROWSER_UA =
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36";
 const MEDIA = { before: "before.png", after: "after.png", gif: "demo.gif", mp4: "demo.mp4" };
 
 function parseArgs(argv) {
-  const args = { command: argv[0], allowUnreachableHost: [], push: true };
+  const args = { command: argv[0], push: true };
   for (let i = 1; i < argv.length; i += 1) {
     const key = argv[i];
     if (key === "--no-push") {
@@ -27,8 +28,7 @@ function parseArgs(argv) {
     const name = key.slice(2).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
     const value = argv[++i];
     if (value === undefined) fail(`${key} needs a value`);
-    if (Array.isArray(args[name])) args[name].push(value);
-    else args[name] = value;
+    args[name] = value;
   }
   return args;
 }
@@ -194,118 +194,53 @@ function imageSources(html) {
   return [...html.matchAll(/<img\b[^>]*?\ssrc="([^"]+)"/g)].map((match) => decodeEntities(match[1]));
 }
 
-function repoMediaPath(src, owner, repo) {
-  const match = src.match(
-    new RegExp(`^https://github\\.com/${owner}/${repo}/(?:raw|blob)/(.+?)(?:\\?raw=true)?$`),
-  );
-  return match ? match[1] : null;
-}
-
-// Branch names may contain "/", so try each split of "<ref>/<path>" in turn.
-async function fetchRepoMedia(refAndPath, owner, repo) {
-  const parts = refAndPath.split("/");
-  let last = { status: 404, bytes: new Uint8Array() };
-  for (let i = 1; i < parts.length; i += 1) {
-    const ref = parts.slice(0, i).join("/");
-    const path = parts.slice(i).join("/");
-    const response = await api(
-      `repos/${owner}/${repo}/contents/${path}?ref=${encodeURIComponent(ref)}`,
-      "application/vnd.github.raw",
-    );
-    last = { status: response.status, bytes: new Uint8Array(await response.arrayBuffer()) };
-    if (response.status === 200) return last;
-  }
-  return last;
-}
-
-async function verifyImage(src, { owner, repo, isPrivate, allowUnreachable }) {
-  const media = repoMediaPath(src, owner, repo);
-  try {
-    const anonymous = await fetch(src, { redirect: "follow" });
-    const bytes = new Uint8Array(await anonymous.arrayBuffer());
+// Load an image the way a logged-out browser does: no cookies, no token, every
+// redirect followed. Hops are followed by hand so a failure names its host.
+async function loadLikeLoggedOutBrowser(src) {
+  const hops = [];
+  let url = src;
+  for (let i = 0; i < 10; i += 1) {
+    let response;
+    try {
+      response = await fetch(url, { redirect: "manual", headers: { "User-Agent": BROWSER_UA } });
+    } catch (error) {
+      const code = error instanceof Error ? error.cause?.code ?? error.message : String(error);
+      hops.push(`${new URL(url).host} ${code}`);
+      return { src, ok: false, status: null, hops, error: `${new URL(url).host} unreachable (${code})` };
+    }
+    hops.push(`${new URL(url).host} ${response.status}`);
+    const location = response.headers.get("location");
+    if (response.status >= 300 && response.status < 400 && location) {
+      url = new URL(location, url).toString();
+      continue;
+    }
+    const bytes = new Uint8Array(await response.arrayBuffer());
     const type = sniffImage(bytes);
-    if (anonymous.status === 200 && type) {
-      return { src, ok: true, status: 200, type, bytes: bytes.length, via: "anonymous fetch" };
-    }
-    if (!(media && isPrivate)) {
-      return { src, ok: false, status: anonymous.status, type, via: "anonymous fetch" };
-    }
-  } catch (error) {
-    if (!media) {
-      const host = new URL(src).host;
-      const allowed = allowUnreachable.includes(host);
-      return {
-        src,
-        ok: allowed,
-        status: null,
-        via: allowed ? "skipped: host unreachable from this machine (allowed by flag)" : "anonymous fetch",
-        error: error instanceof Error ? error.cause?.code ?? error.message : String(error),
-      };
-    }
+    return {
+      src,
+      ok: response.status === 200 && type !== null,
+      status: response.status,
+      contentType: response.headers.get("content-type"),
+      type,
+      bytes: bytes.length,
+      hops,
+    };
   }
-  // A private repo serves github.com/<repo>/raw/... only to a signed-in viewer's
-  // browser, which GitHub redirects to a short-lived raw URL. The contents API at
-  // the same ref and path returns those exact bytes for a token with read access.
-  const { status, bytes } = await fetchRepoMedia(media, owner, repo);
-  const type = sniffImage(bytes);
-  return {
-    src,
-    ok: status === 200 && type !== null,
-    status,
-    type,
-    bytes: bytes.length,
-    via: "contents API (private repo; signed-in viewers get these bytes)",
-  };
-}
-
-async function screenshotRendered(bodyHtml, images, title, path) {
-  let html = bodyHtml;
-  for (const image of images) {
-    const media = image.dataUrl;
-    if (media) html = html.split(`src="${image.htmlSrc}"`).join(`src="${media}"`);
-  }
-  const page = `<!doctype html><meta charset="utf-8"><style>
-    body{margin:0;background:#fff;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#1f2328}
-    .bar{background:#f6f8fa;border-bottom:1px solid #d1d9e0;padding:16px 32px;font-size:20px}
-    .bar small{display:block;color:#59636e;font-size:12px}
-    .box{margin:24px 32px;border:1px solid #d1d9e0;border-radius:6px}
-    .box>header{background:#f6f8fa;border-bottom:1px solid #d1d9e0;padding:8px 16px;color:#59636e}
-    .markdown-body{padding:16px 24px}
-    .markdown-body img{max-width:100%;border:1px solid #d1d9e0}
-    pre{background:#f6f8fa;padding:12px;border-radius:6px;overflow:auto;font-size:12px}
-    code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-    h2,h3{border-bottom:1px solid #d1d9e0;padding-bottom:.3em}
-  </style><div class="bar">${title.replace(/</g, "&lt;")}<small>body_html from the GitHub API (application/vnd.github.html+json), images loaded as a signed-in viewer</small></div>
-  <div class="box"><header>Pull request description</header><div class="markdown-body">${html}</div></div>`;
-  const browser = await launchChromium();
-  const tab = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  await tab.setContent(page, { waitUntil: "load" });
-  await tab.screenshot({ path, fullPage: true });
-  await browser.close();
+  return { src, ok: false, status: null, hops, error: "too many redirects" };
 }
 
 async function screenshotLoggedOut(url, path) {
   const browser = await launchChromium();
   const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
   const tab = await context.newPage();
-  const response = await tab.goto(url, { waitUntil: "domcontentloaded" });
-  await tab.waitForTimeout(1_500);
-  const status = response?.status() ?? "no response";
-  const title = await tab.title();
-  // GitHub's stylesheets may be blocked on restricted networks; stamp the facts on top.
-  await tab.evaluate(
-    ({ url, status, title }) => {
-      const banner = document.createElement("div");
-      banner.style.cssText =
-        "position:fixed;inset:0 0 auto 0;z-index:99999;padding:20px 28px;background:#fff8c5;border-bottom:2px solid #d4a72c;font:16px/1.5 system-ui,sans-serif;color:#1f2328";
-      banner.innerHTML = `<strong>Logged-out browser view</strong><br>${url}<br>HTTP ${status} · page title “${title}”`;
-      document.body.prepend(banner);
-    },
-    { url, status, title },
+  const response = await tab.goto(url, { waitUntil: "load" });
+  await tab.waitForTimeout(2_000);
+  const images = await tab.locator(".comment-body img, .markdown-body img").evaluateAll((nodes) =>
+    nodes.map((img) => ({ src: img.currentSrc || img.src, rendered: img.complete && img.naturalWidth > 0 })),
   );
-  await tab.screenshot({ path, fullPage: false });
+  await tab.screenshot({ path, fullPage: true });
   await browser.close();
-  return response?.status() ?? null;
+  return { status: response?.status() ?? null, images };
 }
 
 async function check(args) {
@@ -326,19 +261,6 @@ async function check(args) {
   if (/<video\s[^>]*src=/i.test(pr.body ?? "") && !/<video\b/i.test(bodyHtml)) {
     failures.push("Body has a <video> tag that GitHub stripped. Use the GIF instead.");
   }
-
-  const results = [];
-  for (const src of sources) {
-    const result = await verifyImage(src, {
-      owner,
-      repo,
-      isPrivate,
-      allowUnreachable: args.allowUnreachableHost,
-    });
-    results.push(result);
-    if (!result.ok) failures.push(`Image did not resolve to a 200 image: ${src} (${result.status ?? result.error})`);
-  }
-
   if (args.feature) {
     for (const file of [MEDIA.before, MEDIA.after, MEDIA.gif]) {
       const suffix = `/docs/verification/${args.feature}/${file}`;
@@ -348,55 +270,32 @@ async function check(args) {
     }
   }
 
+  const results = [];
+  for (const src of sources) {
+    const result = await loadLikeLoggedOutBrowser(src);
+    results.push(result);
+    if (!result.ok) {
+      failures.push(`Not a 200 image for a logged-out browser: ${src} (${result.error ?? `HTTP ${result.status}, ${result.type ?? "not image bytes"}`})`);
+    }
+  }
+
   const prUrl = `https://github.com/${owner}/${repo}/pull/${args.pr}`;
-  let loggedOut;
-  try {
-    const anonymous = await fetch(prUrl, { redirect: "manual" });
-    loggedOut = {
-      url: prUrl,
-      status: anonymous.status,
-      note:
-        anonymous.status === 200
-          ? "Logged-out visitors can open the PR."
-          : isPrivate
-            ? "Private repo: logged-out visitors get a 404. Viewers must be signed in with access."
-            : "Logged-out fetch did not return the PR page.",
-    };
-    if (args.loggedOutScreenshot) {
-      loggedOut.screenshot = args.loggedOutScreenshot;
-      loggedOut.browserStatus = await screenshotLoggedOut(prUrl, args.loggedOutScreenshot);
-    }
-  } catch (error) {
-    loggedOut = { url: prUrl, error: error instanceof Error ? error.message : String(error) };
-  }
-  if (!isPrivate && loggedOut.status !== 200) {
-    failures.push(`Public repo but logged-out PR page returned ${loggedOut.status}.`);
+  const page = await loadLikeLoggedOutBrowser(prUrl);
+  const loggedOut = { url: prUrl, status: page.status, hops: page.hops, error: page.error };
+  if (page.status !== 200) failures.push(`Logged-out PR page did not load: ${page.error ?? `HTTP ${page.status}`}`);
+  if (args.loggedOutScreenshot) {
+    const shot = await screenshotLoggedOut(prUrl, args.loggedOutScreenshot);
+    loggedOut.screenshot = { path: args.loggedOutScreenshot, ...shot };
   }
 
-  if (args.screenshot) {
-    const images = [];
-    for (const result of results) {
-      const media = repoMediaPath(result.src, owner, repo);
-      if (!media || !result.ok) continue;
-      const { bytes } = await fetchRepoMedia(media, owner, repo);
-      const buffer = Buffer.from(bytes);
-      images.push({
-        htmlSrc: result.src.replace(/&/g, "&amp;"),
-        dataUrl: `data:${result.type};base64,${buffer.toString("base64")}`,
-      });
-    }
-    await screenshotRendered(bodyHtml, images, `${pr.title} #${args.pr}`, args.screenshot);
+  console.log(
+    JSON.stringify({ ok: failures.length === 0 && !isPrivate, pr: prUrl, repoPrivate: isPrivate, images: results, loggedOut, failures }, null, 2),
+  );
+  if (isPrivate) {
+    fail(
+      `${owner}/${repo} is private, so logged-out viewers cannot load repo images: drag and drop before.png, after.png and demo.gif into the PR description editor on github.com (user-attachments uploads work on private repos), then rerun check.`,
+    );
   }
-
-  const summary = {
-    ok: failures.length === 0,
-    pr: prUrl,
-    repoPrivate: isPrivate,
-    images: results,
-    loggedOut,
-    failures,
-  };
-  console.log(JSON.stringify(summary, null, 2));
   if (failures.length > 0) process.exit(1);
 }
 
