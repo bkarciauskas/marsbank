@@ -1,7 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { seedSnapshotForSlug } from "@/lib/fixtures";
+import { applyIncomingResidentTransfer } from "@/lib/ledger";
+import { tokens } from "@/lib/money";
 import { BankProvider } from "@/lib/store";
+import { incomingReadKey } from "@/lib/use-incoming-read";
 import { BankingShell } from "./banking-shell";
 
 const push = vi.fn();
@@ -92,6 +96,61 @@ describe("BankingShell", () => {
     fireEvent.submit(screen.getByRole("search"));
 
     expect(push).toHaveBeenCalledWith("/banking/accounts?q=crater");
+  });
+
+  it("shows an empty incoming feed on a seeded register", async () => {
+    renderShell();
+
+    fireEvent.click(screen.getByRole("button", { name: "Notifications" }));
+
+    expect(
+      await screen.findByText("No tokens from other residents yet."),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Mark all as read" })).toBeDisabled();
+  });
+
+  it("lights the bell when a resident credit arrives on refresh, then clears it", async () => {
+    let register = seedSnapshotForSlug("cameron");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json({ snapshot: register })),
+    );
+    renderShell();
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument();
+
+    register = applyIncomingResidentTransfer(
+      register,
+      {
+        amount: tokens(250),
+        description: "Dust filters",
+        requestId: "req-1",
+        senderEmail: "aaron@marsbank.mars",
+        senderName: "Aaron Vale",
+      },
+      new Date("2026-10-20T10:00:00.000Z"),
+    );
+    act(() => {
+      window.dispatchEvent(new Event("focus"));
+    });
+
+    const bell = await screen.findByRole("button", {
+      name: "Notifications, 1 unread",
+    });
+    fireEvent.click(bell);
+    const panel = screen.getByRole("region", { name: "Incoming transfers" });
+    expect(panel).toHaveTextContent("Aaron Vale sent 250 tokens");
+    expect(panel).toHaveTextContent("Dust filters");
+
+    fireEvent.click(screen.getByRole("button", { name: "Mark all as read" }));
+
+    expect(screen.getByRole("button", { name: "Notifications" })).toBeInTheDocument();
+    expect(
+      window.localStorage.getItem(incomingReadKey("cameron@marsbank.mars")),
+    ).toBe("2026-10-20T10:00:00.000Z");
+    expect(
+      window.localStorage.getItem(incomingReadKey("aaron@marsbank.mars")),
+    ).toBeNull();
   });
 
   it("ignores an empty search rather than routing to a blank result", () => {

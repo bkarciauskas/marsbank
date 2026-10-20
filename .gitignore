@@ -2,6 +2,7 @@ node_modules
 .next
 .next-verify
 .next-e2e
+.next-e2e-bell
 .next-shots
 out
 .DS_Store
