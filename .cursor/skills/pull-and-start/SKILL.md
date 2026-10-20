@@ -31,7 +31,13 @@ PORT=3021 sh scripts/start.sh
 - Run it in the background; it does not exit. Ready when the output shows `✓ Ready`, then confirm `curl -s -o /dev/null -w "%{http_code}" http://localhost:3021/login` returns `200`.
 - The ledger is in memory, so every restart resets demo data.
 
-## 3. Report
+## 3. Open in the Browser
+
+Once `/login` returns 200, open `http://localhost:3021` in Cursor's Browser with the `cursor-ide-browser` `browser_navigate` tool, passing `position: "active"` so the tab is visible. Reuse an existing Mars Bank tab if `browser_tabs` lists one; otherwise set `newTab: true`.
+
+Always use `localhost`, never the `Network:` address.
+
+## 4. Report
 
 Tell the user, in a sentence or two:
 
