@@ -232,8 +232,8 @@ export function DemoConsole() {
             <code>demo/cursor-hooks</code> into <code>.cursor</code>; Reset
             removes those installed files. Reload Cursor after Setup or Reset so
             hook changes take effect. Agent Guardrails Setup plants a lint break,
-            a heading change, or a stub route, or adds a style hook, and Reset
-            removes exactly that. Reset also restores transfer-form sources, the
+            a heading change, or a stub route, or adds a style hook or scoped
+            rules, and Reset removes exactly that. Reset also restores transfer-form sources, the
             ledger, and the activity log.
           </p>
         </div>

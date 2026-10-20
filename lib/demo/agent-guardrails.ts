@@ -4,6 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { hookInstallPaths } from "./install-hooks";
 import type { DemoScenarioId } from "./scenarios";
+import {
+  installScopedContext,
+  scopedContextGuardrail,
+  uninstallScopedContext,
+} from "./scoped-context";
 
 const lockPath = path.join(os.tmpdir(), "marsbank-agent-guardrails.lock");
 
@@ -139,18 +144,21 @@ export function plantAgentScenario(id: DemoScenarioId): void {
   if (id === "agent-lint") plantAgentLint();
   else if (id === "agent-verify") plantAgentVerify();
   else if (id === "agent-route") plantAgentRoute();
+  else if (id === "agent-rules") installScopedContext();
 }
 
 export function revertAgentScenario(id: DemoScenarioId): void {
   if (id === "agent-lint") revertAgentLint();
   else if (id === "agent-verify") revertAgentVerify();
   else if (id === "agent-route") revertAgentRoute();
+  else if (id === "agent-rules") uninstallScopedContext();
 }
 
 export function revertAgentGuardrails(): void {
   revertAgentLint();
   revertAgentVerify();
   revertAgentRoute();
+  uninstallScopedContext();
 }
 
 function runCommand(
@@ -241,5 +249,6 @@ export async function agentGuardrail(id: DemoScenarioId): Promise<string> {
   if (id === "agent-verify") return verifyGuardrail();
   if (id === "agent-route") return routeGuardrail();
   if (id === "agent-autopilot") return autopilotGuardrail();
+  if (id === "agent-rules") return scopedContextGuardrail();
   return "";
 }

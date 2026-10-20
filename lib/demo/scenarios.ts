@@ -7,6 +7,7 @@ export const demoScenarioIds = [
   "agent-verify",
   "agent-route",
   "agent-autopilot",
+  "agent-rules",
 ] as const;
 
 export type DemoScenarioId = (typeof demoScenarioIds)[number];
@@ -96,6 +97,35 @@ export const agentGuardrailsScenarios: readonly DemoScenario[] = [
           "The diff comes out formatted and lint-clean with no style rules in the prompt. Style lives in a hook, not in the prompt, so it is caught before CI.",
         prompt:
           "Add a percentOf(part, whole) helper to lib/money.ts that returns the whole-number percentage of two token amounts, with a test in lib/money.test.ts.",
+      },
+    ],
+  },
+  {
+    id: "agent-rules",
+    title: "Rules that load on demand",
+    pitch:
+      "Setup adds two Apply to Specific Files rules to .cursor/rules (alwaysApply: false plus globs): api-route-header.mdc for app/api/**/*.ts and test-names.mdc for test files. It also adds a nested components/banking/AGENTS.md. Each one enters the agent's context only when the agent works on a matching file or inside that folder. Why: a convention stays out of the context for every edit it does not apply to. Rules decide what the agent sees. They do not block anything; for real blocking, see Style on autopilot and the Cursor Hooks tab.",
+    prompts: [
+      {
+        id: "api-edit",
+        description:
+          "Matches app/api/**/*.ts: the file now starts with // API: POST /api/transfers.",
+        prompt:
+          "Add a one-line comment above the POST handler in app/api/transfers/route.ts saying it is the template for new routes.",
+      },
+      {
+        id: "banking-edit",
+        description:
+          "Inside components/banking: the file now starts with // Banking UI: account-list.tsx.",
+        prompt:
+          "Add a one-line comment above the AccountList export in components/banking/account-list.tsx saying it lists a resident's accounts with optional totals.",
+      },
+      {
+        id: "plain-edit",
+        description:
+          "Outside both: lib/money.ts gets the comment and neither header.",
+        prompt:
+          "Add a one-line comment above parseTokenInput in lib/money.ts saying it rejects fractional and negative input.",
       },
     ],
   },
