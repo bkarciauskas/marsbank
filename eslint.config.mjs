@@ -60,6 +60,7 @@ const domainFiles = [
   "lib/daypart.ts",
   "lib/fixtures.ts",
   "lib/flow-report.ts",
+  "lib/statement-csv.ts",
   "lib/shared-ledger.ts",
   "lib/theme.ts",
 ];
