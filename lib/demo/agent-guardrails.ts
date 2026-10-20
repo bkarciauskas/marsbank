@@ -2,9 +2,10 @@ import { execFile } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { hookInstallPaths } from "./install-hooks";
 import type { DemoScenarioId } from "./scenarios";
 
-const lockPath = path.join(os.tmpdir(), "marsbank-agent-friendly.lock");
+const lockPath = path.join(os.tmpdir(), "marsbank-agent-guardrails.lock");
 
 export const agentLintFile = "components/demo/planted-ledger-import.tsx";
 export const agentRouteFile = "app/api/payees/route.ts";
@@ -66,7 +67,7 @@ export async function withAgentLock<T>(fn: () => Promise<T> | T): Promise<T> {
         throw error;
       }
       if (Date.now() - started > 30_000) {
-        throw new Error("Timed out waiting for the agent-friendly plant lock.");
+        throw new Error("Timed out waiting for the agent-guardrails plant lock.");
       }
       await new Promise((resolve) => setTimeout(resolve, 20));
     }
@@ -146,7 +147,7 @@ export function revertAgentScenario(id: DemoScenarioId): void {
   else if (id === "agent-route") revertAgentRoute();
 }
 
-export function revertAgentFriendly(): void {
+export function revertAgentGuardrails(): void {
   revertAgentLint();
   revertAgentVerify();
   revertAgentRoute();
@@ -230,9 +231,15 @@ function routeGuardrail(): string {
   ].join("\n");
 }
 
+function autopilotGuardrail(): string {
+  const shown = path.relative(process.cwd(), hookInstallPaths.hooksJson);
+  return `$ cat ${shown}\n${fs.readFileSync(hookInstallPaths.hooksJson, "utf8").trim()}`;
+}
+
 export async function agentGuardrail(id: DemoScenarioId): Promise<string> {
   if (id === "agent-lint") return lintGuardrail();
   if (id === "agent-verify") return verifyGuardrail();
   if (id === "agent-route") return routeGuardrail();
+  if (id === "agent-autopilot") return autopilotGuardrail();
   return "";
 }

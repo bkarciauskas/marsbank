@@ -6,6 +6,7 @@ export const demoScenarioIds = [
   "agent-lint",
   "agent-verify",
   "agent-route",
+  "agent-autopilot",
 ] as const;
 
 export type DemoScenarioId = (typeof demoScenarioIds)[number];
@@ -40,13 +41,7 @@ export function showsHookActivity(id: DemoScenarioId): boolean {
   return id === "hooks";
 }
 
-export function isAgentFriendlyScenario(
-  id: DemoScenarioId | null,
-): id is "agent-lint" | "agent-verify" | "agent-route" {
-  return id === "agent-lint" || id === "agent-verify" || id === "agent-route";
-}
-
-export const agentFriendlyScenarios: readonly DemoScenario[] = [
+export const agentGuardrailsScenarios: readonly DemoScenario[] = [
   {
     id: "agent-lint",
     title: "Lint boundary",
@@ -89,7 +84,28 @@ export const agentFriendlyScenarios: readonly DemoScenario[] = [
       },
     ],
   },
+  {
+    id: "agent-autopilot",
+    title: "Style on autopilot",
+    pitch:
+      "Setup adds an afterFileEdit hook to .cursor/hooks.json. It runs Prettier, then eslint --fix, on every file the agent edits.",
+    prompts: [
+      {
+        id: "add-feature",
+        description:
+          "The diff comes out formatted and lint-clean with no style rules in the prompt. Style lives in a hook, not in the prompt, so it is caught before CI.",
+        prompt:
+          "Add a percentOf(part, whole) helper to lib/money.ts that returns the whole-number percentage of two token amounts, with a test in lib/money.test.ts.",
+      },
+    ],
+  },
 ];
+
+export function isAgentGuardrailsScenario(
+  id: DemoScenarioId | null,
+): boolean {
+  return agentGuardrailsScenarios.some((scenario) => scenario.id === id);
+}
 
 export const demoScenarioCatalog: readonly DemoScenario[] = [
   {

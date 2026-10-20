@@ -7,12 +7,12 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { hookActivityPath } from "@/lib/demo/hook-activity";
 import { hookStampPath } from "@/lib/demo/hook-stamp";
 import {
-  demoHookScriptFiles,
-  demoHooksInstallPaths,
-  demoHooksInstalled,
-  uninstallDemoHooks,
+  hookInstallPaths,
+  hookKitInstalled,
+  hookKits,
+  uninstallAllHookKits,
 } from "@/lib/demo/install-hooks";
-import { revertAgentFriendly } from "@/lib/demo/agent-friendly";
+import { revertAgentGuardrails } from "@/lib/demo/agent-guardrails";
 import { DEMO_SCENARIO_COOKIE } from "@/lib/demo/scenarios";
 import { accountId } from "@/lib/ids";
 import { availableBalance } from "@/lib/ledger";
@@ -43,13 +43,13 @@ function post(body: unknown, cookie = "") {
 
 describe("demo route", () => {
   beforeEach(async () => {
-    uninstallDemoHooks();
+    uninstallAllHookKits();
     await getLedgerRepository().resetAll("cameron");
   });
 
   afterEach(() => {
-    revertAgentFriendly();
-    uninstallDemoHooks();
+    revertAgentGuardrails();
+    uninstallAllHookKits();
     try {
       fs.unlinkSync(hookStampPath);
     } catch {
@@ -116,11 +116,11 @@ describe("demo route", () => {
       expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("hooks");
       expect(fs.existsSync(hookStampPath)).toBe(false);
       expect(fs.existsSync(hookActivityPath)).toBe(false);
-      expect(demoHooksInstalled()).toBe(true);
-      expect(fs.existsSync(demoHooksInstallPaths.hooksJson)).toBe(true);
-      for (const file of demoHookScriptFiles) {
+      expect(hookKitInstalled("hooks")).toBe(true);
+      expect(fs.existsSync(hookInstallPaths.hooksJson)).toBe(true);
+      for (const file of hookKits.hooks.scripts) {
         expect(
-          fs.existsSync(path.join(demoHooksInstallPaths.hooksDir, file)),
+          fs.existsSync(path.join(hookInstallPaths.hooksDir, file)),
         ).toBe(true);
       }
       expect(fs.readFileSync(transferForm, "utf8")).not.toContain(
@@ -156,7 +156,7 @@ describe("demo route", () => {
 
   it("uninstalls hooks when the hooks walk is reset", async () => {
     await post({ action: "setup", scenario: "hooks" });
-    expect(demoHooksInstalled()).toBe(true);
+    expect(hookKitInstalled("hooks")).toBe(true);
 
     const response = await post(
       { action: "reset", scenario: "hooks" },
@@ -168,7 +168,7 @@ describe("demo route", () => {
       hooksInstalled: false,
       guardrail: null,
     });
-    expect(demoHooksInstalled()).toBe(false);
+    expect(hookKitInstalled("hooks")).toBe(false);
   });
 
   it("resets one walk without clearing a different staged walk", async () => {
@@ -209,6 +209,30 @@ describe("demo route", () => {
         path.join(process.cwd(), "components/demo/planted-ledger-import.tsx"),
       ),
     ).toBe(false);
+  });
+
+  it("adds the style hook beside the Cursor Hooks kit and resets only the style hook", async () => {
+    await post({ action: "setup", scenario: "hooks" });
+    const before = fs.readFileSync(hookInstallPaths.hooksJson, "utf8");
+
+    const staged = await post({ action: "setup", scenario: "agent-autopilot" });
+    const body = (await staged.json()) as {
+      active: string;
+      hooksInstalled: boolean;
+      guardrail: { output: string };
+    };
+    expect(body.active).toBe("agent-autopilot");
+    expect(body.hooksInstalled).toBe(true);
+    expect(body.guardrail.output).toContain("node .cursor/hooks/format-edit.mjs");
+    expect(hookKitInstalled("agent-autopilot")).toBe(true);
+
+    const reset = await post(
+      { action: "reset", scenario: "agent-autopilot" },
+      `${DEMO_SCENARIO_COOKIE}=agent-autopilot`,
+    );
+    expect((await reset.json()).active).toBeNull();
+    expect(hookKitInstalled("agent-autopilot")).toBe(false);
+    expect(fs.readFileSync(hookInstallPaths.hooksJson, "utf8")).toBe(before);
   });
 
   it("rejects an unknown action or walk", async () => {

@@ -10,17 +10,17 @@ import {
   plantAgentLint,
   plantAgentRoute,
   plantAgentVerify,
-  revertAgentFriendly,
+  revertAgentGuardrails,
   withAgentLock,
-} from "./agent-friendly";
+} from "./agent-guardrails";
 
 function read(relativePath: string): string {
   return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
 }
 
-describe("agent-friendly plants", () => {
+describe("agent-guardrails plants", () => {
   afterEach(() => {
-    revertAgentFriendly();
+    revertAgentGuardrails();
   });
 
   it("writes a UI ledger import that lint rejects, then deletes it", async () => {
@@ -30,7 +30,7 @@ describe("agent-friendly plants", () => {
       expect(output).toContain("useBank()");
       expect(output).toContain("@/lib/store");
       expect(fs.existsSync(path.join(process.cwd(), agentLintFile))).toBe(true);
-      revertAgentFriendly();
+      revertAgentGuardrails();
       expect(fs.existsSync(path.join(process.cwd(), agentLintFile))).toBe(false);
     });
   });
@@ -43,7 +43,7 @@ describe("agent-friendly plants", () => {
       expect(read(agentAccountsFile)).not.toContain("<h1>Token register</h1>");
       const output = await agentGuardrail("agent-verify");
       expect(output).toContain("Token register");
-      revertAgentFriendly();
+      revertAgentGuardrails();
       expect(read(agentAccountsFile)).toBe(original);
     });
   });
@@ -57,7 +57,7 @@ describe("agent-friendly plants", () => {
       expect(output).toContain("npm run lint");
       expect(output).toContain("npx tsc --noEmit");
       expect(fs.existsSync(path.join(process.cwd(), agentRouteFile))).toBe(true);
-      revertAgentFriendly();
+      revertAgentGuardrails();
       expect(fs.existsSync(path.join(process.cwd(), agentRouteFile))).toBe(false);
     });
   });
