@@ -1,11 +1,23 @@
 "use client";
 
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Download, X } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { TransactionList } from "@/components/banking/transaction-list";
+import { statementCsv, type StatementCsv } from "@/lib/statement-csv";
 import { useBank } from "@/lib/store";
+
+function saveFile(file: StatementCsv): void {
+  const url = URL.createObjectURL(
+    new Blob([file.body], { type: "text/csv;charset=utf-8" }),
+  );
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = file.filename;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 
 function ActivityRegister() {
   const { snapshot } = useBank();
@@ -25,6 +37,16 @@ function ActivityRegister() {
           <h1>Token movement</h1>
           <p className="mars-time">Mars-local ledger</p>
         </div>
+        <button
+          type="button"
+          className="desk-quiet-action"
+          disabled={transactions.length === 0}
+          onClick={() =>
+            saveFile(statementCsv({ transactions, accounts: snapshot.accounts }))
+          }
+        >
+          <Download aria-hidden="true" /> Download CSV
+        </button>
       </div>
       <section className="bank-section activity-register desk-card">
         <div className="bank-section-heading desk-card-heading">
