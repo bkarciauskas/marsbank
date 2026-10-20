@@ -34,6 +34,7 @@ describe("demo scenarios", () => {
     expect(isDemoScenario("agent-verify")).toBe(true);
     expect(isDemoScenario("agent-route")).toBe(true);
     expect(isDemoScenario("agent-autopilot")).toBe(true);
+    expect(isDemoScenario("agent-rules")).toBe(true);
     expect(isDemoScenario("pii-guard")).toBe(false);
     expect(isDemoScenario("other")).toBe(false);
     expect(scenarioFromCookie("hooks")).toBe("hooks");
@@ -53,11 +54,13 @@ describe("demo scenarios", () => {
       "agent-verify",
       "agent-route",
       "agent-autopilot",
+      "agent-rules",
     ]);
     expect(
       agentGuardrailsScenarios.every(
         (scenario) =>
-          scenario.prompts.length === 1 && !scenario.prompts[0]?.prompt.includes("\n"),
+          scenario.prompts.length > 0 &&
+          scenario.prompts.every((block) => !block.prompt.includes("\n")),
       ),
     ).toBe(true);
     expect(isAgentGuardrailsScenario("agent-verify")).toBe(true);

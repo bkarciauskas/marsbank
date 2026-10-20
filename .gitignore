@@ -16,6 +16,7 @@ coverage
 .cursor/hooks/demo-activity.jsonl
 .cursor/hooks/demo-activity.test.jsonl
 .cursor/hooks-vitest/
+.cursor/scoped-context-vitest/
 tsconfig.tsbuildinfo
 tsconfig.tsbuildinfo
 .impeccable/widths*
