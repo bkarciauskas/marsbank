@@ -91,7 +91,7 @@ const child = spawn(
       ...process.env,
       PATH: `${dirname(process.execPath)}${delimiter}${process.env.PATH ?? ""}`,
       NEXT_TELEMETRY_DISABLED: "1",
-      MARSBANK_NEXT_DIST_DIR: ".next-e2e-bell",
+      MARSBANK_NEXT_DIST_DIR: ".next-e2e",
     },
     stdio: ["ignore", "pipe", "pipe"],
     detached: true,
