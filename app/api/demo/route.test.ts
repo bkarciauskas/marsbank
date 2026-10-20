@@ -211,6 +211,30 @@ describe("demo route", () => {
     ).toBe(false);
   });
 
+  it("adds the style hook beside the Cursor Hooks kit and resets only the style hook", async () => {
+    await post({ action: "setup", scenario: "hooks" });
+    const before = fs.readFileSync(hookInstallPaths.hooksJson, "utf8");
+
+    const staged = await post({ action: "setup", scenario: "agent-autopilot" });
+    const body = (await staged.json()) as {
+      active: string;
+      hooksInstalled: boolean;
+      guardrail: { output: string };
+    };
+    expect(body.active).toBe("agent-autopilot");
+    expect(body.hooksInstalled).toBe(true);
+    expect(body.guardrail.output).toContain("node .cursor/hooks/format-edit.mjs");
+    expect(hookKitInstalled("agent-autopilot")).toBe(true);
+
+    const reset = await post(
+      { action: "reset", scenario: "agent-autopilot" },
+      `${DEMO_SCENARIO_COOKIE}=agent-autopilot`,
+    );
+    expect((await reset.json()).active).toBeNull();
+    expect(hookKitInstalled("agent-autopilot")).toBe(false);
+    expect(fs.readFileSync(hookInstallPaths.hooksJson, "utf8")).toBe(before);
+  });
+
   it("rejects an unknown action or walk", async () => {
     expect((await post({ action: "stage" })).status).toBe(400);
     expect((await post({ action: "setup", scenario: "other" })).status).toBe(

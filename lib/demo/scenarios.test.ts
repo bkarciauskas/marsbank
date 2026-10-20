@@ -33,6 +33,7 @@ describe("demo scenarios", () => {
     expect(isDemoScenario("agent-lint")).toBe(true);
     expect(isDemoScenario("agent-verify")).toBe(true);
     expect(isDemoScenario("agent-route")).toBe(true);
+    expect(isDemoScenario("agent-autopilot")).toBe(true);
     expect(isDemoScenario("pii-guard")).toBe(false);
     expect(isDemoScenario("other")).toBe(false);
     expect(scenarioFromCookie("hooks")).toBe("hooks");
@@ -51,6 +52,7 @@ describe("demo scenarios", () => {
       "agent-lint",
       "agent-verify",
       "agent-route",
+      "agent-autopilot",
     ]);
     expect(
       agentGuardrailsScenarios.every(
@@ -59,6 +61,7 @@ describe("demo scenarios", () => {
       ),
     ).toBe(true);
     expect(isAgentGuardrailsScenario("agent-verify")).toBe(true);
+    expect(isAgentGuardrailsScenario("agent-autopilot")).toBe(true);
     expect(isAgentGuardrailsScenario("hooks")).toBe(false);
   });
 });

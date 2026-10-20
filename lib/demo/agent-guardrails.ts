@@ -2,6 +2,7 @@ import { execFile } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { hookInstallPaths } from "./install-hooks";
 import type { DemoScenarioId } from "./scenarios";
 
 const lockPath = path.join(os.tmpdir(), "marsbank-agent-guardrails.lock");
@@ -230,9 +231,15 @@ function routeGuardrail(): string {
   ].join("\n");
 }
 
+function autopilotGuardrail(): string {
+  const shown = path.relative(process.cwd(), hookInstallPaths.hooksJson);
+  return `$ cat ${shown}\n${fs.readFileSync(hookInstallPaths.hooksJson, "utf8").trim()}`;
+}
+
 export async function agentGuardrail(id: DemoScenarioId): Promise<string> {
   if (id === "agent-lint") return lintGuardrail();
   if (id === "agent-verify") return verifyGuardrail();
   if (id === "agent-route") return routeGuardrail();
+  if (id === "agent-autopilot") return autopilotGuardrail();
   return "";
 }
