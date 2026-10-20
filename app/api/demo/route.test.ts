@@ -7,10 +7,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { hookActivityPath } from "@/lib/demo/hook-activity";
 import { hookStampPath } from "@/lib/demo/hook-stamp";
 import {
-  demoHookScriptFiles,
-  demoHooksInstallPaths,
-  demoHooksInstalled,
-  uninstallDemoHooks,
+  hookInstallPaths,
+  hookKitInstalled,
+  hookKits,
+  uninstallAllHookKits,
 } from "@/lib/demo/install-hooks";
 import { revertAgentGuardrails } from "@/lib/demo/agent-guardrails";
 import { DEMO_SCENARIO_COOKIE } from "@/lib/demo/scenarios";
@@ -43,13 +43,13 @@ function post(body: unknown, cookie = "") {
 
 describe("demo route", () => {
   beforeEach(async () => {
-    uninstallDemoHooks();
+    uninstallAllHookKits();
     await getLedgerRepository().resetAll("cameron");
   });
 
   afterEach(() => {
     revertAgentGuardrails();
-    uninstallDemoHooks();
+    uninstallAllHookKits();
     try {
       fs.unlinkSync(hookStampPath);
     } catch {
@@ -116,11 +116,11 @@ describe("demo route", () => {
       expect(response.cookies.get(DEMO_SCENARIO_COOKIE)?.value).toBe("hooks");
       expect(fs.existsSync(hookStampPath)).toBe(false);
       expect(fs.existsSync(hookActivityPath)).toBe(false);
-      expect(demoHooksInstalled()).toBe(true);
-      expect(fs.existsSync(demoHooksInstallPaths.hooksJson)).toBe(true);
-      for (const file of demoHookScriptFiles) {
+      expect(hookKitInstalled("hooks")).toBe(true);
+      expect(fs.existsSync(hookInstallPaths.hooksJson)).toBe(true);
+      for (const file of hookKits.hooks.scripts) {
         expect(
-          fs.existsSync(path.join(demoHooksInstallPaths.hooksDir, file)),
+          fs.existsSync(path.join(hookInstallPaths.hooksDir, file)),
         ).toBe(true);
       }
       expect(fs.readFileSync(transferForm, "utf8")).not.toContain(
@@ -156,7 +156,7 @@ describe("demo route", () => {
 
   it("uninstalls hooks when the hooks walk is reset", async () => {
     await post({ action: "setup", scenario: "hooks" });
-    expect(demoHooksInstalled()).toBe(true);
+    expect(hookKitInstalled("hooks")).toBe(true);
 
     const response = await post(
       { action: "reset", scenario: "hooks" },
@@ -168,7 +168,7 @@ describe("demo route", () => {
       hooksInstalled: false,
       guardrail: null,
     });
-    expect(demoHooksInstalled()).toBe(false);
+    expect(hookKitInstalled("hooks")).toBe(false);
   });
 
   it("resets one walk without clearing a different staged walk", async () => {

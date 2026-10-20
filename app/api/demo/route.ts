@@ -9,9 +9,11 @@ import {
 import { clearHookActivity } from "@/lib/demo/hook-activity";
 import { clearHookStamp } from "@/lib/demo/hook-stamp";
 import {
-  demoHooksInstalled,
-  installDemoHooks,
-  uninstallDemoHooks,
+  hookKitInstalled,
+  installHookKit,
+  isHookKit,
+  uninstallAllHookKits,
+  uninstallHookKit,
 } from "@/lib/demo/install-hooks";
 import { restoreDemoSources } from "@/lib/demo/restore-sources";
 import {
@@ -34,7 +36,7 @@ function demoStatus(
 ) {
   return {
     active,
-    hooksInstalled: demoHooksInstalled(),
+    hooksInstalled: hookKitInstalled("hooks"),
     guardrail,
   };
 }
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
 
   if (action === "reset-all") {
     await restoreRegisters();
-    uninstallDemoHooks();
+    uninstallAllHookKits();
     return withScenario(NextResponse.json(demoStatus(null)), null);
   }
 
@@ -105,9 +107,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Choose a demo walk." }, { status: 400 });
     }
     await restoreRegisters();
-    if (scenario === "hooks") {
-      installDemoHooks();
-    }
+    if (isHookKit(scenario)) installHookKit(scenario);
     if (isAgentGuardrailsScenario(scenario)) {
       const output = await withAgentLock(async () => {
         plantAgentScenario(scenario);
@@ -129,9 +129,7 @@ export async function POST(request: NextRequest) {
     }
     await restoreRegisters();
     revertAgentScenario(scenario);
-    if (scenario === "hooks") {
-      uninstallDemoHooks();
-    }
+    if (isHookKit(scenario)) uninstallHookKit(scenario);
     const next = activeFrom(request) === scenario ? null : activeFrom(request);
     return withScenario(NextResponse.json(demoStatus(next)), next);
   }
