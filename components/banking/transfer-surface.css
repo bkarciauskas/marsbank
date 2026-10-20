@@ -210,6 +210,33 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   font-size: var(--desk-text-figure);
 }
 
+.banking-shell .step-up-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin: -20px 0 24px;
+  padding: 14px 16px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  background: var(--desk-shade);
+  color: var(--desk-ink);
+  font-size: var(--desk-text-sm);
+  cursor: pointer;
+}
+
+.banking-shell .step-up-confirm input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--desk-ink);
+}
+
+.banking-shell .step-up-confirm small {
+  display: block;
+  margin-top: 4px;
+  color: var(--desk-ink-soft);
+}
+
 .banking-shell .transfer-success p,
 .banking-shell .transfer-loading {
   color: var(--desk-ink-soft);

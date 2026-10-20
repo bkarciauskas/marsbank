@@ -74,6 +74,46 @@ describe("transfers route", () => {
     expect(reserve?.current).toBe(2_002_460_000);
   });
 
+  it("enforces step-up and the per-sol PayID limit on the server", async () => {
+    const send = (requestId: string, amount: number, stepUpConfirmed?: boolean) =>
+      POST(
+        request({
+          requestId,
+          kind: "payid",
+          from: "acc-everyday",
+          amount,
+          description: "",
+          payee: {
+            scheme: "cursor",
+            id: "@cursor",
+            displayName: "Cursor",
+            institution: "Cursor",
+          },
+          ...(stepUpConfirmed === undefined ? {} : { stepUpConfirmed }),
+        }),
+      );
+
+    const unconfirmed = await send("route-step-up-001", 200_000);
+    expect(unconfirmed.status).toBe(409);
+    expect(await unconfirmed.json()).toEqual({ kind: "step-up-required" });
+
+    const spoofed = await send("route-step-up-002", 200_000, "yes" as never);
+    expect(await spoofed.json()).toEqual({ kind: "step-up-required" });
+
+    expect((await send("route-step-up-003", 200_000, true)).status).toBe(200);
+
+    const overLimit = await send("route-limit-001", 50_001, true);
+    expect(overLimit.status).toBe(409);
+    expect(await overLimit.json()).toEqual({ kind: "sol-limit" });
+
+    const aaron = await getLedgerRepository().getRegister("aaron");
+    expect(
+      aaron.transactions
+        .filter((transaction) => transaction.payee && transaction.direction === "debit")
+        .map((transaction) => transaction.amount),
+    ).toEqual([200_000]);
+  });
+
   it("rejects malformed and unauthenticated transfers", async () => {
     expect((await POST(request({ kind: "payid" }))).status).toBe(400);
     expect(

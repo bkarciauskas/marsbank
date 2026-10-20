@@ -62,12 +62,12 @@ const scenario = {
       repository.transfer(
         "aaron",
         "concurrent-request-1",
-        sendToBen(600_000_000),
+        moveToReserve(600_000_000),
       ),
       repository.transfer(
         "aaron",
         "concurrent-request-2",
-        sendToBen(600_000_000),
+        moveToReserve(600_000_000),
       ),
     ]);
 

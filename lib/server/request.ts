@@ -91,6 +91,7 @@ export function parseTransfer(value: unknown): ParsedTransfer | undefined {
           amount,
           description: value.description,
           payee,
+          stepUpConfirmed: value.stepUpConfirmed === true,
         },
       },
     };

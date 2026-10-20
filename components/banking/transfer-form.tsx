@@ -5,7 +5,13 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import type { ResolvedPayId } from "@/lib/domain";
 import type { AccountId } from "@/lib/ids";
-import { availableBalance } from "@/lib/ledger";
+import {
+  availableBalance,
+  needsStepUp,
+  SOL_SEND_LIMIT,
+  solSendRemaining,
+  STEP_UP_THRESHOLD,
+} from "@/lib/ledger";
 import { formatTokens, parseTokenInput, type TokenAmount } from "@/lib/money";
 import { lookupPayId, payIdLabel, suggestedPayIds } from "@/lib/payid";
 import { useBank } from "@/lib/store";
@@ -39,6 +45,7 @@ type TransferState =
       payee: ResolvedPayId;
       amount: TokenAmount;
       description: string;
+      stepUpConfirmed: boolean;
     }
   | {
       step: "posted";
@@ -64,6 +71,8 @@ const errorMessages = {
   "loan-not-source": "Choose a token account. A habitat loan cannot send funds.",
   "invalid-payid": "Enter a valid Cursor identity or PayID.",
   "own-payid": "That identity points back to your own Mars Bank profile.",
+  "sol-limit": `That send passes your ${formatTokens(SOL_SEND_LIMIT)} PayID limit for this sol. Lower the amount or send next sol.`,
+  "step-up-required": `Confirm the send on the review step. Sends above ${formatTokens(STEP_UP_THRESHOLD)} need it.`,
   network: "The shared register could not be reached. Try sending again.",
 } as const;
 
@@ -123,6 +132,10 @@ export function TransferForm() {
         setState({ ...state, issue: errorMessages["own-payid"] });
         return;
       }
+      if (amount > solSendRemaining(snapshot, new Date())) {
+        setState({ ...state, issue: errorMessages["sol-limit"] });
+        return;
+      }
       setState({
         step: "review",
         destination: "payid",
@@ -130,6 +143,7 @@ export function TransferForm() {
         payee: lookup.payee,
         amount,
         description: state.description,
+        stepUpConfirmed: false,
       });
       return;
     }
@@ -158,6 +172,7 @@ export function TransferForm() {
             amount: state.amount,
             description: state.description,
             payee: state.payee,
+            stepUpConfirmed: state.stepUpConfirmed,
           })
         : await transfer({
             from: state.from,
@@ -235,6 +250,8 @@ export function TransferForm() {
   }
 
   if (state.step === "review") {
+    const stepUp =
+      state.destination === "payid" && needsStepUp(state.amount) ? state : null;
     return (
       <div className="transfer-review">
         <div className="transfer-route">
@@ -266,6 +283,26 @@ export function TransferForm() {
           <strong>{formatTokens(state.amount)}</strong>
           {state.description ? <p>{state.description}</p> : null}
         </div>
+        {stepUp ? (
+          <label className="step-up-confirm" htmlFor="transfer-step-up">
+            <input
+              checked={stepUp.stepUpConfirmed}
+              disabled={submitting}
+              id="transfer-step-up"
+              onChange={(event) =>
+                setState({ ...stepUp, stepUpConfirmed: event.target.checked })
+              }
+              type="checkbox"
+            />
+            <span>
+              I confirm sending {formatTokens(stepUp.amount)} to{" "}
+              {stepUp.payee.displayName}.
+              <small>
+                Sends above {formatTokens(STEP_UP_THRESHOLD)} need this check.
+              </small>
+            </span>
+          </label>
+        ) : null}
         <div className="review-actions">
           <button
             className="secondary-action"
@@ -287,7 +324,7 @@ export function TransferForm() {
           </button>
           <button
             className="primary-action"
-            disabled={submitting}
+            disabled={submitting || (stepUp !== null && !stepUp.stepUpConfirmed)}
             onClick={() => void post()}
             type="button"
           >

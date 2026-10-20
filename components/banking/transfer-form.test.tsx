@@ -59,4 +59,60 @@ describe("TransferForm", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  function reviewPayId(amount: string) {
+    fireEvent.change(screen.getByPlaceholderText("@name or name@domain"), {
+      target: { value: "@cursor" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("0"), {
+      target: { value: amount },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Review route" }));
+  }
+
+  it("holds a large PayID send until the step-up box is checked", async () => {
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    reviewPayId("60000");
+    const send = screen.getByRole("button", { name: "Send tokens" });
+    expect(send).toBeDisabled();
+    fireEvent.click(
+      screen.getByRole("checkbox", {
+        name: /I confirm sending 60,000 tokens to Cursor/,
+      }),
+    );
+    expect(send).toBeEnabled();
+    fireEvent.click(send);
+    expect(await screen.findByText("Tokens dispatched")).toBeInTheDocument();
+  });
+
+  it("shows no step-up box at the threshold", () => {
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    reviewPayId("50000");
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Send tokens" })).toBeEnabled();
+  });
+
+  it("stops a PayID send above the per-sol limit before review", () => {
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    reviewPayId("250001");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "That send passes your 250,000 tokens PayID limit for this sol.",
+    );
+    expect(screen.getByRole("button", { name: "Review route" })).toBeInTheDocument();
+  });
 });
