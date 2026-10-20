@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import type { DemoScenarioId } from "./scenarios";
 
-const lockPath = path.join(os.tmpdir(), "marsbank-agent-friendly.lock");
+const lockPath = path.join(os.tmpdir(), "marsbank-agent-guardrails.lock");
 
 export const agentLintFile = "components/demo/planted-ledger-import.tsx";
 export const agentRouteFile = "app/api/payees/route.ts";
@@ -66,7 +66,7 @@ export async function withAgentLock<T>(fn: () => Promise<T> | T): Promise<T> {
         throw error;
       }
       if (Date.now() - started > 30_000) {
-        throw new Error("Timed out waiting for the agent-friendly plant lock.");
+        throw new Error("Timed out waiting for the agent-guardrails plant lock.");
       }
       await new Promise((resolve) => setTimeout(resolve, 20));
     }
@@ -146,7 +146,7 @@ export function revertAgentScenario(id: DemoScenarioId): void {
   else if (id === "agent-route") revertAgentRoute();
 }
 
-export function revertAgentFriendly(): void {
+export function revertAgentGuardrails(): void {
   revertAgentLint();
   revertAgentVerify();
   revertAgentRoute();

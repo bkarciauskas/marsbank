@@ -31,7 +31,7 @@ describe("DemoPage", () => {
       screen.getByRole("tab", { name: /Cursor Debug Mode/ }),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("tab", { name: "Agent-friendly" }),
+      screen.getByRole("tab", { name: "Agent Guardrails" }),
     ).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /PII & secrets/ })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reset all" })).toBeInTheDocument();

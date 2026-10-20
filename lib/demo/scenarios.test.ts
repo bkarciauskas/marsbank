@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  agentFriendlyScenarios,
+  agentGuardrailsScenarios,
   demoScenarioCatalog,
-  isAgentFriendlyScenario,
+  isAgentGuardrailsScenario,
   isDemoScenario,
   scenarioFromCookie,
   showsHookActivity,
@@ -46,19 +46,19 @@ describe("demo scenarios", () => {
     expect(showsHookActivity("agent-lint")).toBe(false);
   });
 
-  it("keeps the agent-friendly walks on their own tab", () => {
-    expect(agentFriendlyScenarios.map((scenario) => scenario.id)).toEqual([
+  it("keeps the Agent Guardrails walks on their own tab", () => {
+    expect(agentGuardrailsScenarios.map((scenario) => scenario.id)).toEqual([
       "agent-lint",
       "agent-verify",
       "agent-route",
     ]);
     expect(
-      agentFriendlyScenarios.every(
+      agentGuardrailsScenarios.every(
         (scenario) =>
           scenario.prompts.length === 1 && !scenario.prompts[0]?.prompt.includes("\n"),
       ),
     ).toBe(true);
-    expect(isAgentFriendlyScenario("agent-verify")).toBe(true);
-    expect(isAgentFriendlyScenario("hooks")).toBe(false);
+    expect(isAgentGuardrailsScenario("agent-verify")).toBe(true);
+    expect(isAgentGuardrailsScenario("hooks")).toBe(false);
   });
 });

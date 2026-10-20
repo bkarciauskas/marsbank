@@ -4,9 +4,9 @@ import { Check, Copy, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import type { HookActivityEntry } from "@/lib/demo/hook-activity";
 import {
-  agentFriendlyScenarios,
+  agentGuardrailsScenarios,
   demoScenarioCatalog,
-  isAgentFriendlyScenario,
+  isAgentGuardrailsScenario,
   isDemoScenario,
   showsHookActivity,
   type DemoScenario,
@@ -35,10 +35,10 @@ type DemoStatus = {
   guardrail?: DemoGuardrail | null;
 };
 
-type ConsoleTab = "hooks" | "debug-mode" | "agent-friendly";
+type ConsoleTab = "hooks" | "debug-mode" | "agent-guardrails";
 
 function consoleTab(active: DemoScenarioId | null): ConsoleTab {
-  if (isAgentFriendlyScenario(active)) return "agent-friendly";
+  if (isAgentGuardrailsScenario(active)) return "agent-guardrails";
   if (active === "debug-mode") return "debug-mode";
   return "hooks";
 }
@@ -219,7 +219,7 @@ export function DemoConsole() {
     }, 1600);
   }
 
-  const selected = tab === "agent-friendly" ? null : scenarioForTab(tab);
+  const selected = tab === "agent-guardrails" ? null : scenarioForTab(tab);
 
   return (
     <div className="demo-console">
@@ -231,7 +231,7 @@ export function DemoConsole() {
             Each demo has its own tab. On Hooks, Setup copies the kit from{" "}
             <code>demo/cursor-hooks</code> into <code>.cursor</code>; Reset
             removes those installed files. Reload Cursor after Setup or Reset so
-            hook changes take effect. Agent-friendly Setup plants a lint break, a
+            hook changes take effect. Agent Guardrails Setup plants a lint break, a
             heading change, or a stub route, and Reset removes that plant. Reset
             also restores transfer-form sources, the ledger, and the activity log.
           </p>
@@ -277,27 +277,27 @@ export function DemoConsole() {
           );
         })}
         <button
-          aria-controls="demo-panel-agent-friendly"
-          aria-selected={tab === "agent-friendly"}
+          aria-controls="demo-panel-agent-guardrails"
+          aria-selected={tab === "agent-guardrails"}
           className={
-            tab === "agent-friendly" ? "demo-tab demo-tab-selected" : "demo-tab"
+            tab === "agent-guardrails" ? "demo-tab demo-tab-selected" : "demo-tab"
           }
-          id="demo-tab-agent-friendly"
-          onClick={() => setTab("agent-friendly")}
+          id="demo-tab-agent-guardrails"
+          onClick={() => setTab("agent-guardrails")}
           role="tab"
           type="button"
         >
-          Agent-friendly
-          {isAgentFriendlyScenario(active) ? <span>Staged</span> : null}
+          Agent Guardrails
+          {isAgentGuardrailsScenario(active) ? <span>Staged</span> : null}
         </button>
       </div>
-      {tab === "agent-friendly" ? (
+      {tab === "agent-guardrails" ? (
         <div
           className="demo-agent-stack"
-          id="demo-panel-agent-friendly"
+          id="demo-panel-agent-guardrails"
           role="tabpanel"
         >
-          {agentFriendlyScenarios.map((scenario) => (
+          {agentGuardrailsScenarios.map((scenario) => (
             <ScenarioPanel
               asTabPanel={false}
               busy={busy}
@@ -374,7 +374,7 @@ function ScenarioPanel({
   return (
     <section
       aria-labelledby={
-        asTabPanel ? `demo-tab-${scenario.id}` : `demo-tab-agent-friendly`
+        asTabPanel ? `demo-tab-${scenario.id}` : `demo-tab-agent-guardrails`
       }
       className={staged ? "demo-walk demo-walk-staged" : "demo-walk"}
       data-scenario={scenario.id}

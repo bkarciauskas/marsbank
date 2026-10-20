@@ -40,13 +40,13 @@ export function showsHookActivity(id: DemoScenarioId): boolean {
   return id === "hooks";
 }
 
-export function isAgentFriendlyScenario(
+export function isAgentGuardrailsScenario(
   id: DemoScenarioId | null,
 ): id is "agent-lint" | "agent-verify" | "agent-route" {
   return id === "agent-lint" || id === "agent-verify" || id === "agent-route";
 }
 
-export const agentFriendlyScenarios: readonly DemoScenario[] = [
+export const agentGuardrailsScenarios: readonly DemoScenario[] = [
   {
     id: "agent-lint",
     title: "Lint boundary",

@@ -12,7 +12,7 @@ import {
   demoHooksInstalled,
   uninstallDemoHooks,
 } from "@/lib/demo/install-hooks";
-import { revertAgentFriendly } from "@/lib/demo/agent-friendly";
+import { revertAgentGuardrails } from "@/lib/demo/agent-guardrails";
 import { DEMO_SCENARIO_COOKIE } from "@/lib/demo/scenarios";
 import { accountId } from "@/lib/ids";
 import { availableBalance } from "@/lib/ledger";
@@ -48,7 +48,7 @@ describe("demo route", () => {
   });
 
   afterEach(() => {
-    revertAgentFriendly();
+    revertAgentGuardrails();
     uninstallDemoHooks();
     try {
       fs.unlinkSync(hookStampPath);

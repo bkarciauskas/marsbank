@@ -2,10 +2,10 @@ import { type NextRequest, NextResponse } from "next/server";
 import {
   agentGuardrail,
   plantAgentScenario,
-  revertAgentFriendly,
+  revertAgentGuardrails,
   revertAgentScenario,
   withAgentLock,
-} from "@/lib/demo/agent-friendly";
+} from "@/lib/demo/agent-guardrails";
 import { clearHookActivity } from "@/lib/demo/hook-activity";
 import { clearHookStamp } from "@/lib/demo/hook-stamp";
 import {
@@ -16,7 +16,7 @@ import {
 import { restoreDemoSources } from "@/lib/demo/restore-sources";
 import {
   DEMO_SCENARIO_COOKIE,
-  isAgentFriendlyScenario,
+  isAgentGuardrailsScenario,
   isDemoScenario,
   scenarioFromCookie,
   type DemoScenarioId,
@@ -70,7 +70,7 @@ async function restoreRegisters(): Promise<void> {
   clearHookActivity();
   restoreDemoSources();
   await withAgentLock(() => {
-    revertAgentFriendly();
+    revertAgentGuardrails();
   });
   await getLedgerRepository().resetAll(defaultDemoResident.slug);
 }
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
     if (scenario === "hooks") {
       installDemoHooks();
     }
-    if (isAgentFriendlyScenario(scenario)) {
+    if (isAgentGuardrailsScenario(scenario)) {
       const output = await withAgentLock(async () => {
         plantAgentScenario(scenario);
         return agentGuardrail(scenario);
