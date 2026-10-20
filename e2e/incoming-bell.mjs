@@ -131,6 +131,7 @@ try {
   await signIn(recipient, "ben", "Ben");
   const quietBell = recipient.getByRole("button", { name: "Notifications", exact: true });
   await quietBell.waitFor();
+  await recipient.waitForLoadState("networkidle");
   await shot(recipient, "01-bell-before.png");
 
   await signIn(sender, "aaron", "Aaron");
