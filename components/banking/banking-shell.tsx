@@ -2,7 +2,6 @@
 
 import {
   ArrowLeftRight,
-  Bell,
   ChartNoAxesColumn,
   CreditCard,
   House,
@@ -17,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { type FormEvent, type ReactNode, useState } from "react";
 import { MarsMark } from "@/components/brand/wordmark";
 import { useBank } from "@/lib/store";
+import { IncomingBell } from "./incoming-bell";
 
 const nav = [
   { href: "/banking", label: "Position", icon: House, onTabBar: true },
@@ -98,13 +98,7 @@ export function BankingShell({ children }: { children: ReactNode }) {
           <Link className="desk-demo-flag" href="/demo">
             Demo data
           </Link>
-          <Link
-            aria-label="Notifications"
-            className="desk-icon-button"
-            href="/banking/settings"
-          >
-            <Bell />
-          </Link>
+          <IncomingBell />
           <Link
             aria-current={
               pathname.startsWith("/banking/settings") ? "page" : undefined

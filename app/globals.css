@@ -3168,6 +3168,123 @@ a.desk-demo-flag:focus-visible {
   background: var(--desk-chrome-hover);
 }
 
+.desk-bell {
+  position: relative;
+}
+
+.desk-bell .desk-icon-button {
+  position: relative;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.desk-bell .desk-icon-button:hover,
+.desk-bell .desk-icon-button[aria-expanded="true"] {
+  background: var(--desk-chrome-hover);
+}
+
+.banking-shell .desk-bell-count {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  display: grid;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 9px;
+  padding: 0 4px;
+  background: var(--oxide);
+  color: var(--desk-sheet);
+  font-size: var(--desk-text-micro);
+  font-weight: 700;
+  line-height: 1;
+  place-items: center;
+}
+
+.desk-bell-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 340px;
+  max-height: 420px;
+  overflow-y: auto;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: var(--desk-radius);
+  background: var(--desk-sheet);
+  box-shadow: 0 12px 32px rgb(16 21 24 / 18%);
+  color: var(--desk-ink);
+}
+
+.desk-bell-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--desk-rule);
+  padding: 12px 14px;
+}
+
+.desk-bell-panel h2 {
+  margin: 0;
+  font-size: var(--desk-text-md);
+  font-weight: 600;
+}
+
+.desk-bell-panel header button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--oxide-dark);
+  cursor: pointer;
+  font-size: var(--desk-text-sm);
+  font-weight: 600;
+}
+
+.desk-bell-panel header button:disabled {
+  color: var(--desk-ink-faint);
+  cursor: default;
+}
+
+.desk-bell-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desk-bell-panel li {
+  display: grid;
+  gap: 3px;
+  border-bottom: 1px solid var(--desk-rule);
+  border-left: 3px solid transparent;
+  padding: 10px 14px 10px 11px;
+}
+
+.desk-bell-panel li:last-child {
+  border-bottom: 0;
+}
+
+.desk-bell-panel li.unread {
+  border-left-color: var(--oxide);
+  background: var(--desk-shade);
+}
+
+.desk-bell-panel li strong {
+  font-size: var(--desk-text-base);
+  font-weight: 600;
+}
+
+.desk-bell-panel li small,
+.desk-bell-empty {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.desk-bell-empty {
+  margin: 0;
+  padding: 16px 14px;
+}
+
 .banking-shell .customer-avatar {
   width: 28px;
   height: 28px;
