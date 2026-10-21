@@ -11,6 +11,46 @@ import type { AccountId, CardId } from "./ids";
 import { txnId } from "./ids";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
+import { solIndex } from "./sol";
+
+/**
+ * Risk controls on PayID sends. Only PayID sends leave the resident's register;
+ * moves between a resident's own accounts are not limited.
+ *
+ * - SOL_SEND_LIMIT: 250,000 tokens of PayID sends per sol, about five of the
+ *   seeded 48,000-token payrolls. Everyday sends fit; a hijacked session cannot
+ *   drain a billion-token register in one sol.
+ * - STEP_UP_THRESHOLD: a send above 50,000 tokens (about one payroll) needs an
+ *   explicit confirmation on the review step. The ledger rejects it without one.
+ *
+ * A sol is one earth-day rolling over at 00:00 UTC (`solIndex` in lib/sol.ts).
+ */
+export const SOL_SEND_LIMIT = tokens(250_000);
+export const STEP_UP_THRESHOLD = tokens(50_000);
+
+export function needsStepUp(amount: TokenAmount): boolean {
+  return amount > STEP_UP_THRESHOLD;
+}
+
+export function sentThisSol(snapshot: BankSnapshot, now: Date): TokenAmount {
+  const sol = solIndex(now.getTime());
+  return snapshot.transactions.reduce(
+    (total, transaction) =>
+      transaction.direction === "debit" &&
+      transaction.payee &&
+      solIndex(Date.parse(transaction.postedOn)) === sol
+        ? addTokens(total, transaction.amount)
+        : total,
+    tokens(0),
+  );
+}
+
+export function solSendRemaining(
+  snapshot: BankSnapshot,
+  now: Date,
+): TokenAmount {
+  return tokens(Math.max(0, SOL_SEND_LIMIT - sentThisSol(snapshot, now)));
+}
 
 export type RegisterPosition = {
   onHand: TokenAmount;
@@ -188,6 +228,12 @@ export function applyPayIdTransfer(
   const source = snapshot.accounts.find((account) => account.id === command.from);
   if (!source) return { kind: "unknown-account" };
   if (source.kind === "loan") return { kind: "loan-not-source" };
+  if (command.amount > solSendRemaining(snapshot, now)) {
+    return { kind: "sol-limit" };
+  }
+  if (needsStepUp(command.amount) && !command.stepUpConfirmed) {
+    return { kind: "step-up-required" };
+  }
 
   const debited = debit(source, command.amount);
   if (!debited) {

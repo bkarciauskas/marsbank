@@ -84,6 +84,8 @@ export type TransferFailure =
   | { kind: "loan-not-source" }
   | { kind: "invalid-payid" }
   | { kind: "own-payid" }
+  | { kind: "sol-limit" }
+  | { kind: "step-up-required" }
   | { kind: "network" };
 
 export type TransferCommand = {
@@ -98,6 +100,7 @@ export type PayIdTransferCommand = {
   amount: TokenAmount;
   description: string;
   payee: ResolvedPayId;
+  stepUpConfirmed?: boolean;
 };
 
 export type HostedTransferCommand =

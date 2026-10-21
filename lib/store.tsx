@@ -54,23 +54,24 @@ function registerFromPayload(value: unknown): BankSnapshot | undefined {
     : undefined;
 }
 
+const transferFailureKinds: Record<TransferFailure["kind"], true> = {
+  "same-account": true,
+  "unknown-account": true,
+  "amount-not-positive": true,
+  "insufficient-funds": true,
+  "credit-limit": true,
+  "loan-not-source": true,
+  "invalid-payid": true,
+  "own-payid": true,
+  "sol-limit": true,
+  "step-up-required": true,
+  network: true,
+};
+
 function isTransferFailureKind(
   value: unknown,
 ): value is TransferFailure["kind"] {
-  switch (value) {
-    case "same-account":
-    case "unknown-account":
-    case "amount-not-positive":
-    case "insufficient-funds":
-    case "credit-limit":
-    case "loan-not-source":
-    case "invalid-payid":
-    case "own-payid":
-    case "network":
-      return true;
-    default:
-      return false;
-  }
+  return typeof value === "string" && Object.hasOwn(transferFailureKinds, value);
 }
 
 function transferFromPayload(value: unknown): TransferResult | undefined {

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { BankSnapshot, TransferResult } from "./domain";
 import { DEMO_CREDIT_LIMIT, seedSnapshot } from "./fixtures";
 import { accountId, cardId } from "./ids";
 import {
@@ -6,10 +7,15 @@ import {
   applyTransfer,
   availableBalance,
   displayBalance,
+  needsStepUp,
   registerPosition,
   offsetAccounts,
   offsetTotal,
+  sentThisSol,
   setCardStatus,
+  SOL_SEND_LIMIT,
+  solSendRemaining,
+  STEP_UP_THRESHOLD,
 } from "./ledger";
 import { tokens } from "./money";
 
@@ -194,5 +200,114 @@ describe("Mars Bank ledger", () => {
         (transaction) => transaction.postedOn === "2026-08-26T10:00:00.000Z",
       ),
     ).toHaveLength(1);
+  });
+});
+
+describe("PayID send limits", () => {
+  const morning = new Date("2026-08-26T08:00:00.000Z");
+
+  function sendToCursor(
+    snapshot: BankSnapshot,
+    amount: number,
+    now: Date,
+    stepUpConfirmed = true,
+  ): TransferResult {
+    return applyPayIdTransfer(
+      snapshot,
+      {
+        from: accountId("acc-everyday"),
+        amount: tokens(amount),
+        description: "",
+        payee: {
+          scheme: "cursor",
+          id: "@cursor",
+          displayName: "Cursor",
+          institution: "Cursor",
+        },
+        stepUpConfirmed,
+      },
+      now,
+    );
+  }
+
+  function posted(result: TransferResult): BankSnapshot {
+    if (result.kind !== "ok") throw new Error(`expected ok, got ${result.kind}`);
+    return result.snapshot;
+  }
+
+  it("rejects a send that passes the per-sol limit and leaves the register alone", () => {
+    const afterFirst = posted(
+      sendToCursor(structuredClone(seedSnapshot), 200_000, morning),
+    );
+
+    expect(sendToCursor(afterFirst, 50_001, morning)).toEqual({
+      kind: "sol-limit",
+    });
+    expect(sentThisSol(afterFirst, morning)).toBe(200_000);
+    expect(solSendRemaining(afterFirst, morning)).toBe(50_000);
+  });
+
+  it("allows a send that lands exactly on the limit, then nothing more", () => {
+    const afterFirst = posted(
+      sendToCursor(structuredClone(seedSnapshot), 200_000, morning),
+    );
+    const atLimit = posted(sendToCursor(afterFirst, 50_000, morning));
+
+    expect(sentThisSol(atLimit, morning)).toBe(SOL_SEND_LIMIT);
+    expect(sendToCursor(atLimit, 1, morning)).toEqual({ kind: "sol-limit" });
+    expect(
+      sendToCursor(structuredClone(seedSnapshot), SOL_SEND_LIMIT, morning).kind,
+    ).toBe("ok");
+    expect(
+      sendToCursor(structuredClone(seedSnapshot), SOL_SEND_LIMIT + 1, morning),
+    ).toEqual({ kind: "sol-limit" });
+  });
+
+  it("requires step-up confirmation above the threshold", () => {
+    const seed = structuredClone(seedSnapshot);
+
+    expect(sendToCursor(seed, STEP_UP_THRESHOLD + 1, morning, false)).toEqual({
+      kind: "step-up-required",
+    });
+    expect(sendToCursor(seed, STEP_UP_THRESHOLD + 1, morning, true).kind).toBe(
+      "ok",
+    );
+  });
+
+  it("skips step-up at or below the threshold", () => {
+    const seed = structuredClone(seedSnapshot);
+
+    expect(needsStepUp(STEP_UP_THRESHOLD)).toBe(false);
+    expect(sendToCursor(seed, STEP_UP_THRESHOLD, morning, false).kind).toBe(
+      "ok",
+    );
+    expect(sendToCursor(seed, 2_500, morning, false).kind).toBe("ok");
+  });
+
+  it("resets the limit when the sol rolls over at 00:00 UTC", () => {
+    const lastSecond = new Date("2026-08-26T23:59:59.000Z");
+    const nextSol = new Date("2026-08-27T00:00:00.000Z");
+    const spent = posted(
+      sendToCursor(structuredClone(seedSnapshot), SOL_SEND_LIMIT, lastSecond),
+    );
+
+    expect(sendToCursor(spent, 1, lastSecond)).toEqual({ kind: "sol-limit" });
+    expect(sentThisSol(spent, nextSol)).toBe(0);
+    expect(sendToCursor(spent, SOL_SEND_LIMIT, nextSol).kind).toBe("ok");
+  });
+
+  it("does not limit or count moves between the resident's own accounts", () => {
+    const moved = applyTransfer(
+      structuredClone(seedSnapshot),
+      {
+        from: accountId("acc-everyday"),
+        to: accountId("acc-reserve"),
+        amount: tokens(600_000_000),
+        description: "",
+      },
+      morning,
+    );
+
+    expect(sentThisSol(posted(moved), morning)).toBe(0);
   });
 });
