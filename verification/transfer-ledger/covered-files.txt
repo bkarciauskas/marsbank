@@ -1,0 +1,13 @@
+# Files TransferLedger.tla and step-contract.test.ts describe. check.sh --drift
+# diffs these against sync-commit. Functions per file are listed in
+# .cursor/skills/transfer-ledger-verification/SKILL.md.
+lib/ledger.ts
+lib/shared-ledger.ts
+lib/money.ts
+lib/domain.ts
+lib/server/ledger-repository.ts
+lib/server/request.ts
+app/api/transfers/route.ts
+lib/store.tsx
+components/banking/transfer-form.tsx
+migrations/001_shared_registers.sql
