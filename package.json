@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:e2e": "node e2e/sign-in.mjs && node e2e/incoming-bell.mjs"
+    "test:e2e": "node e2e/sign-in.mjs && node e2e/incoming-bell.mjs",
+    "verify:transfer-ledger": "bash verification/transfer-ledger/check.sh"
   },
   "repository": {
     "type": "git",
