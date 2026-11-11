@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { lookupPayId } from "./payid";
+import {
+  lookupPayId,
+  lookupResidentPayId,
+  suggestedResidentHandles,
+} from "./payid";
 
 describe("PayID lookup", () => {
   it("resolves known Cursor and PayID aliases", () => {
@@ -41,5 +45,58 @@ describe("PayID lookup", () => {
       kind: "ok",
       payee: { displayName: "Cameron" },
     });
+  });
+
+  it("resolves another Mars Bank resident by PayID or @slug for payment requests", () => {
+    expect(
+      lookupResidentPayId("ben@marsbank.mars", "aaron@marsbank.mars"),
+    ).toMatchObject({
+      kind: "ok",
+      resident: { slug: "ben", email: "ben@marsbank.mars" },
+      payee: {
+        scheme: "payid",
+        id: "ben@marsbank.mars",
+        displayName: "Ben",
+        institution: "Mars Bank",
+      },
+    });
+    expect(lookupResidentPayId("@ben", "aaron@marsbank.mars")).toMatchObject({
+      kind: "ok",
+      resident: { slug: "ben" },
+    });
+    expect(lookupResidentPayId("BEN", "aaron@marsbank.mars")).toMatchObject({
+      kind: "ok",
+      resident: { slug: "ben" },
+    });
+  });
+
+  it("rejects self, external non-resident handles, and malformed targets for payment requests", () => {
+    expect(
+      lookupResidentPayId("aaron@marsbank.mars", "aaron@marsbank.mars"),
+    ).toEqual({ kind: "own" });
+    expect(lookupResidentPayId("@aaron", "aaron@marsbank.mars")).toEqual({
+      kind: "own",
+    });
+    expect(lookupResidentPayId("@cursor", "aaron@marsbank.mars")).toEqual({
+      kind: "unknown-resident",
+    });
+    expect(
+      lookupResidentPayId("outsider@earth.org", "aaron@marsbank.mars"),
+    ).toEqual({
+      kind: "unknown-resident",
+    });
+    expect(lookupResidentPayId("", "aaron@marsbank.mars")).toEqual({
+      kind: "invalid",
+    });
+    expect(lookupResidentPayId("???", "aaron@marsbank.mars")).toEqual({
+      kind: "invalid",
+    });
+  });
+
+  it("suggests handles for the five other Mars Bank residents", () => {
+    const handles = suggestedResidentHandles("aaron@marsbank.mars");
+    expect(handles).toHaveLength(5);
+    expect(handles.some((entry) => entry.slug === "aaron")).toBe(false);
+    expect(handles.some((entry) => entry.handle === "@ben")).toBe(true);
   });
 });

@@ -2,17 +2,28 @@ import postgres from "postgres";
 import type {
   BankSnapshot,
   CardStatus,
+  HostedPaymentRequestCommand,
   HostedTransferCommand,
+  PaymentRequestResult,
   TransferResult,
 } from "../domain";
 import {
   demoResidentBySlug,
   demoResidents,
+  type DemoResident,
   seedSnapshotForSlug,
 } from "../fixtures";
-import type { CardId } from "../ids";
+import { paymentRequestId, type CardId } from "../ids";
 import { setCardStatus } from "../ledger";
-import { applySharedTransfer } from "../shared-ledger";
+import { lookupResidentPayId } from "../payid";
+import {
+  applyApprovePaymentRequest,
+  applyCancelPaymentRequest,
+  applyCreatePaymentRequest,
+  applyDeclinePaymentRequest,
+  applySharedTransfer,
+  type SharedPaymentRequestResult,
+} from "../shared-ledger";
 
 export type TransferOptions = {
   holdReserve?: boolean;
@@ -26,6 +37,11 @@ export type LedgerRepository = {
     command: HostedTransferCommand,
     options?: TransferOptions,
   ) => Promise<TransferResult>;
+  paymentRequest: (
+    slug: string,
+    command: HostedPaymentRequestCommand,
+    options?: TransferOptions,
+  ) => Promise<PaymentRequestResult>;
   updateCardStatus: (
     slug: string,
     cardId: CardId,
@@ -54,6 +70,85 @@ function recipientSlug(
     (resident) =>
       resident.slug !== senderSlug && resident.email.toLowerCase() === payeeId,
   )?.slug;
+}
+
+function normalizeSnapshot(snapshot: BankSnapshot): BankSnapshot {
+  return Array.isArray(snapshot.paymentRequests)
+    ? snapshot
+    : { ...snapshot, paymentRequests: [] };
+}
+
+function counterpartySlugForAction(
+  actorSnapshot: BankSnapshot,
+  slug: string,
+  command: Exclude<HostedPaymentRequestCommand, { action: "create" }>,
+): string | undefined {
+  const existing = (actorSnapshot.paymentRequests ?? []).find(
+    (entry) => entry.id === command.command.paymentRequestId,
+  );
+  if (!existing) return undefined;
+  if (command.action === "cancel") {
+    return existing.requesterSlug === slug ? existing.payerSlug : undefined;
+  }
+  return existing.payerSlug === slug ? existing.requesterSlug : undefined;
+}
+
+function executePaymentRequestStep({
+  actor,
+  actorResident,
+  command,
+  counterparty,
+  counterpartyResident,
+  holdReserve,
+  now,
+}: {
+  actor: BankSnapshot;
+  actorResident: DemoResident;
+  command: HostedPaymentRequestCommand;
+  counterparty: BankSnapshot;
+  counterpartyResident: DemoResident;
+  holdReserve?: boolean;
+  now: Date;
+}): SharedPaymentRequestResult {
+  switch (command.action) {
+    case "create":
+      return applyCreatePaymentRequest({
+        amount: command.command.amount,
+        description: command.command.description,
+        id: paymentRequestId(`pr-${crypto.randomUUID()}`),
+        now,
+        payer: counterparty,
+        payerResident: counterpartyResident,
+        requester: actor,
+        requesterResident: actorResident,
+      });
+    case "approve":
+      return applyApprovePaymentRequest({
+        command: command.command,
+        holdReserve,
+        now,
+        payer: actor,
+        payerSlug: actorResident.slug,
+        requester: counterparty,
+        requesterResident: counterpartyResident,
+      });
+    case "decline":
+      return applyDeclinePaymentRequest({
+        command: command.command,
+        now,
+        payer: actor,
+        payerSlug: actorResident.slug,
+        requester: counterparty,
+      });
+    case "cancel":
+      return applyCancelPaymentRequest({
+        command: command.command,
+        now,
+        payer: counterparty,
+        requester: actor,
+        requesterSlug: actorResident.slug,
+      });
+  }
 }
 
 class MemoryLedgerRepository implements LedgerRepository {
@@ -141,6 +236,75 @@ class MemoryLedgerRepository implements LedgerRepository {
     });
   }
 
+  paymentRequest(
+    slug: string,
+    command: HostedPaymentRequestCommand,
+    options?: TransferOptions,
+  ): Promise<PaymentRequestResult> {
+    return this.exclusive(() => {
+      const actorResident = demoResidentBySlug(slug);
+      if (!actorResident) {
+        return { kind: "unknown-resident" };
+      }
+
+      let targetResident: DemoResident | undefined;
+      const actor = normalizeSnapshot(
+        this.registers.get(slug) ?? seedSnapshotForSlug(slug),
+      );
+
+      if (command.action === "create") {
+        const lookup = lookupResidentPayId(
+          command.command.target,
+          actorResident.email,
+        );
+        if (lookup.kind === "invalid") return { kind: "invalid-payid" };
+        if (lookup.kind === "own") return { kind: "own-payid" };
+        if (lookup.kind === "unknown-resident") {
+          return { kind: "unknown-resident" };
+        }
+        if (command.command.amount <= 0) {
+          return { kind: "amount-not-positive" };
+        }
+        targetResident = lookup.resident;
+      } else {
+        const targetSlug = counterpartySlugForAction(actor, slug, command);
+        if (!targetSlug || targetSlug === slug) {
+          return { kind: "unknown-request" };
+        }
+        targetResident = demoResidentBySlug(targetSlug);
+        if (!targetResident) {
+          return { kind: "unknown-resident" };
+        }
+      }
+
+      const counterparty = normalizeSnapshot(
+        this.registers.get(targetResident.slug) ??
+          seedSnapshotForSlug(targetResident.slug),
+      );
+      const result = executePaymentRequestStep({
+        actor,
+        actorResident,
+        command,
+        counterparty,
+        counterpartyResident: targetResident,
+        holdReserve: options?.holdReserve,
+        now: new Date(),
+      });
+
+      if (result.kind !== "ok") {
+        return structuredClone(result);
+      }
+
+      this.registers.set(slug, result.actor);
+      this.registers.set(result.counterpartySlug, result.counterparty);
+      return structuredClone({
+        kind: "ok",
+        snapshot: result.actor,
+        request: result.request,
+      });
+    });
+  }
+
   resetAll(slug: string): Promise<BankSnapshot> {
     return this.exclusive(() => {
       this.registers = new Map(
@@ -176,7 +340,9 @@ class PostgresLedgerRepository implements LedgerRepository {
       FROM marsbank_registers
       WHERE resident_slug = ${slug}
     `;
-    return structuredClone(row?.snapshot ?? seedSnapshotForSlug(slug));
+    return structuredClone(
+      normalizeSnapshot(row?.snapshot ?? seedSnapshotForSlug(slug)),
+    );
   }
 
   async transfer(
@@ -281,7 +447,7 @@ class PostgresLedgerRepository implements LedgerRepository {
         FOR UPDATE
       `;
       const next = setCardStatus(
-        row?.snapshot ?? seedSnapshotForSlug(slug),
+        normalizeSnapshot(row?.snapshot ?? seedSnapshotForSlug(slug)),
         cardId,
         status,
       );
@@ -291,6 +457,119 @@ class PostgresLedgerRepository implements LedgerRepository {
         WHERE resident_slug = ${slug}
       `;
       return next;
+    });
+  }
+
+  async paymentRequest(
+    slug: string,
+    command: HostedPaymentRequestCommand,
+    options?: TransferOptions,
+  ): Promise<PaymentRequestResult> {
+    const actorResident = demoResidentBySlug(slug);
+    if (!actorResident) {
+      return { kind: "unknown-resident" };
+    }
+
+    let createTargetResident: DemoResident | undefined;
+    if (command.action === "create") {
+      const lookup = lookupResidentPayId(
+        command.command.target,
+        actorResident.email,
+      );
+      if (lookup.kind === "invalid") return { kind: "invalid-payid" };
+      if (lookup.kind === "own") return { kind: "own-payid" };
+      if (lookup.kind === "unknown-resident") {
+        return { kind: "unknown-resident" };
+      }
+      if (command.command.amount <= 0) {
+        return { kind: "amount-not-positive" };
+      }
+      createTargetResident = lookup.resident;
+    }
+
+    await this.ensureSeeded();
+    return this.sql.begin(async (transaction) => {
+      let targetResident = createTargetResident;
+      if (command.action !== "create") {
+        const [peek] = await transaction<RegisterRow[]>`
+          SELECT resident_slug, snapshot
+          FROM marsbank_registers
+          WHERE resident_slug = ${slug}
+        `;
+        const peekSnapshot = normalizeSnapshot(
+          peek?.snapshot ?? seedSnapshotForSlug(slug),
+        );
+        const targetSlug = counterpartySlugForAction(
+          peekSnapshot,
+          slug,
+          command,
+        );
+        if (!targetSlug || targetSlug === slug) {
+          return { kind: "unknown-request" };
+        }
+        targetResident = demoResidentBySlug(targetSlug);
+        if (!targetResident) {
+          return { kind: "unknown-resident" };
+        }
+      }
+
+      if (!targetResident) {
+        return { kind: "unknown-resident" };
+      }
+
+      const lockSlugs = [slug, targetResident.slug].sort();
+      const rows: RegisterRow[] = [];
+      for (const lockSlug of lockSlugs) {
+        const [row] = await transaction<RegisterRow[]>`
+          SELECT resident_slug, snapshot
+          FROM marsbank_registers
+          WHERE resident_slug = ${lockSlug}
+          FOR UPDATE
+        `;
+        if (row) rows.push(row);
+      }
+
+      const actor = normalizeSnapshot(
+        rows.find((row) => row.resident_slug === slug)?.snapshot ??
+          seedSnapshotForSlug(slug),
+      );
+      const counterparty = normalizeSnapshot(
+        rows.find((row) => row.resident_slug === targetResident.slug)
+          ?.snapshot ?? seedSnapshotForSlug(targetResident.slug),
+      );
+
+      const result = executePaymentRequestStep({
+        actor,
+        actorResident,
+        command,
+        counterparty,
+        counterpartyResident: targetResident,
+        holdReserve: options?.holdReserve,
+        now: new Date(),
+      });
+
+      if (result.kind !== "ok") {
+        return result;
+      }
+
+      await transaction`
+        UPDATE marsbank_registers
+        SET snapshot = ${transaction.json(result.actor)}, updated_at = now()
+        WHERE resident_slug = ${slug}
+      `;
+      await transaction`
+        UPDATE marsbank_registers
+        SET
+          snapshot = ${transaction.json(result.counterparty)},
+          updated_at = now()
+        WHERE resident_slug = ${result.counterpartySlug}
+      `;
+
+      return {
+        kind: "ok",
+        snapshot: result.actor,
+        request: result.request,
+      };
     });
   }
 
@@ -339,4 +618,10 @@ export function getLedgerRepository(): LedgerRepository {
 
 export function createMemoryLedgerRepository(): LedgerRepository {
   return new MemoryLedgerRepository();
+}
+
+export function createPostgresLedgerRepository(
+  sql: postgres.Sql,
+): LedgerRepository {
+  return new PostgresLedgerRepository(sql);
 }

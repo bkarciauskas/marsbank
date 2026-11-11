@@ -1,11 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { seedSnapshotForSlug } from "@/lib/fixtures";
+import { demoResidentBySlug, seedSnapshotForSlug } from "@/lib/fixtures";
+import { paymentRequestId } from "@/lib/ids";
 import { applyIncomingResidentTransfer } from "@/lib/ledger";
 import { tokens } from "@/lib/money";
+import { applyCreatePaymentRequest } from "@/lib/shared-ledger";
 import { BankProvider } from "@/lib/store";
 import { incomingReadKey } from "@/lib/use-incoming-read";
+import { createLedgerFetch } from "@/test-utils/ledger-fetch";
 import { BankingShell } from "./banking-shell";
 
 const push = vi.fn();
@@ -162,5 +165,78 @@ describe("BankingShell", () => {
     fireEvent.submit(screen.getByRole("search"));
 
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it("surfaces open payment requests in the bell for one-click approval, step-up check, or decline", async () => {
+    const aaronResident = demoResidentBySlug("aaron");
+    const cameronResident = demoResidentBySlug("cameron");
+    if (!aaronResident || !cameronResident) return;
+
+    const first = applyCreatePaymentRequest({
+      amount: tokens(1_400),
+      description: "Arc Canteen tray",
+      id: paymentRequestId("pr-shell-1"),
+      now: new Date("2026-10-20T10:00:00.000Z"),
+      payer: seedSnapshotForSlug("cameron"),
+      payerResident: cameronResident,
+      requester: seedSnapshotForSlug("aaron"),
+      requesterResident: aaronResident,
+    });
+    if (first.kind !== "ok") return;
+
+    const second = applyCreatePaymentRequest({
+      amount: tokens(60_000),
+      description: "Rover charter",
+      id: paymentRequestId("pr-shell-2"),
+      now: new Date("2026-10-20T10:05:00.000Z"),
+      payer: first.counterparty,
+      payerResident: cameronResident,
+      requester: first.actor,
+      requesterResident: aaronResident,
+    });
+    if (second.kind !== "ok") return;
+
+    vi.stubGlobal("fetch", createLedgerFetch(second.counterparty));
+    renderShell();
+
+    const bell = await screen.findByRole("button", {
+      name: "Notifications, 2 unread",
+    });
+    fireEvent.click(bell);
+
+    const panel = screen.getByRole("region", { name: "Incoming transfers" });
+    expect(panel).toHaveTextContent("Aaron requested 60,000 tokens");
+    expect(panel).toHaveTextContent("Aaron requested 1,400 tokens");
+
+    const approveButtons = screen.getAllByRole("button", { name: "Approve" });
+    const firstApprove = approveButtons[0];
+    expect(firstApprove).toBeDefined();
+    if (!firstApprove) return;
+    fireEvent.click(firstApprove);
+
+    const confirmPayment = screen.getByRole("button", {
+      name: "Confirm payment",
+    });
+    expect(confirmPayment).toBeDisabled();
+    fireEvent.click(
+      screen.getByRole("checkbox", {
+        name: /I confirm sending 60,000 tokens to Aaron/,
+      }),
+    );
+    expect(confirmPayment).toBeEnabled();
+    fireEvent.click(confirmPayment);
+
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Notifications, 1 unread" }),
+      ).toBeInTheDocument(),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Decline" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Notifications" }),
+      ).toBeInTheDocument(),
+    );
   });
 });

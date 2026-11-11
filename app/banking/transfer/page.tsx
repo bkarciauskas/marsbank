@@ -13,7 +13,8 @@ export default function TransferPage() {
           <h2>Move value at Mars speed</h2>
           <p>
             Send whole token units to a Cursor identity, PayID or another
-            account in your Mars Bank register.
+            account in your Mars Bank register, or request tokens from another
+            resident.
           </p>
         </div>
         <Suspense fallback={<div className="transfer-loading">Plotting accounts…</div>}>
