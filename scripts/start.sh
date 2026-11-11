@@ -2,16 +2,24 @@
 # Start Mars Bank locally: free the dev port, then run Next.js.
 # Usage:
 #   sh scripts/start.sh
-#   PORT=3020 sh scripts/start.sh
+#   PORT=3021 sh scripts/start.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-PORT="${PORT:-3000}"
+PORT="${PORT:-3021}"
 
 ensure_deps() {
-  if [[ -x "node_modules/.bin/next" ]]; then
+  deps_ok() {
+    [[ -x "node_modules/.bin/next" ]] \
+      && [[ -f "node_modules/.package-lock.json" ]] \
+      && [[ ! "package.json" -nt "node_modules/.package-lock.json" ]] \
+      && [[ ! "package-lock.json" -nt "node_modules/.package-lock.json" ]] \
+      && npm ls --depth=0 >/dev/null 2>&1
+  }
+
+  if deps_ok; then
     return 0
   fi
 
