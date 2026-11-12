@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { demoResidentBySlug, seedSnapshotForSlug } from "@/lib/fixtures";
-import { paymentRequestId } from "@/lib/ids";
+import { accountId, paymentRequestId, txnId } from "@/lib/ids";
 import { tokens } from "@/lib/money";
 import { applyCreatePaymentRequest } from "@/lib/shared-ledger";
 import { BankProvider } from "@/lib/store";
@@ -240,5 +240,67 @@ describe("TransferForm", () => {
     expect(
       await screen.findByText(/Declined 60,000 tokens request from Aaron/),
     ).toBeInTheDocument();
+  });
+
+  it("saves a nicknamed contact, pins it, and picks a recent payee", async () => {
+    const snapshot = structuredClone(seedSnapshotForSlug("cameron"));
+    snapshot.transactions = [
+      {
+        id: txnId("recent-ben"),
+        accountId: accountId("acc-everyday"),
+        postedOn: "2026-11-11T00:00:00.000Z",
+        description: "PayID · Ben",
+        amount: tokens(40),
+        direction: "debit",
+        payee: {
+          scheme: "payid",
+          id: "ben@marsbank.mars",
+          displayName: "Ben",
+          institution: "Mars Bank",
+        },
+      },
+      ...snapshot.transactions,
+    ];
+    vi.stubGlobal("fetch", createLedgerFetch(snapshot));
+
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    const recent = await screen.findByRole("button", {
+      name: "Choose recent payee Ben ben@marsbank.mars",
+    });
+    fireEvent.click(recent);
+    const payId = screen.getByPlaceholderText("@name or name@domain");
+    expect(payId).toHaveValue("ben@marsbank.mars");
+
+    fireEvent.change(payId, { target: { value: "@cursor" } });
+    fireEvent.change(screen.getByPlaceholderText("Greenhouse share"), {
+      target: { value: "Cursor desk" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save contact" }));
+
+    const saved = await screen.findByRole("button", {
+      name: "Choose Cursor desk @cursor",
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("Saved Cursor desk.");
+    fireEvent.change(payId, { target: { value: "" } });
+    fireEvent.click(saved);
+    expect(payId).toHaveValue("@cursor");
+
+    fireEvent.click(screen.getByRole("button", { name: "Pin Cursor desk" }));
+    expect(
+      await screen.findByRole("button", { name: "Unpin Cursor desk" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Choose Cursor desk @cursor" }),
+    ).toHaveTextContent("Pinned");
+    expect(
+      screen.queryByRole("button", {
+        name: "Choose recent payee Cursor @cursor",
+      }),
+    ).not.toBeInTheDocument();
   });
 });

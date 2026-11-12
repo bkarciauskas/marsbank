@@ -1670,6 +1670,110 @@ html[data-theme="light"] .survey-select-list li.is-active {
   color: var(--ink);
 }
 
+.contact-directory {
+  display: grid;
+  gap: 12px;
+}
+
+.contact-directory-heading h3 {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.contact-directory-heading p,
+.contact-empty,
+.contact-notice {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-family: var(--body-font);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.contact-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.contact-row button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.contact-row button:first-child {
+  display: flex;
+  min-height: 40px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.contact-row button:first-child[aria-pressed="true"] {
+  border-color: var(--paper);
+}
+
+.contact-row button:first-child strong {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.contact-row button:first-child span,
+.contact-row button:last-child {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.contact-row button:last-child {
+  min-width: 76px;
+  padding: 0 12px;
+  color: inherit;
+}
+
+.contact-row button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.contact-save-button {
+  justify-self: start;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  padding: 0 16px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.contact-save-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .transfer-route small {
   color: var(--muted);
   font-size: 12px;

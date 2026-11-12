@@ -2,6 +2,8 @@ import postgres from "postgres";
 import type {
   BankSnapshot,
   CardStatus,
+  ContactResult,
+  HostedContactCommand,
   HostedPaymentRequestCommand,
   HostedTransferCommand,
   PaymentRequestResult,
@@ -13,9 +15,9 @@ import {
   type DemoResident,
   seedSnapshotForSlug,
 } from "../fixtures";
-import { paymentRequestId, type CardId } from "../ids";
+import { contactId, paymentRequestId, type CardId } from "../ids";
 import { setCardStatus } from "../ledger";
-import { lookupResidentPayId } from "../payid";
+import { applyContactCommand, lookupResidentPayId } from "../payid";
 import {
   applyApprovePaymentRequest,
   applyCancelPaymentRequest,
@@ -47,6 +49,10 @@ export type LedgerRepository = {
     cardId: CardId,
     status: CardStatus,
   ) => Promise<BankSnapshot>;
+  contact: (
+    slug: string,
+    command: HostedContactCommand,
+  ) => Promise<ContactResult>;
   resetAll: (slug: string) => Promise<BankSnapshot>;
 };
 
@@ -73,9 +79,25 @@ function recipientSlug(
 }
 
 function normalizeSnapshot(snapshot: BankSnapshot): BankSnapshot {
-  return Array.isArray(snapshot.paymentRequests)
-    ? snapshot
-    : { ...snapshot, paymentRequests: [] };
+  return {
+    ...snapshot,
+    paymentRequests: Array.isArray(snapshot.paymentRequests)
+      ? snapshot.paymentRequests
+      : [],
+    contacts: Array.isArray(snapshot.contacts) ? snapshot.contacts : [],
+  };
+}
+
+function applyResidentContact(
+  snapshot: BankSnapshot,
+  command: HostedContactCommand,
+): ContactResult {
+  return applyContactCommand(
+    snapshot,
+    command,
+    new Date(),
+    contactId(`contact-${crypto.randomUUID()}`),
+  );
 }
 
 function counterpartySlugForAction(
@@ -233,6 +255,22 @@ class MemoryLedgerRepository implements LedgerRepository {
       const next = setCardStatus(current, cardId, status);
       this.registers.set(slug, next);
       return structuredClone(next);
+    });
+  }
+
+  contact(
+    slug: string,
+    command: HostedContactCommand,
+  ): Promise<ContactResult> {
+    return this.exclusive(() => {
+      const current = normalizeSnapshot(
+        this.registers.get(slug) ?? seedSnapshotForSlug(slug),
+      );
+      const result = applyResidentContact(current, command);
+      if (result.kind === "ok") {
+        this.registers.set(slug, result.snapshot);
+      }
+      return structuredClone(result);
     });
   }
 
@@ -457,6 +495,32 @@ class PostgresLedgerRepository implements LedgerRepository {
         WHERE resident_slug = ${slug}
       `;
       return next;
+    });
+  }
+
+  async contact(
+    slug: string,
+    command: HostedContactCommand,
+  ): Promise<ContactResult> {
+    await this.ensureSeeded();
+    return this.sql.begin(async (transaction) => {
+      const [row] = await transaction<RegisterRow[]>`
+        SELECT resident_slug, snapshot
+        FROM marsbank_registers
+        WHERE resident_slug = ${slug}
+        FOR UPDATE
+      `;
+      const current = normalizeSnapshot(
+        row?.snapshot ?? seedSnapshotForSlug(slug),
+      );
+      const result = applyResidentContact(current, command);
+      if (result.kind !== "ok") return result;
+      await transaction`
+        UPDATE marsbank_registers
+        SET snapshot = ${transaction.json(result.snapshot)}, updated_at = now()
+        WHERE resident_slug = ${slug}
+      `;
+      return result;
     });
   }
 

@@ -206,4 +206,32 @@ describe("shared ledger repository", () => {
     expect((await repository.getRegister("aaron")).paymentRequests).toEqual([]);
     expect((await repository.getRegister("ben")).paymentRequests).toEqual([]);
   });
+
+  it("saves and pins a contact for one resident, then clears it on reset", async () => {
+    const repository = createMemoryLedgerRepository();
+    const saved = await repository.contact("aaron", {
+      action: "save",
+      command: { handle: "@cursor", nickname: "Cursor desk" },
+    });
+    expect(saved.kind).toBe("ok");
+    if (saved.kind !== "ok") return;
+    expect(saved.contact.payee.id).toBe("@cursor");
+
+    const pinned = await repository.contact("aaron", {
+      action: "pin",
+      command: { contactId: saved.contact.id, pinned: true },
+    });
+    expect(pinned.kind).toBe("ok");
+    if (pinned.kind !== "ok") return;
+    expect(pinned.contact.pinned).toBe(true);
+
+    const aaron = await repository.getRegister("aaron");
+    const ben = await repository.getRegister("ben");
+    expect(aaron.contacts).toEqual([pinned.contact]);
+    expect(ben.contacts).toEqual([]);
+
+    await repository.resetAll("aaron");
+    expect((await repository.getRegister("aaron")).contacts).toEqual([]);
+    expect((await repository.getRegister("ben")).contacts).toEqual([]);
+  });
 });

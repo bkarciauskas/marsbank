@@ -1,5 +1,13 @@
-import type { ResolvedPayId } from "./domain";
+import type {
+  BankSnapshot,
+  Contact,
+  ContactResult,
+  HostedContactCommand,
+  ResolvedPayId,
+  Transaction,
+} from "./domain";
 import { demoEmail, demoResidents, type DemoResident } from "./fixtures";
+import type { ContactId } from "./ids";
 
 export type PayIdLookup =
   | { kind: "ok"; payee: ResolvedPayId }
@@ -187,6 +195,115 @@ export function lookupPayId(
 
 export function payIdLabel(payee: ResolvedPayId): string {
   return payee.scheme === "cursor" ? "Cursor account" : "PayID";
+}
+
+const nicknameMaxLength = 40;
+
+function cleanedNickname(raw: string): string | undefined {
+  const nickname = raw.trim().replace(/\s+/g, " ");
+  if (!nickname || nickname.length > nicknameMaxLength) return undefined;
+  return nickname;
+}
+
+export function orderedContacts(contacts: readonly Contact[]): Contact[] {
+  return [...contacts].sort((left, right) => {
+    if (left.pinned !== right.pinned) return left.pinned ? -1 : 1;
+    return (
+      right.savedAt.localeCompare(left.savedAt) ||
+      left.nickname.localeCompare(right.nickname)
+    );
+  });
+}
+
+export function recentCounterparties(
+  transactions: readonly Transaction[],
+  ownerEmail: string,
+  saved: readonly Contact[] = [],
+  limit = 6,
+): ResolvedPayId[] {
+  const savedKeys = new Set(
+    saved.map((contact) => normalizePayId(contact.payee.id)),
+  );
+  const seen = new Set<string>();
+  const recent: ResolvedPayId[] = [];
+  const ordered = transactions
+    .filter((txn) => txn.payee !== undefined)
+    .slice()
+    .sort((left, right) => right.postedOn.localeCompare(left.postedOn));
+
+  for (const txn of ordered) {
+    if (!txn.payee) continue;
+    const key = normalizePayId(txn.payee.id);
+    if (!key || seen.has(key) || savedKeys.has(key)) continue;
+    const lookup = lookupPayId(txn.payee.id, ownerEmail);
+    if (lookup.kind !== "ok") continue;
+    seen.add(key);
+    recent.push(lookup.payee);
+    if (recent.length >= limit) break;
+  }
+
+  return recent;
+}
+
+export function applyContactCommand(
+  snapshot: BankSnapshot,
+  command: HostedContactCommand,
+  now: Date,
+  nextId: ContactId,
+): ContactResult {
+  const contacts = snapshot.contacts ?? [];
+
+  if (command.action === "pin") {
+    const existing = contacts.find(
+      (contact) => contact.id === command.command.contactId,
+    );
+    if (!existing) return { kind: "unknown-contact" };
+    const contact: Contact = { ...existing, pinned: command.command.pinned };
+    return {
+      kind: "ok",
+      contact,
+      snapshot: {
+        ...snapshot,
+        revision: snapshot.revision + 1,
+        contacts: contacts.map((entry) =>
+          entry.id === contact.id ? contact : entry,
+        ),
+      },
+    };
+  }
+
+  const nickname = cleanedNickname(command.command.nickname);
+  if (!nickname) return { kind: "invalid-nickname" };
+
+  const lookup = lookupPayId(command.command.handle, snapshot.customer.email);
+  if (lookup.kind === "invalid") return { kind: "invalid-payid" };
+  if (lookup.kind === "own") return { kind: "own-payid" };
+
+  const key = normalizePayId(lookup.payee.id);
+  const existing = contacts.find(
+    (contact) => normalizePayId(contact.payee.id) === key,
+  );
+  const contact: Contact = existing
+    ? { ...existing, nickname, payee: lookup.payee }
+    : {
+        id: nextId,
+        nickname,
+        payee: lookup.payee,
+        pinned: false,
+        savedAt: now.toISOString(),
+      };
+
+  return {
+    kind: "ok",
+    contact,
+    snapshot: {
+      ...snapshot,
+      revision: snapshot.revision + 1,
+      contacts: existing
+        ? contacts.map((entry) => (entry.id === existing.id ? contact : entry))
+        : [contact, ...contacts],
+    },
+  };
 }
 
 function titleFromHandle(value: string): string {

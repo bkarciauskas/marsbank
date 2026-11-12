@@ -584,6 +584,7 @@ export function snapshotForResident(resident: DemoResident): BankSnapshot {
       credit: creditId,
     }),
     paymentRequests: [],
+    contacts: [],
   };
 }
 

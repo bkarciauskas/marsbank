@@ -1,6 +1,7 @@
 import type {
   AccountId,
   CardId,
+  ContactId,
   CustomerId,
   PaymentRequestId,
   TxnId,
@@ -79,6 +80,15 @@ export type ResolvedPayId = {
   id: string;
   displayName: string;
   institution: string;
+};
+
+/** A PayID or Cursor handle a resident saved, with the nickname they chose. */
+export type Contact = {
+  id: ContactId;
+  nickname: string;
+  payee: ResolvedPayId;
+  pinned: boolean;
+  savedAt: string;
 };
 
 export type TransferFailure =
@@ -170,12 +180,38 @@ export type PaymentRequestFailure =
   | { kind: "unknown-request" }
   | { kind: "request-not-open" };
 
+export type SaveContactCommand = {
+  handle: string;
+  nickname: string;
+};
+
+export type PinContactCommand = {
+  contactId: ContactId;
+  pinned: boolean;
+};
+
+export type HostedContactCommand =
+  | { action: "save"; command: SaveContactCommand }
+  | { action: "pin"; command: PinContactCommand };
+
+export type ContactFailure =
+  | { kind: "invalid-payid" }
+  | { kind: "own-payid" }
+  | { kind: "invalid-nickname" }
+  | { kind: "unknown-contact" }
+  | { kind: "network" };
+
+export type ContactResult =
+  | { kind: "ok"; snapshot: BankSnapshot; contact: Contact }
+  | ContactFailure;
+
 export type BankSnapshot = {
   customer: Customer;
   accounts: Account[];
   cards: Card[];
   transactions: Transaction[];
   paymentRequests: PaymentRequest[];
+  contacts: Contact[];
   revision: number;
 };
 

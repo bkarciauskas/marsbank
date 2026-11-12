@@ -11,17 +11,22 @@ import type {
   ApprovePaymentRequestCommand,
   BankSnapshot,
   CardStatus,
+  Contact,
+  ContactFailure,
+  ContactResult,
   CreatePaymentRequestCommand,
   PayIdTransferCommand,
   PaymentRequest,
   PaymentRequestFailure,
   PaymentRequestResult,
   PaymentRequestStatus,
+  ResolvedPayId,
+  SaveContactCommand,
   TransferCommand,
   TransferFailure,
   TransferResult,
 } from "./domain";
-import type { CardId, PaymentRequestId } from "./ids";
+import type { CardId, ContactId, PaymentRequestId } from "./ids";
 import { defaultDemoResident, seedSnapshotForSlug } from "./fixtures";
 
 type BankStore = {
@@ -40,6 +45,11 @@ type BankStore = {
   cancelRequest: (
     paymentRequestId: PaymentRequestId,
   ) => Promise<PaymentRequestResult>;
+  saveContact: (command: SaveContactCommand) => Promise<ContactResult>;
+  pinContact: (
+    contactId: ContactId,
+    pinned: boolean,
+  ) => Promise<ContactResult>;
   updateCardStatus: (cardId: CardId, status: CardStatus) => Promise<void>;
   reset: () => Promise<void>;
 };
@@ -70,9 +80,15 @@ function registerFromPayload(value: unknown): BankSnapshot | undefined {
   if (!isRecord(value) || !isBankSnapshot(value.snapshot)) {
     return undefined;
   }
-  return Array.isArray(value.snapshot.paymentRequests)
-    ? value.snapshot
-    : { ...value.snapshot, paymentRequests: [] };
+  return {
+    ...value.snapshot,
+    paymentRequests: Array.isArray(value.snapshot.paymentRequests)
+      ? value.snapshot.paymentRequests
+      : [],
+    contacts: Array.isArray(value.snapshot.contacts)
+      ? value.snapshot.contacts
+      : [],
+  };
 }
 
 const transferFailureKinds: Record<TransferFailure["kind"], true> = {
@@ -134,6 +150,50 @@ function isPaymentRequest(value: unknown): value is PaymentRequest {
     typeof value.status === "string" &&
     Object.hasOwn(paymentRequestStatuses, value.status)
   );
+}
+
+const contactFailureKinds: Record<ContactFailure["kind"], true> = {
+  "invalid-payid": true,
+  "own-payid": true,
+  "invalid-nickname": true,
+  "unknown-contact": true,
+  network: true,
+};
+
+function isContactFailureKind(value: unknown): value is ContactFailure["kind"] {
+  return typeof value === "string" && Object.hasOwn(contactFailureKinds, value);
+}
+
+function isResolvedPayId(value: unknown): value is ResolvedPayId {
+  return (
+    isRecord(value) &&
+    (value.scheme === "cursor" || value.scheme === "payid") &&
+    typeof value.id === "string" &&
+    typeof value.displayName === "string" &&
+    typeof value.institution === "string"
+  );
+}
+
+function isContact(value: unknown): value is Contact {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.nickname === "string" &&
+    typeof value.pinned === "boolean" &&
+    typeof value.savedAt === "string" &&
+    isResolvedPayId(value.payee)
+  );
+}
+
+function contactFromPayload(value: unknown): ContactResult | undefined {
+  if (!isRecord(value) || typeof value.kind !== "string") return undefined;
+  if (value.kind === "ok") {
+    const snapshot = registerFromPayload({ snapshot: value.snapshot });
+    return snapshot && isContact(value.contact)
+      ? { kind: "ok", snapshot, contact: value.contact }
+      : undefined;
+  }
+  return isContactFailureKind(value.kind) ? { kind: value.kind } : undefined;
 }
 
 function transferFromPayload(value: unknown): TransferResult | undefined {
@@ -234,6 +294,26 @@ export function BankProvider({
     }
   }
 
+  async function postContact(
+    payload:
+      | ({ action: "save" } & SaveContactCommand)
+      | { action: "pin"; contactId: ContactId; pinned: boolean },
+  ): Promise<ContactResult> {
+    try {
+      const response = await fetch("/api/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = contactFromPayload(await response.json());
+      if (!result) return { kind: "network" };
+      if (result.kind === "ok") setSnapshot(result.snapshot);
+      return result;
+    } catch {
+      return { kind: "network" };
+    }
+  }
+
   const value: BankStore = {
     snapshot,
     async transfer(command) {
@@ -253,6 +333,12 @@ export function BankProvider({
     },
     async cancelRequest(paymentRequestId) {
       return postPaymentRequest({ action: "cancel", paymentRequestId });
+    },
+    async saveContact(command) {
+      return postContact({ action: "save", ...command });
+    },
+    async pinContact(contactId, pinned) {
+      return postContact({ action: "pin", contactId, pinned });
     },
     async updateCardStatus(cardId, status) {
       const response = await fetch("/api/cards", {

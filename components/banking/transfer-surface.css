@@ -162,6 +162,75 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   color: var(--desk-sheet);
 }
 
+.banking-shell .contact-directory-heading h3 {
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-base);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.banking-shell .contact-directory-heading p,
+.banking-shell .contact-empty,
+.banking-shell .contact-notice {
+  color: var(--desk-ink-soft);
+  font-family: inherit;
+  font-size: var(--desk-text-sm);
+}
+
+.banking-shell .contact-row button {
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  background: var(--desk-shade);
+  color: var(--desk-ink);
+  font-family: inherit;
+}
+
+.banking-shell .contact-row button:first-child[aria-pressed="true"] {
+  border-color: var(--desk-ink);
+}
+
+.banking-shell .contact-row button:first-child strong,
+.banking-shell .contact-row button:first-child span,
+.banking-shell .contact-row button:last-child {
+  color: var(--desk-ink);
+  font-family: inherit;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .contact-row button:first-child span {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.banking-shell .contact-save-button {
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-sm);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .contact-save-button:hover,
+.banking-shell .contact-row button:hover {
+  background: var(--desk-ink);
+  color: var(--desk-sheet);
+}
+
+.banking-shell .contact-save-button:hover {
+  color: var(--desk-sheet);
+}
+
+.banking-shell .contact-row button:hover strong,
+.banking-shell .contact-row button:hover span {
+  color: var(--desk-sheet);
+}
+
 .banking-shell .transfer-form .form-error {
   color: var(--danger);
 }
