@@ -15,8 +15,17 @@ Do not reset unless the user asked. Do not edit `features.md`. Do not edit the p
 - Project: `MARS`
 - Board: https://fe-anysphere-demo.atlassian.net/jira/software/projects/MARS/board
 - Stories: `MARS-1` through `MARS-11`, label `marsbank-demo`
-- The board has no sprints. Columns are To Do, In Progress, and Done.
+- The board has no sprints. Columns are To Do, In Progress, and Done. The workflow has no In Review status; never move a story to In Review.
 - Pull requests live in `github.com/bkarciauskas/marsbank`.
+
+## Starting state
+
+A reset restores this state. It does not put every story in unassigned To Do.
+
+| Stories | Status | Assignee |
+| --- | --- | --- |
+| `MARS-1`, `MARS-2` | In Progress | Ben Karciauskas, accountId `712020:03561c63-15cd-478b-a933-718f6a201f8e` |
+| `MARS-3` through `MARS-11` | To Do | none (cleared) |
 
 ## Scope
 
@@ -38,6 +47,9 @@ Match the key as a whole token. `MARS-1` is not `MARS-10` or `MARS-11`.
 
 ## For each story
 
-1. Read the current issue. If it is not already To Do, transition it to To Do. Restore the description from `features.md`. Leave the `marsbank-demo` label.
+1. Read the current issue. Look up its starting status and assignee in the table above.
+   - If the status differs, transition it to that status.
+   - Set the assignee: Ben Karciauskas's accountId for `MARS-1` and `MARS-2`; clear it (null) for `MARS-3` through `MARS-11`.
+   - Restore the description from `features.md`. Leave the `marsbank-demo` label.
 2. Find open pull requests in `bkarciauskas/marsbank` whose title or body names that `MARS` key. Close each without merging and delete its head branch. Do not touch pull requests that do not name a `MARS` key. Do not touch merged pull requests.
-3. Tell the user the key, that it is To Do, and which pull requests were closed. If none were open, say so.
+3. Tell the user the key, its restored status and assignee, and which pull requests were closed. If none were open, say so.
