@@ -217,7 +217,12 @@ function SolAllowanceMeter() {
             title={stepUp}
           />
         </div>
-        <p className="sol-allowance-step-label">{stepUp}</p>
+        <p
+          className="sol-allowance-step-label"
+          style={{ left: portion(allowance.stepUp, allowance.limit) }}
+        >
+          {stepUp}
+        </p>
       </div>
     </section>
   );
