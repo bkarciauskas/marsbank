@@ -304,6 +304,11 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   text-align: right;
 }
 
+.banking-shell .sol-allowance-scale {
+  position: relative;
+  height: 34px;
+}
+
 .banking-shell .sol-allowance-track {
   position: relative;
   height: 8px;
@@ -326,20 +331,24 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
 
 .banking-shell .sol-allowance-step {
   position: absolute;
-  top: -4px;
+  top: 0;
   left: 0;
   width: 2px;
-  height: 16px;
+  height: 8px;
   background: var(--desk-ink);
   transform: translateX(-1px);
 }
 
 .banking-shell .sol-allowance-step-label {
-  margin-top: 10px;
+  position: absolute;
+  top: 16px;
+  margin: 0;
   font-size: var(--desk-text-xs);
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  white-space: nowrap;
+  transform: translateX(8px);
 }
 
 .banking-shell .request-queue-section,
