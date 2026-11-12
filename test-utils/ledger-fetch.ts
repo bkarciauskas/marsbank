@@ -5,11 +5,12 @@ import {
   seedSnapshot,
   seedSnapshotForSlug,
 } from "@/lib/fixtures";
-import { paymentRequestId } from "@/lib/ids";
+import { contactId, paymentRequestId } from "@/lib/ids";
 import { applyPayIdTransfer, applyTransfer, setCardStatus } from "@/lib/ledger";
-import { lookupResidentPayId } from "@/lib/payid";
+import { applyContactCommand, lookupResidentPayId } from "@/lib/payid";
 import {
   parseCardUpdate,
+  parseContactCommand,
   parsePaymentRequestCommand,
   parseTransfer,
 } from "@/lib/server/request";
@@ -155,6 +156,23 @@ export function createLedgerFetch(
       snapshot = result.actor;
       peers.set(result.counterpartySlug, result.counterparty);
       return json({ kind: "ok", snapshot, request: result.request }, 200);
+    }
+    if (url === "/api/contacts") {
+      const parsed = parseContactCommand(bodyFrom(init));
+      if (!parsed) return json({ error: "Enter a valid contact." }, 400);
+      sequence += 1;
+      const applied = applyContactCommand(
+        snapshot,
+        snapshot.customer.email,
+        parsed,
+        {
+          id: contactId(`ct-test-${sequence}`),
+          savedAt: new Date().toISOString(),
+        },
+      );
+      if (applied.kind !== "ok") return json(applied, 409);
+      snapshot = applied.snapshot;
+      return json(applied);
     }
     if (url === "/api/cards") {
       const update = parseCardUpdate(bodyFrom(init));

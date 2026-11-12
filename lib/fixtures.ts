@@ -474,9 +474,7 @@ function postedTransactions(
     }))
     .sort((left, right) => {
       const byPosted = Date.parse(right.postedOn) - Date.parse(left.postedOn);
-      return byPosted !== 0
-        ? byPosted
-        : left.id.localeCompare(right.id);
+      return byPosted !== 0 ? byPosted : left.id.localeCompare(right.id);
     });
 }
 
@@ -486,7 +484,8 @@ export function snapshotForResident(resident: DemoResident): BankSnapshot {
   const offsetId = accountId("acc-offset");
   const creditId = accountId("acc-credit");
   const loanId = accountId("acc-habitat-loan");
-  const holderName = `${resident.givenName} ${resident.familyName}`.toUpperCase();
+  const holderName =
+    `${resident.givenName} ${resident.familyName}`.toUpperCase();
 
   return {
     customer: {
@@ -584,6 +583,7 @@ export function snapshotForResident(resident: DemoResident): BankSnapshot {
       credit: creditId,
     }),
     paymentRequests: [],
+    contacts: [],
   };
 }
 

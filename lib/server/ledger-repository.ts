@@ -2,6 +2,8 @@ import postgres from "postgres";
 import type {
   BankSnapshot,
   CardStatus,
+  ContactResult,
+  HostedContactCommand,
   HostedPaymentRequestCommand,
   HostedTransferCommand,
   PaymentRequestResult,
@@ -13,9 +15,14 @@ import {
   type DemoResident,
   seedSnapshotForSlug,
 } from "../fixtures";
-import { paymentRequestId, type CardId } from "../ids";
+import {
+  contactId,
+  paymentRequestId,
+  type CardId,
+  type ContactId,
+} from "../ids";
 import { setCardStatus } from "../ledger";
-import { lookupResidentPayId } from "../payid";
+import { applyContactCommand, lookupResidentPayId } from "../payid";
 import {
   applyApprovePaymentRequest,
   applyCancelPaymentRequest,
@@ -47,6 +54,10 @@ export type LedgerRepository = {
     cardId: CardId,
     status: CardStatus,
   ) => Promise<BankSnapshot>;
+  contact: (
+    slug: string,
+    command: HostedContactCommand,
+  ) => Promise<ContactResult>;
   resetAll: (slug: string) => Promise<BankSnapshot>;
 };
 
@@ -73,9 +84,26 @@ function recipientSlug(
 }
 
 function normalizeSnapshot(snapshot: BankSnapshot): BankSnapshot {
-  return Array.isArray(snapshot.paymentRequests)
-    ? snapshot
-    : { ...snapshot, paymentRequests: [] };
+  if (
+    Array.isArray(snapshot.paymentRequests) &&
+    Array.isArray(snapshot.contacts)
+  ) {
+    return snapshot;
+  }
+  return {
+    ...snapshot,
+    paymentRequests: Array.isArray(snapshot.paymentRequests)
+      ? snapshot.paymentRequests
+      : [],
+    contacts: Array.isArray(snapshot.contacts) ? snapshot.contacts : [],
+  };
+}
+
+function issueContact(): { id: ContactId; savedAt: string } {
+  return {
+    id: contactId(`ct-${crypto.randomUUID()}`),
+    savedAt: new Date().toISOString(),
+  };
 }
 
 function counterpartySlugForAction(
@@ -175,7 +203,7 @@ class MemoryLedgerRepository implements LedgerRepository {
 
   async getRegister(slug: string): Promise<BankSnapshot> {
     const snapshot = this.registers.get(slug) ?? seedSnapshotForSlug(slug);
-    return structuredClone(snapshot);
+    return structuredClone(normalizeSnapshot(snapshot));
   }
 
   transfer(
@@ -302,6 +330,26 @@ class MemoryLedgerRepository implements LedgerRepository {
         snapshot: result.actor,
         request: result.request,
       });
+    });
+  }
+
+  contact(slug: string, command: HostedContactCommand): Promise<ContactResult> {
+    return this.exclusive(() => {
+      const resident = demoResidentBySlug(slug);
+      if (!resident) return { kind: "invalid-payid" };
+      const current = normalizeSnapshot(
+        this.registers.get(slug) ?? seedSnapshotForSlug(slug),
+      );
+      const applied = applyContactCommand(
+        current,
+        resident.email,
+        command,
+        issueContact(),
+      );
+      if (applied.kind === "ok") {
+        this.registers.set(slug, applied.snapshot);
+      }
+      return structuredClone(applied);
     });
   }
 
@@ -457,6 +505,41 @@ class PostgresLedgerRepository implements LedgerRepository {
         WHERE resident_slug = ${slug}
       `;
       return next;
+    });
+  }
+
+  async contact(
+    slug: string,
+    command: HostedContactCommand,
+  ): Promise<ContactResult> {
+    const resident = demoResidentBySlug(slug);
+    if (!resident) return { kind: "invalid-payid" };
+
+    await this.ensureSeeded();
+    return this.sql.begin(async (transaction) => {
+      const [row] = await transaction<RegisterRow[]>`
+        SELECT resident_slug, snapshot
+        FROM marsbank_registers
+        WHERE resident_slug = ${slug}
+        FOR UPDATE
+      `;
+      const current = normalizeSnapshot(
+        row?.snapshot ?? seedSnapshotForSlug(slug),
+      );
+      const applied = applyContactCommand(
+        current,
+        resident.email,
+        command,
+        issueContact(),
+      );
+      if (applied.kind !== "ok") return applied;
+
+      await transaction`
+        UPDATE marsbank_registers
+        SET snapshot = ${transaction.json(applied.snapshot)}, updated_at = now()
+        WHERE resident_slug = ${slug}
+      `;
+      return applied;
     });
   }
 
