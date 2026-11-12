@@ -1,9 +1,9 @@
 "use client";
 
 import { ArrowRight, Check, CheckCircle2, Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import type {
+  BankSnapshot,
   PaymentRequest,
   PaymentRequestFailure,
   PaymentRequestStatus,
@@ -14,10 +14,16 @@ import {
   availableBalance,
   needsStepUp,
   SOL_SEND_LIMIT,
+  solSendAllowance,
   solSendRemaining,
   STEP_UP_THRESHOLD,
 } from "@/lib/ledger";
-import { formatTokens, parseTokenInput, type TokenAmount } from "@/lib/money";
+import {
+  formatTokens,
+  groupTokens,
+  parseTokenInput,
+  type TokenAmount,
+} from "@/lib/money";
 import { openIncomingRequests, outgoingRequests } from "@/lib/notifications";
 import {
   lookupPayId,
@@ -108,8 +114,120 @@ const postedAt = new Intl.DateTimeFormat("en-AU", {
   timeZone: "UTC",
 });
 
-export function TransferForm() {
-  const searchParams = useSearchParams();
+const solDate = new Intl.DateTimeFormat("en-AU", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+});
+
+const NOTE_LIMIT = 60;
+
+/** Query values that open Send already filled in, beside the existing `from`. */
+export type TransferLinkPrefill = {
+  from?: string;
+  to?: string;
+  payid?: string;
+  amount?: string;
+  note?: string;
+};
+
+function portion(part: number, whole: number): string {
+  if (whole <= 0) return "0%";
+  const percent = Math.min(100, (part / whole) * 100);
+  return `${Number(percent.toFixed(2))}%`;
+}
+
+function collectFromPrefill(
+  snapshot: BankSnapshot,
+  prefill: TransferLinkPrefill,
+): Extract<TransferState, { step: "collect" }> {
+  const sources = snapshot.accounts.filter((account) => account.kind !== "loan");
+  const fallbackSource = sources[0];
+  if (!fallbackSource) {
+    throw new Error("This register has no account that can send tokens.");
+  }
+  const from =
+    sources.find((account) => account.id === prefill.from)?.id ??
+    fallbackSource.id;
+  const requestedTo = snapshot.accounts.find(
+    (account) => account.id === prefill.to,
+  );
+  const to =
+    requestedTo?.id ??
+    snapshot.accounts.find((account) => account.id !== from)?.id ??
+    fallbackSource.id;
+  const payId = prefill.payid?.trim() ?? "";
+  const amount = parseTokenInput(prefill.amount ?? "");
+
+  return {
+    step: "collect",
+    destination: payId ? "payid" : requestedTo ? "own" : "payid",
+    from,
+    to,
+    payId,
+    requestTarget: "",
+    amountInput: amount !== null && amount > 0 ? String(amount) : "",
+    description: (prefill.note ?? "").trim().slice(0, NOTE_LIMIT),
+  };
+}
+
+function SolAllowanceMeter() {
+  const { snapshot } = useBank();
+  const allowance = solSendAllowance(snapshot, new Date());
+  const used = `${groupTokens(allowance.sent)} of ${groupTokens(allowance.limit)} tokens used`;
+  const stepUp = `Step-up above ${groupTokens(allowance.stepUp)} tokens`;
+
+  return (
+    <section aria-labelledby="sol-allowance-title" className="sol-allowance">
+      <div className="sol-allowance-copy">
+        <h3 id="sol-allowance-title">Today&apos;s PayID limit</h3>
+        <p className="sol-allowance-used">
+          <strong>{used}</strong>
+        </p>
+        <p className="sol-allowance-sol">
+          <time dateTime={new Date(allowance.sol.startsAt).toISOString()}>
+            {`${solDate.format(allowance.sol.startsAt)} UTC`}
+          </time>
+        </p>
+        <p className="sol-allowance-left">
+          {`${groupTokens(allowance.remaining)} tokens left this sol`}
+        </p>
+      </div>
+      <div className="sol-allowance-scale">
+        <div
+          aria-label="PayID tokens sent this sol"
+          aria-valuemax={allowance.limit}
+          aria-valuemin={0}
+          aria-valuenow={allowance.sent}
+          aria-valuetext={`${used}. ${stepUp}.`}
+          className="sol-allowance-track"
+          role="meter"
+        >
+          <span className="sol-allowance-clip">
+            <span
+              className="sol-allowance-fill"
+              style={{ width: portion(allowance.sent, allowance.limit) }}
+            />
+          </span>
+          <span
+            aria-hidden="true"
+            className="sol-allowance-step"
+            style={{ left: portion(allowance.stepUp, allowance.limit) }}
+            title={stepUp}
+          />
+        </div>
+        <p className="sol-allowance-step-label">{stepUp}</p>
+      </div>
+    </section>
+  );
+}
+
+export function TransferForm({
+  prefill = {},
+}: {
+  prefill?: TransferLinkPrefill;
+}) {
   const {
     snapshot,
     transfer,
@@ -137,27 +255,19 @@ export function TransferForm() {
     () => snapshot.accounts.filter((account) => account.kind !== "loan"),
     [snapshot.accounts],
   );
-  const requestedSource = searchParams.get("from");
   const fallbackSource = sources[0];
   if (!fallbackSource) {
     throw new Error("This register has no account that can send tokens.");
   }
-  const initialSource =
-    sources.find((account) => account.id === requestedSource)?.id ??
+  const linkedSource =
+    sources.find((account) => account.id === prefill.from)?.id ??
     fallbackSource.id;
   const initialDestination =
-    snapshot.accounts.find((account) => account.id !== initialSource)?.id ??
+    snapshot.accounts.find((account) => account.id !== linkedSource)?.id ??
     fallbackSource.id;
-  const [state, setState] = useState<TransferState>({
-    step: "collect",
-    destination: "payid",
-    from: initialSource,
-    to: initialDestination,
-    payId: "",
-    requestTarget: "",
-    amountInput: "",
-    description: "",
-  });
+  const [state, setState] = useState<TransferState>(() =>
+    collectFromPrefill(snapshot, prefill),
+  );
 
   const openIncoming = useMemo(
     () => openIncomingRequests(snapshot),
@@ -574,6 +684,7 @@ export function TransferForm() {
         ) : null}
       </section>
     ) : null;
+  const allowanceMeter = <SolAllowanceMeter />;
 
   if (state.step === "posted") {
     const destinationName =
@@ -582,6 +693,7 @@ export function TransferForm() {
         : accountName(state.to);
     return (
       <div className="transfer-desk">
+        {allowanceMeter}
         {incomingQueueSection}
         <div className="transfer-success">
           <CheckCircle2 />
@@ -617,6 +729,7 @@ export function TransferForm() {
       state.destination === "payid" && needsStepUp(state.amount) ? state : null;
     return (
       <div className="transfer-desk">
+        {allowanceMeter}
         {incomingQueueSection}
         <div className="transfer-review">
           <div className="transfer-route">
@@ -716,6 +829,7 @@ export function TransferForm() {
 
   return (
     <div className="transfer-desk">
+      {allowanceMeter}
       {incomingQueueSection}
       <form className="transfer-form" onSubmit={collect}>
         <fieldset className="transfer-destination">
@@ -834,7 +948,7 @@ export function TransferForm() {
               Request reference
               <input
                 id="transfer-description"
-                maxLength={60}
+                maxLength={NOTE_LIMIT}
                 onChange={(event) =>
                   setState({ ...state, description: event.target.value })
                 }
@@ -970,7 +1084,7 @@ export function TransferForm() {
               Transfer reference
               <input
                 id="transfer-description"
-                maxLength={60}
+                maxLength={NOTE_LIMIT}
                 onChange={(event) =>
                   setState({ ...state, description: event.target.value })
                 }

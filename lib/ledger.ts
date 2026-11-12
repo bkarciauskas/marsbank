@@ -11,7 +11,7 @@ import type { AccountId, CardId } from "./ids";
 import { txnId } from "./ids";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
-import { solIndex } from "./sol";
+import { solIndex, utcSol, type UtcSol } from "./sol";
 
 /**
  * Risk controls on PayID sends. Only PayID sends leave the resident's register;
@@ -50,6 +50,31 @@ export function solSendRemaining(
   now: Date,
 ): TokenAmount {
   return tokens(Math.max(0, SOL_SEND_LIMIT - sentThisSol(snapshot, now)));
+}
+
+/**
+ * PayID tokens already sent in one UTC sol, read against the sol cap and the
+ * step-up line. Own-account moves are not part of `sent`.
+ */
+export type SolSendAllowance = {
+  sol: UtcSol;
+  sent: TokenAmount;
+  limit: TokenAmount;
+  remaining: TokenAmount;
+  stepUp: TokenAmount;
+};
+
+export function solSendAllowance(
+  snapshot: BankSnapshot,
+  now: Date,
+): SolSendAllowance {
+  return {
+    sol: utcSol(now.getTime()),
+    sent: sentThisSol(snapshot, now),
+    limit: SOL_SEND_LIMIT,
+    remaining: solSendRemaining(snapshot, now),
+    stepUp: STEP_UP_THRESHOLD,
+  };
 }
 
 export type RegisterPosition = {

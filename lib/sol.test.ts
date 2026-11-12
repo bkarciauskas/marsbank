@@ -4,6 +4,7 @@ import {
   solIndex,
   solNumberFromLatest,
   solsBeforeLatest,
+  utcSol,
 } from "./sol";
 
 describe("ledger sol numbering", () => {
@@ -25,5 +26,18 @@ describe("solIndex", () => {
 
     expect(solIndex(Date.parse("2026-08-26T00:00:00.000Z"))).toBe(last);
     expect(solIndex(Date.parse("2026-08-27T00:00:00.000Z"))).toBe(last + 1);
+  });
+});
+
+describe("utcSol", () => {
+  it("bounds the earth-day that contains a UTC instant", () => {
+    const midday = Date.parse("2026-08-26T12:00:00.000Z");
+    const sol = utcSol(midday);
+
+    expect(sol.index).toBe(solIndex(midday));
+    expect(sol.startsAt).toBe(Date.parse("2026-08-26T00:00:00.000Z"));
+    expect(sol.endsAt).toBe(Date.parse("2026-08-27T00:00:00.000Z"));
+    expect(utcSol(sol.endsAt).index).toBe(sol.index + 1);
+    expect(utcSol(sol.endsAt - 1).index).toBe(sol.index);
   });
 });

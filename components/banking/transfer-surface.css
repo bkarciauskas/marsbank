@@ -252,6 +252,96 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   align-content: start;
 }
 
+.banking-shell .sol-allowance {
+  display: grid;
+  gap: 14px;
+  padding: 28px 42px 22px;
+  border-bottom: 1px solid var(--desk-rule);
+  background: var(--desk-sheet);
+}
+
+.banking-shell .sol-allowance-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 24px;
+  align-items: baseline;
+}
+
+.banking-shell .sol-allowance h3,
+.banking-shell .sol-allowance p {
+  margin: 0;
+}
+
+.banking-shell .sol-allowance h3 {
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-md);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .sol-allowance-used {
+  color: var(--desk-ink);
+  font-size: var(--desk-text-md);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  text-align: right;
+}
+
+.banking-shell .sol-allowance-used strong {
+  font-weight: 600;
+}
+
+.banking-shell .sol-allowance-sol,
+.banking-shell .sol-allowance-left,
+.banking-shell .sol-allowance-step-label {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.banking-shell .sol-allowance-left {
+  text-align: right;
+}
+
+.banking-shell .sol-allowance-track {
+  position: relative;
+  height: 8px;
+}
+
+.banking-shell .sol-allowance-clip {
+  display: block;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--desk-rule);
+}
+
+.banking-shell .sol-allowance-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--oxide);
+}
+
+.banking-shell .sol-allowance-step {
+  position: absolute;
+  top: -4px;
+  left: 0;
+  width: 2px;
+  height: 16px;
+  background: var(--desk-ink);
+  transform: translateX(-1px);
+}
+
+.banking-shell .sol-allowance-step-label {
+  margin-top: 10px;
+  font-size: var(--desk-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .banking-shell .request-queue-section,
 .banking-shell .outgoing-requests-section {
   display: grid;
@@ -425,8 +515,18 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   }
 
   .banking-shell .request-queue-section,
-  .banking-shell .outgoing-requests-section {
+  .banking-shell .outgoing-requests-section,
+  .banking-shell .sol-allowance {
     padding: 22px 24px;
+  }
+
+  .banking-shell .sol-allowance-copy {
+    grid-template-columns: 1fr;
+  }
+
+  .banking-shell .sol-allowance-used,
+  .banking-shell .sol-allowance-left {
+    text-align: left;
   }
 }
 

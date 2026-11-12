@@ -14,10 +14,12 @@ import {
   sentThisSol,
   setCardStatus,
   SOL_SEND_LIMIT,
+  solSendAllowance,
   solSendRemaining,
   STEP_UP_THRESHOLD,
 } from "./ledger";
 import { tokens } from "./money";
+import { utcSol } from "./sol";
 
 describe("Mars Bank ledger", () => {
   it("tallies on-hand deposits against habitat debt", () => {
@@ -309,5 +311,32 @@ describe("PayID send limits", () => {
     );
 
     expect(sentThisSol(posted(moved), morning)).toBe(0);
+    expect(solSendAllowance(posted(moved), morning).sent).toBe(0);
+  });
+
+  it("reports the sol allowance from PayID sends in the current UTC sol", () => {
+    const fresh = solSendAllowance(structuredClone(seedSnapshot), morning);
+
+    expect(fresh).toEqual({
+      sol: utcSol(morning.getTime()),
+      sent: tokens(0),
+      limit: SOL_SEND_LIMIT,
+      remaining: SOL_SEND_LIMIT,
+      stepUp: STEP_UP_THRESHOLD,
+    });
+
+    const after = posted(
+      sendToCursor(structuredClone(seedSnapshot), 60_000, morning),
+    );
+    const used = solSendAllowance(after, morning);
+
+    expect(used.sent).toBe(60_000);
+    expect(used.remaining).toBe(190_000);
+    expect(used.limit).toBe(SOL_SEND_LIMIT);
+    expect(used.stepUp).toBe(STEP_UP_THRESHOLD);
+    expect(used.sol).toEqual(utcSol(morning.getTime()));
+    expect(solSendAllowance(after, new Date("2026-08-27T00:00:00.000Z")).sent).toBe(
+      0,
+    );
   });
 });
