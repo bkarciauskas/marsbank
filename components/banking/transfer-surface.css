@@ -162,6 +162,112 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   color: var(--desk-sheet);
 }
 
+.banking-shell .contact-directory,
+.banking-shell .contact-recent {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  border: 1px solid var(--desk-rule);
+  border-radius: 3px;
+  padding: 14px;
+  background: var(--desk-shade);
+}
+
+.banking-shell .contact-directory-header h3,
+.banking-shell .contact-recent h3 {
+  margin: 0;
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-base);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.banking-shell .contact-directory-header p,
+.banking-shell .contact-empty {
+  margin: 4px 0 0;
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .contact-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.banking-shell .contact-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.banking-shell .contact-row button {
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-sm);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .contact-row button:first-child {
+  display: grid;
+  gap: 2px;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.banking-shell .contact-row button:first-child span {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.banking-shell .contact-row button:last-child {
+  min-width: 76px;
+  padding: 0 12px;
+}
+
+.banking-shell .contact-row button[aria-pressed="true"] {
+  background: var(--desk-ink);
+  color: var(--desk-sheet);
+}
+
+.banking-shell .contact-save {
+  justify-self: start;
+  min-height: 40px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  padding: 0 14px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-sm);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .contact-save:hover {
+  background: var(--desk-ink);
+  color: var(--desk-sheet);
+}
+
+@media (max-width: 560px) {
+  .banking-shell .contact-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .banking-shell .transfer-form .form-error {
   color: var(--danger);
 }

@@ -14,7 +14,8 @@ export default function TransferPage() {
           <p>
             Send whole token units to a Cursor identity, PayID or another
             account in your Mars Bank register, or request tokens from another
-            resident.
+            resident. Save a handle with a nickname and pick a recent payee
+            instead of typing it again.
           </p>
         </div>
         <Suspense fallback={<div className="transfer-loading">Plotting accounts…</div>}>

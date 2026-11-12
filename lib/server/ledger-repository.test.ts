@@ -116,7 +116,11 @@ describe("shared ledger repository", () => {
 
   it("restores every resident register", async () => {
     const repository = createMemoryLedgerRepository();
-    await repository.transfer("aaron", "request-before-reset", sendToBen(10_000));
+    await repository.transfer(
+      "aaron",
+      "request-before-reset",
+      sendToBen(10_000),
+    );
     await repository.resetAll("aaron");
 
     const ben = await repository.getRegister("ben");
@@ -205,5 +209,46 @@ describe("shared ledger repository", () => {
     await repository.resetAll("aaron");
     expect((await repository.getRegister("aaron")).paymentRequests).toEqual([]);
     expect((await repository.getRegister("ben")).paymentRequests).toEqual([]);
+  });
+
+  it("saves and pins a contact, keeps it through a transfer, and clears it on reset", async () => {
+    const repository = createMemoryLedgerRepository();
+    const saved = await repository.contact("aaron", {
+      action: "save",
+      command: { handle: "@cursor", nickname: "Cursor desk" },
+    });
+    expect(saved.kind).toBe("ok");
+    if (saved.kind !== "ok") return;
+
+    const pinned = await repository.contact("aaron", {
+      action: "pin",
+      command: { contactId: saved.contact.id, pinned: true },
+    });
+    expect(pinned.kind).toBe("ok");
+    if (pinned.kind !== "ok") return;
+    expect(pinned.contact.pinned).toBe(true);
+
+    const sent = await repository.transfer(
+      "aaron",
+      "request-after-contact",
+      sendToBen(1_000),
+    );
+    expect(sent.kind).toBe("ok");
+    if (sent.kind !== "ok") return;
+    expect(sent.snapshot.contacts).toEqual([
+      expect.objectContaining({
+        id: saved.contact.id,
+        nickname: "Cursor desk",
+        pinned: true,
+        payee: expect.objectContaining({ id: "@cursor" }),
+      }),
+    ]);
+
+    const ben = await repository.getRegister("ben");
+    expect(ben.contacts).toEqual([]);
+
+    await repository.resetAll("aaron");
+    expect((await repository.getRegister("aaron")).contacts).toEqual([]);
+    expect((await repository.getRegister("ben")).contacts).toEqual([]);
   });
 });

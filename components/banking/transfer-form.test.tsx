@@ -241,4 +241,98 @@ describe("TransferForm", () => {
       await screen.findByText(/Declined 60,000 tokens request from Aaron/),
     ).toBeInTheDocument();
   });
+
+  async function settleRegister() {
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith("/api/register", {
+        cache: "no-store",
+      }),
+    );
+  }
+
+  it("asks for a nickname before saving a contact", async () => {
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+    await settleRegister();
+
+    fireEvent.change(screen.getByPlaceholderText("@name or name@domain"), {
+      target: { value: "@cursor" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save contact" }));
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Enter a nickname for this contact.",
+    );
+  });
+
+  it("saves a nickname, pins the contact, and fills the send form from it", async () => {
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+    await settleRegister();
+
+    const payee = screen.getByPlaceholderText("@name or name@domain");
+    fireEvent.change(payee, { target: { value: "@cursor" } });
+    fireEvent.change(screen.getByPlaceholderText("Habitat crew"), {
+      target: { value: "Cursor desk" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save contact" }));
+    expect(
+      await screen.findByText("Saved Cursor desk for @cursor."),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Pin Cursor desk" }));
+    expect(
+      await screen.findByRole("button", { name: "Unpin Cursor desk" }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.change(payee, { target: { value: "" } });
+    fireEvent.click(
+      screen.getByRole("button", { name: "Use Cursor desk, @cursor" }),
+    );
+    expect(payee).toHaveValue("@cursor");
+
+    fireEvent.change(screen.getByPlaceholderText("0"), {
+      target: { value: "2500" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Review route" }));
+    expect(screen.getByText("Cursor")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Send tokens" }));
+    expect(await screen.findByText("Tokens dispatched")).toBeInTheDocument();
+  });
+
+  it("fills the send form from a recent payee instead of typing it again", async () => {
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+    await settleRegister();
+
+    const payee = screen.getByPlaceholderText("@name or name@domain");
+    fireEvent.change(payee, { target: { value: "ops@habitat.mars" } });
+    fireEvent.change(screen.getByPlaceholderText("0"), {
+      target: { value: "1800" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Review route" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send tokens" }));
+    expect(await screen.findByText("Tokens dispatched")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Plot another route" }));
+    fireEvent.change(screen.getByPlaceholderText("@name or name@domain"), {
+      target: { value: "" },
+    });
+    fireEvent.click(
+      screen.getByRole("button", {
+        name: "Recent payee Ops, ops@habitat.mars",
+      }),
+    );
+    expect(screen.getByPlaceholderText("@name or name@domain")).toHaveValue(
+      "ops@habitat.mars",
+    );
+  });
 });

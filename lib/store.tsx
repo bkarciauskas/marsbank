@@ -11,12 +11,17 @@ import type {
   ApprovePaymentRequestCommand,
   BankSnapshot,
   CardStatus,
+  ContactFailure,
+  ContactResult,
   CreatePaymentRequestCommand,
   PayIdTransferCommand,
   PaymentRequest,
   PaymentRequestFailure,
   PaymentRequestResult,
   PaymentRequestStatus,
+  PinContactCommand,
+  SaveContactCommand,
+  SavedContact,
   TransferCommand,
   TransferFailure,
   TransferResult,
@@ -40,6 +45,8 @@ type BankStore = {
   cancelRequest: (
     paymentRequestId: PaymentRequestId,
   ) => Promise<PaymentRequestResult>;
+  saveContact: (command: SaveContactCommand) => Promise<ContactResult>;
+  pinContact: (command: PinContactCommand) => Promise<ContactResult>;
   updateCardStatus: (cardId: CardId, status: CardStatus) => Promise<void>;
   reset: () => Promise<void>;
 };
@@ -70,9 +77,15 @@ function registerFromPayload(value: unknown): BankSnapshot | undefined {
   if (!isRecord(value) || !isBankSnapshot(value.snapshot)) {
     return undefined;
   }
-  return Array.isArray(value.snapshot.paymentRequests)
-    ? value.snapshot
-    : { ...value.snapshot, paymentRequests: [] };
+  return {
+    ...value.snapshot,
+    paymentRequests: Array.isArray(value.snapshot.paymentRequests)
+      ? value.snapshot.paymentRequests
+      : [],
+    contacts: Array.isArray(value.snapshot.contacts)
+      ? value.snapshot.contacts
+      : [],
+  };
 }
 
 const transferFailureKinds: Record<TransferFailure["kind"], true> = {
@@ -89,11 +102,20 @@ const transferFailureKinds: Record<TransferFailure["kind"], true> = {
   network: true,
 };
 
-const paymentRequestFailureKinds: Record<PaymentRequestFailure["kind"], true> = {
-  ...transferFailureKinds,
-  "unknown-resident": true,
-  "unknown-request": true,
-  "request-not-open": true,
+const paymentRequestFailureKinds: Record<PaymentRequestFailure["kind"], true> =
+  {
+    ...transferFailureKinds,
+    "unknown-resident": true,
+    "unknown-request": true,
+    "request-not-open": true,
+  };
+
+const contactFailureKinds: Record<ContactFailure["kind"], true> = {
+  "invalid-payid": true,
+  "own-payid": true,
+  "invalid-nickname": true,
+  "unknown-contact": true,
+  network: true,
 };
 
 const paymentRequestStatuses: Record<PaymentRequestStatus, true> = {
@@ -106,7 +128,13 @@ const paymentRequestStatuses: Record<PaymentRequestStatus, true> = {
 function isTransferFailureKind(
   value: unknown,
 ): value is TransferFailure["kind"] {
-  return typeof value === "string" && Object.hasOwn(transferFailureKinds, value);
+  return (
+    typeof value === "string" && Object.hasOwn(transferFailureKinds, value)
+  );
+}
+
+function isContactFailureKind(value: unknown): value is ContactFailure["kind"] {
+  return typeof value === "string" && Object.hasOwn(contactFailureKinds, value);
 }
 
 function isPaymentRequestFailureKind(
@@ -136,6 +164,21 @@ function isPaymentRequest(value: unknown): value is PaymentRequest {
   );
 }
 
+function isSavedContact(value: unknown): value is SavedContact {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.nickname === "string" &&
+    typeof value.pinned === "boolean" &&
+    typeof value.savedAt === "string" &&
+    isRecord(value.payee) &&
+    (value.payee.scheme === "cursor" || value.payee.scheme === "payid") &&
+    typeof value.payee.id === "string" &&
+    typeof value.payee.displayName === "string" &&
+    typeof value.payee.institution === "string"
+  );
+}
+
 function transferFromPayload(value: unknown): TransferResult | undefined {
   if (!isRecord(value) || typeof value.kind !== "string") return undefined;
   if (value.kind === "ok") {
@@ -158,6 +201,17 @@ function paymentRequestFromPayload(
   return isPaymentRequestFailureKind(value.kind)
     ? { kind: value.kind }
     : undefined;
+}
+
+function contactFromPayload(value: unknown): ContactResult | undefined {
+  if (!isRecord(value) || typeof value.kind !== "string") return undefined;
+  if (value.kind === "ok") {
+    const snapshot = registerFromPayload({ snapshot: value.snapshot });
+    return snapshot && isSavedContact(value.contact)
+      ? { kind: "ok", snapshot, contact: value.contact }
+      : undefined;
+  }
+  return isContactFailureKind(value.kind) ? { kind: value.kind } : undefined;
 }
 
 export function BankProvider({
@@ -234,6 +288,26 @@ export function BankProvider({
     }
   }
 
+  async function postContact(
+    payload:
+      | ({ action: "save" } & SaveContactCommand)
+      | ({ action: "pin" } & PinContactCommand),
+  ): Promise<ContactResult> {
+    try {
+      const response = await fetch("/api/contacts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = contactFromPayload(await response.json());
+      if (!result) return { kind: "network" };
+      if (result.kind === "ok") setSnapshot(result.snapshot);
+      return result;
+    } catch {
+      return { kind: "network" };
+    }
+  }
+
   const value: BankStore = {
     snapshot,
     async transfer(command) {
@@ -253,6 +327,12 @@ export function BankProvider({
     },
     async cancelRequest(paymentRequestId) {
       return postPaymentRequest({ action: "cancel", paymentRequestId });
+    },
+    async saveContact(command) {
+      return postContact({ action: "save", ...command });
+    },
+    async pinContact(command) {
+      return postContact({ action: "pin", ...command });
     },
     async updateCardStatus(cardId, status) {
       const response = await fetch("/api/cards", {
