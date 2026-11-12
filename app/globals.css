@@ -3206,8 +3206,8 @@ a.desk-demo-flag:focus-visible {
   z-index: 40;
   top: calc(100% + 8px);
   right: 0;
-  width: 340px;
-  max-height: 420px;
+  width: 360px;
+  max-height: 460px;
   overflow-y: auto;
   border: 1px solid var(--desk-rule-strong);
   border-radius: var(--desk-radius);
@@ -3283,6 +3283,93 @@ a.desk-demo-flag:focus-visible {
 .desk-bell-empty {
   margin: 0;
   padding: 16px 14px;
+}
+
+.desk-bell-requests {
+  border-bottom: 1px solid var(--desk-rule);
+}
+
+.desk-bell-subheading {
+  margin: 0;
+  border-bottom: 1px solid var(--desk-rule);
+  padding: 7px 14px;
+  background: var(--desk-shade);
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.desk-bell-request-item {
+  gap: 6px;
+}
+
+.desk-bell-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.desk-bell-approve,
+.desk-bell-decline {
+  min-height: 30px;
+  border-radius: 3px;
+  padding: 0 11px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--desk-text-xs);
+  font-weight: 600;
+}
+
+.desk-bell-approve {
+  border: 1px solid var(--desk-ink);
+  background: var(--desk-ink);
+  color: var(--desk-sheet);
+}
+
+.desk-bell-approve:disabled,
+.desk-bell-decline:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.desk-bell-decline {
+  border: 1px solid var(--desk-rule-strong);
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+}
+
+.desk-bell-step-up {
+  display: grid;
+  gap: 8px;
+  margin-top: 4px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  padding: 8px 10px;
+  background: var(--desk-sheet);
+}
+
+.desk-bell-step-up label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+  font-size: var(--desk-text-xs);
+  line-height: 1.35;
+}
+
+.desk-bell-step-up input {
+  margin-top: 2px;
+  accent-color: var(--desk-ink);
+}
+
+.desk-bell-error {
+  margin: 2px 0 0;
+  color: var(--danger);
+  font-size: var(--desk-text-xs);
+  font-weight: 500;
 }
 
 .banking-shell .customer-avatar {

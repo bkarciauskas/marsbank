@@ -106,6 +106,11 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   overflow: hidden;
   border: 1px solid var(--desk-rule-strong);
   border-radius: 3px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.banking-shell .transfer-destination button + button {
+  border-left: 1px solid var(--desk-rule);
 }
 
 .banking-shell .transfer-destination button {
@@ -242,6 +247,173 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
   color: var(--desk-ink-soft);
 }
 
+.banking-shell .transfer-desk {
+  display: grid;
+  align-content: start;
+}
+
+.banking-shell .request-queue-section,
+.banking-shell .outgoing-requests-section {
+  display: grid;
+  gap: 14px;
+  padding: 28px 42px;
+}
+
+.banking-shell .request-queue-section {
+  border-bottom: 1px solid var(--desk-rule);
+  background: var(--desk-shade);
+}
+
+.banking-shell .outgoing-requests-section {
+  border-top: 1px solid var(--desk-rule);
+  background: var(--desk-sheet);
+}
+
+.banking-shell .request-queue-header h3 {
+  margin: 0;
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-base);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.banking-shell .request-queue-header p,
+.banking-shell .requests-empty {
+  margin: 4px 0 0;
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.banking-shell .request-queue-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.banking-shell .request-queue-item {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  padding: 14px 16px;
+  background: var(--desk-sheet);
+}
+
+.banking-shell .request-queue-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.banking-shell .request-queue-copy strong {
+  color: var(--desk-ink);
+  font-size: var(--desk-text-base);
+  font-weight: 600;
+}
+
+.banking-shell .request-queue-copy span {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.banking-shell .request-queue-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.banking-shell .request-approve-button,
+.banking-shell .request-decline-button {
+  min-height: 36px;
+  border-radius: 3px;
+  padding: 0 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--desk-text-sm);
+  font-weight: 600;
+}
+
+.banking-shell .request-approve-button {
+  border: 1px solid var(--desk-ink);
+  background: var(--desk-ink);
+  color: var(--desk-sheet);
+}
+
+.banking-shell .request-decline-button {
+  border: 1px solid var(--desk-rule-strong);
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+}
+
+.banking-shell .request-approve-button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.banking-shell .request-decline-button:hover:not(:disabled) {
+  background: var(--desk-shade);
+}
+
+.banking-shell .request-approve-button:disabled,
+.banking-shell .request-decline-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.banking-shell .request-step-up {
+  display: grid;
+  gap: 10px;
+}
+
+.banking-shell .request-step-up .step-up-confirm {
+  margin: 0;
+}
+
+.banking-shell .request-dispatched-note {
+  margin: 0;
+  border: 1px solid var(--desk-rule-strong);
+  border-left: 3px solid var(--oxide);
+  border-radius: 3px;
+  padding: 10px 13px;
+  background: var(--desk-shade);
+  color: var(--desk-ink);
+  font-size: var(--desk-text-sm);
+  font-weight: 500;
+}
+
+.banking-shell .request-status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 999px;
+  padding: 0 10px;
+  font-size: var(--desk-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.banking-shell .request-status-pill.is-open {
+  border-color: var(--oxide);
+  background: var(--desk-shade);
+  color: var(--oxide-dark);
+}
+
+.banking-shell .request-status-pill.is-paid {
+  background: var(--desk-ink);
+  border-color: var(--desk-ink);
+  color: var(--desk-sheet);
+}
+
+.banking-shell .request-status-pill.is-declined,
+.banking-shell .request-status-pill.is-cancelled {
+  background: var(--desk-shade);
+  color: var(--desk-ink-soft);
+}
+
 @media (max-width: 850px) {
   .banking-shell .transfer-panel-heading {
     border-right: 0;
@@ -250,5 +422,21 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
 
   .banking-shell .transfer-panel-heading h2 {
     margin-top: 0;
+  }
+
+  .banking-shell .request-queue-section,
+  .banking-shell .outgoing-requests-section {
+    padding: 22px 24px;
+  }
+}
+
+@media (max-width: 560px) {
+  .banking-shell .transfer-destination > div {
+    grid-template-columns: 1fr;
+  }
+
+  .banking-shell .transfer-destination button + button {
+    border-left: 0;
+    border-top: 1px solid var(--desk-rule);
   }
 }

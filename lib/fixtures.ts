@@ -583,6 +583,7 @@ export function snapshotForResident(resident: DemoResident): BankSnapshot {
       offset: offsetId,
       credit: creditId,
     }),
+    paymentRequests: [],
   };
 }
 

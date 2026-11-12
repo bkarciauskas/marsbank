@@ -1,12 +1,13 @@
 import type { NextRequest } from "next/server";
 import type {
   CardStatus,
+  HostedPaymentRequestCommand,
   HostedTransferCommand,
   PayIdScheme,
   ResolvedPayId,
 } from "../domain";
 import { isDemoSlug } from "../fixtures";
-import { accountId, cardId, type CardId } from "../ids";
+import { accountId, cardId, paymentRequestId, type CardId } from "../ids";
 import { tokens } from "../money";
 
 export function authenticatedResident(request: NextRequest): string | undefined {
@@ -110,4 +111,71 @@ export function parseCardUpdate(
     return undefined;
   }
   return { cardId: cardId(value.cardId), status: value.status };
+}
+
+export function parsePaymentRequestCommand(
+  value: unknown,
+): HostedPaymentRequestCommand | undefined {
+  if (!isRecord(value) || !isString(value.action)) {
+    return undefined;
+  }
+
+  if (value.action === "create") {
+    if (
+      !isString(value.target) ||
+      typeof value.amount !== "number" ||
+      !Number.isSafeInteger(value.amount) ||
+      !isString(value.description)
+    ) {
+      return undefined;
+    }
+    return {
+      action: "create",
+      command: {
+        target: value.target,
+        amount: tokens(value.amount),
+        description: value.description,
+      },
+    };
+  }
+
+  if (
+    !isString(value.paymentRequestId) ||
+    value.paymentRequestId.length < 4 ||
+    value.paymentRequestId.length > 100
+  ) {
+    return undefined;
+  }
+
+  const id = paymentRequestId(value.paymentRequestId);
+
+  if (value.action === "approve") {
+    if (!isString(value.from) || value.from.length === 0) {
+      return undefined;
+    }
+    return {
+      action: "approve",
+      command: {
+        paymentRequestId: id,
+        from: accountId(value.from),
+        stepUpConfirmed: value.stepUpConfirmed === true,
+      },
+    };
+  }
+
+  if (value.action === "decline") {
+    return {
+      action: "decline",
+      command: { paymentRequestId: id },
+    };
+  }
+
+  if (value.action === "cancel") {
+    return {
+      action: "cancel",
+      command: { paymentRequestId: id },
+    };
+  }
+
+  return undefined;
 }

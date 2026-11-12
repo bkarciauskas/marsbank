@@ -1,4 +1,10 @@
-import type { AccountId, CardId, CustomerId, TxnId } from "./ids";
+import type {
+  AccountId,
+  CardId,
+  CustomerId,
+  PaymentRequestId,
+  TxnId,
+} from "./ids";
 import type { TokenAmount } from "./money";
 
 export type AccountBase = {
@@ -115,14 +121,68 @@ export type Customer = {
   initials: string;
 };
 
+export type PaymentRequestStatus = "open" | "paid" | "declined" | "cancelled";
+
+export type PaymentRequest = {
+  id: PaymentRequestId;
+  requesterSlug: string;
+  requesterName: string;
+  requesterEmail: string;
+  payerSlug: string;
+  payerName: string;
+  payerEmail: string;
+  amount: TokenAmount;
+  description: string;
+  createdAt: string;
+  status: PaymentRequestStatus;
+  resolvedAt?: string;
+};
+
+export type CreatePaymentRequestCommand = {
+  target: string;
+  amount: TokenAmount;
+  description: string;
+};
+
+export type ApprovePaymentRequestCommand = {
+  paymentRequestId: PaymentRequestId;
+  from: AccountId;
+  stepUpConfirmed?: boolean;
+};
+
+export type DeclinePaymentRequestCommand = {
+  paymentRequestId: PaymentRequestId;
+};
+
+export type CancelPaymentRequestCommand = {
+  paymentRequestId: PaymentRequestId;
+};
+
+export type HostedPaymentRequestCommand =
+  | { action: "create"; command: CreatePaymentRequestCommand }
+  | { action: "approve"; command: ApprovePaymentRequestCommand }
+  | { action: "decline"; command: DeclinePaymentRequestCommand }
+  | { action: "cancel"; command: CancelPaymentRequestCommand };
+
+export type PaymentRequestFailure =
+  | TransferFailure
+  | { kind: "unknown-resident" }
+  | { kind: "unknown-request" }
+  | { kind: "request-not-open" };
+
 export type BankSnapshot = {
   customer: Customer;
   accounts: Account[];
   cards: Card[];
   transactions: Transaction[];
+  paymentRequests: PaymentRequest[];
   revision: number;
 };
 
 export type TransferResult =
   | { kind: "ok"; snapshot: BankSnapshot }
   | TransferFailure;
+
+export type PaymentRequestResult =
+  | { kind: "ok"; snapshot: BankSnapshot; request: PaymentRequest }
+  | PaymentRequestFailure;

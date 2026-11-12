@@ -123,4 +123,87 @@ describe("shared ledger repository", () => {
     const sol = ben.accounts.find((account) => account.id === "acc-everyday");
     expect(sol && availableBalance(sol)).toBe(1_000_312_750);
   });
+
+  it("manages resident payment requests across creation, approval, decline, cancel, and reset", async () => {
+    const repository = createMemoryLedgerRepository();
+
+    expect(
+      await repository.paymentRequest("aaron", {
+        action: "create",
+        command: { target: "@aaron", amount: tokens(500), description: "Self" },
+      }),
+    ).toEqual({ kind: "own-payid" });
+
+    expect(
+      await repository.paymentRequest("aaron", {
+        action: "create",
+        command: {
+          target: "@cursor",
+          amount: tokens(500),
+          description: "External",
+        },
+      }),
+    ).toEqual({ kind: "unknown-resident" });
+
+    const created = await repository.paymentRequest("aaron", {
+      action: "create",
+      command: {
+        target: "@ben",
+        amount: tokens(60_000),
+        description: "Rover batteries",
+      },
+    });
+    expect(created.kind).toBe("ok");
+    if (created.kind !== "ok") return;
+
+    const needsConfirm = await repository.paymentRequest("ben", {
+      action: "approve",
+      command: {
+        paymentRequestId: created.request.id,
+        from: accountId("acc-everyday"),
+      },
+    });
+    expect(needsConfirm).toEqual({ kind: "step-up-required" });
+
+    const approved = await repository.paymentRequest("ben", {
+      action: "approve",
+      command: {
+        paymentRequestId: created.request.id,
+        from: accountId("acc-everyday"),
+        stepUpConfirmed: true,
+      },
+    });
+    expect(approved.kind).toBe("ok");
+
+    const overCapReq = await repository.paymentRequest("aaron", {
+      action: "create",
+      command: {
+        target: "ben@marsbank.mars",
+        amount: tokens(200_000),
+        description: "Habitat dome glass",
+      },
+    });
+    expect(overCapReq.kind).toBe("ok");
+    if (overCapReq.kind !== "ok") return;
+
+    const overCapApprove = await repository.paymentRequest("ben", {
+      action: "approve",
+      command: {
+        paymentRequestId: overCapReq.request.id,
+        from: accountId("acc-everyday"),
+        stepUpConfirmed: true,
+      },
+    });
+    expect(overCapApprove).toEqual({ kind: "sol-limit" });
+
+    const declined = await repository.paymentRequest("ben", {
+      action: "decline",
+      command: { paymentRequestId: overCapReq.request.id },
+    });
+    expect(declined.kind).toBe("ok");
+
+    await repository.resetAll("aaron");
+    expect((await repository.getRegister("aaron")).paymentRequests).toEqual([]);
+    expect((await repository.getRegister("ben")).paymentRequests).toEqual([]);
+  });
 });

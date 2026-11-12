@@ -1,4 +1,4 @@
-import type { BankSnapshot } from "./domain";
+import type { BankSnapshot, PaymentRequest } from "./domain";
 import type { TxnId } from "./ids";
 import type { TokenAmount } from "./money";
 
@@ -59,4 +59,32 @@ export function markAllRead(
   if (newest === null) return readThrough;
   if (readThrough === null) return newest;
   return newest > readThrough ? newest : readThrough;
+}
+
+export function openIncomingRequests(snapshot: BankSnapshot): PaymentRequest[] {
+  const email = snapshot.customer.email.trim().toLowerCase();
+  return (snapshot.paymentRequests ?? [])
+    .filter(
+      (request) =>
+        request.status === "open" &&
+        request.payerEmail.trim().toLowerCase() === email,
+    )
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+export function outgoingRequests(snapshot: BankSnapshot): PaymentRequest[] {
+  const email = snapshot.customer.email.trim().toLowerCase();
+  return (snapshot.paymentRequests ?? [])
+    .filter(
+      (request) => request.requesterEmail.trim().toLowerCase() === email,
+    )
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+}
+
+export function bellBadgeCount(
+  feed: readonly IncomingTransfer[],
+  readThrough: ReadThrough,
+  openRequests: readonly PaymentRequest[],
+): number {
+  return unreadCount(feed, readThrough) + openRequests.length;
 }

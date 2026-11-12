@@ -1,16 +1,23 @@
 import { describe, expect, it } from "vitest";
 import type { BankSnapshot } from "./domain";
-import { demoResidents, seedSnapshotForSlug } from "./fixtures";
-import { accountId, txnId } from "./ids";
+import { demoResidentBySlug, demoResidents, seedSnapshotForSlug } from "./fixtures";
+import { accountId, paymentRequestId, txnId } from "./ids";
 import { applyTransfer } from "./ledger";
 import { tokens } from "./money";
 import {
+  bellBadgeCount,
   incomingTransfers,
   markAllRead,
+  openIncomingRequests,
+  outgoingRequests,
   unreadCount,
   type IncomingTransfer,
 } from "./notifications";
-import { applySharedTransfer } from "./shared-ledger";
+import {
+  applyCreatePaymentRequest,
+  applyDeclinePaymentRequest,
+  applySharedTransfer,
+} from "./shared-ledger";
 
 function send(
   sender: BankSnapshot,
@@ -154,5 +161,51 @@ describe("markAllRead", () => {
         "2026-10-20T11:00:00.000Z",
       ),
     ).toBe("2026-10-20T11:00:00.000Z");
+  });
+});
+
+describe("payment request notification selectors", () => {
+  it("surfaces open incoming requests to the recipient and outgoing requests to the requester", () => {
+    const aaronResident = demoResidentBySlug("aaron");
+    const benResident = demoResidentBySlug("ben");
+    if (!aaronResident || !benResident) return;
+
+    const created = applyCreatePaymentRequest({
+      amount: tokens(850),
+      description: "Canteen split",
+      id: paymentRequestId("pr-bell-1"),
+      now: new Date("2026-10-20T12:00:00.000Z"),
+      payer: seedSnapshotForSlug("ben"),
+      payerResident: benResident,
+      requester: seedSnapshotForSlug("aaron"),
+      requesterResident: aaronResident,
+    });
+    expect(created.kind).toBe("ok");
+    if (created.kind !== "ok") return;
+
+    expect(openIncomingRequests(created.counterparty)).toHaveLength(1);
+    expect(openIncomingRequests(created.actor)).toHaveLength(0);
+    expect(outgoingRequests(created.actor)).toHaveLength(1);
+    expect(outgoingRequests(created.counterparty)).toHaveLength(0);
+    expect(
+      bellBadgeCount(
+        feedFor(["2026-10-20T11:00:00.000Z"]),
+        null,
+        openIncomingRequests(created.counterparty),
+      ),
+    ).toBe(2);
+
+    const declined = applyDeclinePaymentRequest({
+      command: { paymentRequestId: paymentRequestId("pr-bell-1") },
+      now: new Date("2026-10-20T12:05:00.000Z"),
+      payer: created.counterparty,
+      payerSlug: "ben",
+      requester: created.actor,
+    });
+    expect(declined.kind).toBe("ok");
+    if (declined.kind !== "ok") return;
+
+    expect(openIncomingRequests(declined.actor)).toHaveLength(0);
+    expect(outgoingRequests(declined.counterparty)[0]?.status).toBe("declined");
   });
 });

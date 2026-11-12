@@ -1,10 +1,23 @@
 import type { ResolvedPayId } from "./domain";
-import { demoEmail, demoResidents } from "./fixtures";
+import { demoEmail, demoResidents, type DemoResident } from "./fixtures";
 
 export type PayIdLookup =
   | { kind: "ok"; payee: ResolvedPayId }
   | { kind: "own" }
   | { kind: "invalid" };
+
+export type ResidentPayIdLookup =
+  | { kind: "ok"; resident: DemoResident; payee: ResolvedPayId }
+  | { kind: "own" }
+  | { kind: "unknown-resident" }
+  | { kind: "invalid" };
+
+export type ResidentHandleSuggestion = {
+  slug: string;
+  handle: string;
+  email: string;
+  displayName: string;
+};
 
 type DirectoryEntry = {
   aliases: readonly string[];
@@ -77,6 +90,47 @@ export function suggestedPayIds(ownerEmail: string = demoEmail): ResolvedPayId[]
     .filter((resident) => resident.email !== ownerEmail)
     .map((resident) => residentPayee(resident.email, resident.givenName));
   return [...directory.map((entry) => entry.payee), ...residents];
+}
+
+export function suggestedResidentHandles(
+  ownerEmail: string = demoEmail,
+): ResidentHandleSuggestion[] {
+  const normalizedOwner = normalizePayId(ownerEmail);
+  return demoResidents
+    .filter((resident) => normalizePayId(resident.email) !== normalizedOwner)
+    .map((resident) => ({
+      slug: resident.slug,
+      handle: `@${resident.slug}`,
+      email: resident.email,
+      displayName: resident.givenName,
+    }));
+}
+
+export function lookupResidentPayId(
+  raw: string,
+  ownerEmail: string = demoEmail,
+): ResidentPayIdLookup {
+  const id = normalizePayId(raw);
+  if (!id) return { kind: "invalid" };
+  if (ownAliases(ownerEmail).has(id)) return { kind: "own" };
+
+  const resident = demoResidents.find((entry) => {
+    const email = normalizePayId(entry.email);
+    return id === email || id === entry.slug || id === `@${entry.slug}`;
+  });
+  if (resident) {
+    return {
+      kind: "ok",
+      resident,
+      payee: residentPayee(resident.email, resident.givenName),
+    };
+  }
+
+  if (emailPattern.test(id) || handlePattern.test(id)) {
+    return { kind: "unknown-resident" };
+  }
+
+  return { kind: "invalid" };
 }
 
 export function lookupPayId(

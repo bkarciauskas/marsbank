@@ -2,6 +2,9 @@ export type AccountId = string & { readonly __brand: "AccountId" };
 export type CardId = string & { readonly __brand: "CardId" };
 export type TxnId = string & { readonly __brand: "TxnId" };
 export type CustomerId = string & { readonly __brand: "CustomerId" };
+export type PaymentRequestId = string & {
+  readonly __brand: "PaymentRequestId";
+};
 
 export function accountId(value: string): AccountId {
   return value as AccountId;
@@ -17,4 +20,8 @@ export function txnId(value: string): TxnId {
 
 export function customerId(value: string): CustomerId {
   return value as CustomerId;
+}
+
+export function paymentRequestId(value: string): PaymentRequestId {
+  return value as PaymentRequestId;
 }
