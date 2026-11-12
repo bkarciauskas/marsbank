@@ -9,13 +9,136 @@ import { BankProvider } from "@/lib/store";
 import { createLedgerFetch } from "@/test-utils/ledger-fetch";
 import { TransferForm } from "./transfer-form";
 
-vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams(),
-}));
-
 describe("TransferForm", () => {
   beforeEach(() => {
     window.localStorage.clear();
+  });
+
+  it("shows today's PayID allowance and advances it after a send", async () => {
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    const meter = () =>
+      screen.getByRole("meter", { name: "PayID tokens sent this sol" });
+    expect(meter()).toHaveAttribute("aria-valuemin", "0");
+    expect(meter()).toHaveAttribute("aria-valuemax", "250000");
+    expect(meter()).toHaveAttribute("aria-valuenow", "0");
+    expect(meter()).toHaveAttribute(
+      "aria-valuetext",
+      "0 of 250,000 tokens used. Step-up above 50,000 tokens.",
+    );
+    expect(
+      screen.getByRole("heading", { name: "Today's PayID limit" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("0 of 250,000 tokens used")).toBeInTheDocument();
+    expect(screen.getByText("250,000 tokens left this sol")).toBeInTheDocument();
+    expect(screen.getByText("Step-up above 50,000 tokens")).toBeInTheDocument();
+    expect(document.querySelector(".sol-allowance-step")).toHaveStyle({
+      left: "20%",
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("@name or name@domain"), {
+      target: { value: "@cursor" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("0"), {
+      target: { value: "2500" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Review route" }));
+    fireEvent.click(screen.getByRole("button", { name: "Send tokens" }));
+
+    expect(await screen.findByText("Tokens dispatched")).toBeInTheDocument();
+    expect(meter()).toHaveAttribute("aria-valuenow", "2500");
+    expect(screen.getByText("2,500 of 250,000 tokens used")).toBeInTheDocument();
+    expect(
+      screen.getByText("247,500 tokens left this sol"),
+    ).toBeInTheDocument();
+  });
+
+  it("opens a PayID route from to, payid, amount, and note", () => {
+    render(
+      <BankProvider>
+        <TransferForm
+          prefill={{
+            from: "acc-reserve",
+            to: "acc-habitat-loan",
+            payid: "@cursor",
+            amount: "1,500",
+            note: "  Greenhouse share  ",
+          }}
+        />
+      </BankProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Cursor or PayID" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByPlaceholderText("@name or name@domain")).toHaveValue(
+      "@cursor",
+    );
+    expect(screen.getByPlaceholderText("0")).toHaveValue("1500");
+    expect(screen.getByPlaceholderText("Optional note")).toHaveValue(
+      "Greenhouse share",
+    );
+    expect(
+      screen.getByRole("button", { name: /Long Horizon Reserve/ }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens an own-account route from to when payid is absent", () => {
+    render(
+      <BankProvider>
+        <TransferForm
+          prefill={{
+            from: "acc-everyday",
+            to: "acc-habitat-loan",
+            amount: "10000",
+            note: "Habitat levy",
+          }}
+        />
+      </BankProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Between my accounts" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("button", { name: /Sol Account/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /Olympus Arc Habitat/ }),
+    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("0")).toHaveValue("10000");
+    expect(screen.getByPlaceholderText("Optional note")).toHaveValue(
+      "Habitat levy",
+    );
+  });
+
+  it("ignores an amount that is not whole tokens and keeps the note short", () => {
+    const note = "Arc canteen tray for the north ridge crew tonight please extra";
+    render(
+      <BankProvider>
+        <TransferForm
+          prefill={{
+            payid: "  ",
+            to: "not-an-account",
+            amount: "12.5",
+            note,
+          }}
+        />
+      </BankProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Cursor or PayID" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByPlaceholderText("@name or name@domain")).toHaveValue("");
+    expect(screen.getByPlaceholderText("0")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Optional note")).toHaveValue(
+      note.slice(0, 60),
+    );
   });
 
   it("reviews and posts an own-account transfer", async () => {

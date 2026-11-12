@@ -1,8 +1,48 @@
 import { Suspense } from "react";
-import { TransferForm } from "@/components/banking/transfer-form";
+import {
+  TransferForm,
+  type TransferLinkPrefill,
+} from "@/components/banking/transfer-form";
 import "@/components/banking/transfer-surface.css";
 
-export default function TransferPage() {
+type TransferQuery = {
+  from?: string | string[];
+  to?: string | string[];
+  payid?: string | string[];
+  amount?: string | string[];
+  note?: string | string[];
+};
+
+function firstParam(value: string | string[] | undefined): string | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const trimmed = raw?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function prefillFromQuery(query: TransferQuery): TransferLinkPrefill {
+  return {
+    from: firstParam(query.from),
+    to: firstParam(query.to),
+    payid: firstParam(query.payid),
+    amount: firstParam(query.amount),
+    note: firstParam(query.note),
+  };
+}
+
+export default async function TransferPage({
+  searchParams,
+}: {
+  searchParams: Promise<TransferQuery>;
+}) {
+  const prefill = prefillFromQuery(await searchParams);
+  const prefillKey = [
+    prefill.from,
+    prefill.to,
+    prefill.payid,
+    prefill.amount,
+    prefill.note,
+  ].join("\0");
+
   return (
     <div className="transfer-page">
       <div className="page-intro">
@@ -18,7 +58,7 @@ export default function TransferPage() {
           </p>
         </div>
         <Suspense fallback={<div className="transfer-loading">Plotting accounts…</div>}>
-          <TransferForm />
+          <TransferForm key={prefillKey} prefill={prefill} />
         </Suspense>
       </section>
     </div>
