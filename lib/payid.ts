@@ -1,10 +1,16 @@
-import type { ResolvedPayId } from "./domain";
+import type {
+  BankSnapshot,
+  ContactResult,
+  HostedContactCommand,
+  ResolvedPayId,
+  SavedContact,
+  Transaction,
+} from "./domain";
+import type { ContactId } from "./ids";
 import { demoEmail, demoResidents, type DemoResident } from "./fixtures";
 
 export type PayIdLookup =
-  | { kind: "ok"; payee: ResolvedPayId }
-  | { kind: "own" }
-  | { kind: "invalid" };
+  { kind: "ok"; payee: ResolvedPayId } | { kind: "own" } | { kind: "invalid" };
 
 export type ResidentPayIdLookup =
   | { kind: "ok"; resident: DemoResident; payee: ResolvedPayId }
@@ -85,7 +91,9 @@ function residentPayee(email: string, displayName: string): ResolvedPayId {
   };
 }
 
-export function suggestedPayIds(ownerEmail: string = demoEmail): ResolvedPayId[] {
+export function suggestedPayIds(
+  ownerEmail: string = demoEmail,
+): ResolvedPayId[] {
   const residents = demoResidents
     .filter((resident) => resident.email !== ownerEmail)
     .map((resident) => residentPayee(resident.email, resident.givenName));
@@ -187,6 +195,112 @@ export function lookupPayId(
 
 export function payIdLabel(payee: ResolvedPayId): string {
   return payee.scheme === "cursor" ? "Cursor account" : "PayID";
+}
+
+const nicknameLimit = 40;
+
+export function normalizeContactNickname(raw: string): string | undefined {
+  const nickname = raw.trim().replace(/\s+/g, " ");
+  if (nickname.length < 1 || nickname.length > nicknameLimit) return undefined;
+  return nickname;
+}
+
+function contactKey(payee: ResolvedPayId): string {
+  return normalizePayId(payee.id);
+}
+
+function withContacts(
+  snapshot: BankSnapshot,
+  contacts: SavedContact[],
+): BankSnapshot {
+  return {
+    ...snapshot,
+    revision: snapshot.revision + 1,
+    contacts,
+  };
+}
+
+export function contactsForPicker(
+  contacts: readonly SavedContact[] | undefined,
+): SavedContact[] {
+  return [...(contacts ?? [])].sort((left, right) => {
+    if (left.pinned !== right.pinned) return left.pinned ? -1 : 1;
+    return right.savedAt.localeCompare(left.savedAt);
+  });
+}
+
+export function recentPayeeCounterparties(
+  transactions: readonly Transaction[],
+  contacts: readonly SavedContact[] | undefined = [],
+  limit = 6,
+): ResolvedPayId[] {
+  const saved = new Set(
+    (contacts ?? []).map((contact) => contactKey(contact.payee)),
+  );
+  const seen = new Set<string>();
+  const recent: ResolvedPayId[] = [];
+  for (const txn of transactions) {
+    if (txn.direction !== "debit" || !txn.payee) continue;
+    const key = contactKey(txn.payee);
+    if (!key || seen.has(key) || saved.has(key)) continue;
+    seen.add(key);
+    recent.push(txn.payee);
+    if (recent.length >= limit) break;
+  }
+  return recent;
+}
+
+export function applyContactCommand(
+  snapshot: BankSnapshot,
+  ownerEmail: string,
+  command: HostedContactCommand,
+  issued: { id: ContactId; savedAt: string },
+): ContactResult {
+  const contacts = snapshot.contacts ?? [];
+
+  if (command.action === "pin") {
+    const existing = contacts.find(
+      (contact) => contact.id === command.command.contactId,
+    );
+    if (!existing) return { kind: "unknown-contact" };
+    const contact: SavedContact = {
+      ...existing,
+      pinned: command.command.pinned,
+    };
+    return {
+      kind: "ok",
+      contact,
+      snapshot: withContacts(
+        snapshot,
+        contacts.map((entry) => (entry.id === contact.id ? contact : entry)),
+      ),
+    };
+  }
+
+  const nickname = normalizeContactNickname(command.command.nickname);
+  if (!nickname) return { kind: "invalid-nickname" };
+
+  const lookup = lookupPayId(command.command.handle, ownerEmail);
+  if (lookup.kind === "invalid") return { kind: "invalid-payid" };
+  if (lookup.kind === "own") return { kind: "own-payid" };
+
+  const key = contactKey(lookup.payee);
+  const existing = contacts.find(
+    (contact) => contactKey(contact.payee) === key,
+  );
+  const contact: SavedContact = existing
+    ? { ...existing, nickname, payee: lookup.payee }
+    : {
+        id: issued.id,
+        nickname,
+        payee: lookup.payee,
+        pinned: false,
+        savedAt: issued.savedAt,
+      };
+  const next = existing
+    ? contacts.map((entry) => (entry.id === contact.id ? contact : entry))
+    : [contact, ...contacts];
+  return { kind: "ok", contact, snapshot: withContacts(snapshot, next) };
 }
 
 function titleFromHandle(value: string): string {

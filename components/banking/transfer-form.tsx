@@ -4,10 +4,12 @@ import { ArrowRight, Check, CheckCircle2, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useMemo, useState, type FormEvent } from "react";
 import type {
+  ContactFailure,
   PaymentRequest,
   PaymentRequestFailure,
   PaymentRequestStatus,
   ResolvedPayId,
+  SavedContact,
 } from "@/lib/domain";
 import type { AccountId, PaymentRequestId } from "@/lib/ids";
 import {
@@ -20,9 +22,11 @@ import {
 import { formatTokens, parseTokenInput, type TokenAmount } from "@/lib/money";
 import { openIncomingRequests, outgoingRequests } from "@/lib/notifications";
 import {
+  contactsForPicker,
   lookupPayId,
   lookupResidentPayId,
   payIdLabel,
+  recentPayeeCounterparties,
   suggestedPayIds,
   suggestedResidentHandles,
 } from "@/lib/payid";
@@ -75,6 +79,15 @@ type TransferState =
       amount: TokenAmount;
     };
 
+const contactErrors = {
+  "invalid-payid": "Enter a valid Cursor identity or PayID.",
+  "own-payid": "That identity points back to your own Mars Bank profile.",
+  "invalid-nickname": "Enter a nickname for this contact.",
+  "unknown-contact": "That contact is no longer saved.",
+  network:
+    "The shared register could not be reached. Try saving the contact again.",
+} as const satisfies Record<ContactFailure["kind"], string>;
+
 const errorMessages = {
   "same-account": "Choose a different destination account.",
   "unknown-account": "That route includes an account no longer on your register.",
@@ -118,6 +131,8 @@ export function TransferForm() {
     approveRequest,
     declineRequest,
     cancelRequest,
+    saveContact,
+    pinContact,
   } = useBank();
   const [submitting, setSubmitting] = useState(false);
   const [requestNotice, setRequestNotice] = useState<string | null>(null);
@@ -132,6 +147,10 @@ export function TransferForm() {
   const [requestIssues, setRequestIssues] = useState<Record<string, string>>(
     {},
   );
+  const [nickname, setNickname] = useState("");
+  const [contactNotice, setContactNotice] = useState<string | null>(null);
+  const [contactIssue, setContactIssue] = useState<string | null>(null);
+  const [contactBusy, setContactBusy] = useState(false);
 
   const sources = useMemo(
     () => snapshot.accounts.filter((account) => account.kind !== "loan"),
@@ -164,6 +183,14 @@ export function TransferForm() {
     [snapshot],
   );
   const outgoing = useMemo(() => outgoingRequests(snapshot), [snapshot]);
+  const savedContacts = useMemo(
+    () => contactsForPicker(snapshot.contacts),
+    [snapshot.contacts],
+  );
+  const recentPayees = useMemo(
+    () => recentPayeeCounterparties(snapshot.transactions, snapshot.contacts),
+    [snapshot.transactions, snapshot.contacts],
+  );
 
   const accountName = (id: AccountId) =>
     snapshot.accounts.find((account) => account.id === id)?.name ?? "Account";
@@ -224,6 +251,68 @@ export function TransferForm() {
       description: "",
       issue: undefined,
     });
+  }
+
+  function fillPayee(payId: string) {
+    if (state.step !== "collect") return;
+    setState({ ...state, payId, issue: undefined });
+    setContactIssue(null);
+  }
+
+  async function saveCurrentContact() {
+    if (state.step !== "collect" || state.destination !== "payid") return;
+    if (!nickname.trim()) {
+      setContactIssue(contactErrors["invalid-nickname"]);
+      setContactNotice(null);
+      return;
+    }
+    const lookup = state.payId
+      ? lookupPayId(state.payId, snapshot.customer.email)
+      : null;
+    if (!lookup || lookup.kind === "invalid") {
+      setContactIssue(contactErrors["invalid-payid"]);
+      setContactNotice(null);
+      return;
+    }
+    if (lookup.kind === "own") {
+      setContactIssue(contactErrors["own-payid"]);
+      setContactNotice(null);
+      return;
+    }
+
+    setContactBusy(true);
+    const result = await saveContact({ handle: state.payId, nickname });
+    setContactBusy(false);
+    if (result.kind !== "ok") {
+      setContactIssue(contactErrors[result.kind]);
+      setContactNotice(null);
+      return;
+    }
+    setContactIssue(null);
+    setNickname("");
+    setContactNotice(
+      `Saved ${result.contact.nickname} for ${result.contact.payee.id}.`,
+    );
+  }
+
+  async function pinSavedContact(contact: SavedContact) {
+    setContactBusy(true);
+    const result = await pinContact({
+      contactId: contact.id,
+      pinned: !contact.pinned,
+    });
+    setContactBusy(false);
+    if (result.kind !== "ok") {
+      setContactIssue(contactErrors[result.kind]);
+      setContactNotice(null);
+      return;
+    }
+    setContactIssue(null);
+    setContactNotice(
+      result.contact.pinned
+        ? `Pinned ${result.contact.nickname}.`
+        : `Unpinned ${result.contact.nickname}.`,
+    );
   }
 
   function collect(event: FormEvent<HTMLFormElement>) {
@@ -943,6 +1032,101 @@ export function TransferForm() {
                   </button>
                 ))}
               </div>
+            ) : null}
+            {state.destination === "payid" ? (
+              <section aria-label="Saved contacts" className="contact-directory">
+                <div className="contact-directory-header">
+                  <h3>Saved contacts</h3>
+                  <p>Save a PayID or Cursor handle, then pin the ones you use.</p>
+                </div>
+                {savedContacts.length === 0 ? (
+                  <p className="contact-empty">No saved contacts yet.</p>
+                ) : (
+                  <ul className="contact-list">
+                    {savedContacts.map((contact) => (
+                      <li className="contact-row" key={contact.id}>
+                        <button
+                          aria-label={`Use ${contact.nickname}, ${contact.payee.id}`}
+                          disabled={contactBusy}
+                          onClick={() => fillPayee(contact.payee.id)}
+                          type="button"
+                        >
+                          <strong>{contact.nickname}</strong>
+                          <span>{contact.payee.id}</span>
+                        </button>
+                        <button
+                          aria-label={
+                            contact.pinned
+                              ? `Unpin ${contact.nickname}`
+                              : `Pin ${contact.nickname}`
+                          }
+                          aria-pressed={contact.pinned}
+                          disabled={contactBusy}
+                          onClick={() => void pinSavedContact(contact)}
+                          type="button"
+                        >
+                          {contact.pinned ? "Pinned" : "Pin"}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <label htmlFor="contact-nickname">
+                  Nickname
+                  <input
+                    id="contact-nickname"
+                    maxLength={40}
+                    onChange={(event) => {
+                      setNickname(event.target.value);
+                      setContactIssue(null);
+                    }}
+                    placeholder="Habitat crew"
+                    value={nickname}
+                  />
+                  <small>Saves the Cursor handle or PayID entered above.</small>
+                </label>
+                <button
+                  className="contact-save"
+                  disabled={contactBusy}
+                  onClick={() => void saveCurrentContact()}
+                  type="button"
+                >
+                  {contactBusy ? "Saving contact" : "Save contact"}
+                </button>
+                {contactIssue ? (
+                  <p className="form-error" role="alert">
+                    {contactIssue}
+                  </p>
+                ) : null}
+                {contactNotice ? (
+                  <p className="request-dispatched-note" role="status">
+                    {contactNotice}
+                  </p>
+                ) : null}
+              </section>
+            ) : null}
+            {state.destination === "payid" ? (
+              <section aria-label="Recent payees" className="contact-recent">
+                <h3>Recent payees</h3>
+                {recentPayees.length === 0 ? (
+                  <p className="contact-empty">
+                    Payees you send to show up here for the next route.
+                  </p>
+                ) : (
+                  <div className="payid-suggestions">
+                    {recentPayees.map((payee) => (
+                      <button
+                        aria-label={`Recent payee ${payee.displayName}, ${payee.id}`}
+                        key={payee.id}
+                        onClick={() => fillPayee(payee.id)}
+                        type="button"
+                      >
+                        {payee.displayName}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </section>
             ) : null}
             <label htmlFor="transfer-amount">
               Token amount

@@ -1,16 +1,25 @@
 import type { NextRequest } from "next/server";
 import type {
   CardStatus,
+  HostedContactCommand,
   HostedPaymentRequestCommand,
   HostedTransferCommand,
   PayIdScheme,
   ResolvedPayId,
 } from "../domain";
 import { isDemoSlug } from "../fixtures";
-import { accountId, cardId, paymentRequestId, type CardId } from "../ids";
+import {
+  accountId,
+  cardId,
+  contactId,
+  paymentRequestId,
+  type CardId,
+} from "../ids";
 import { tokens } from "../money";
 
-export function authenticatedResident(request: NextRequest): string | undefined {
+export function authenticatedResident(
+  request: NextRequest,
+): string | undefined {
   const slug = request.cookies.get("marsbank-demo-session")?.value;
   return isDemoSlug(slug) ? slug : undefined;
 }
@@ -174,6 +183,48 @@ export function parsePaymentRequestCommand(
     return {
       action: "cancel",
       command: { paymentRequestId: id },
+    };
+  }
+
+  return undefined;
+}
+
+export function parseContactCommand(
+  value: unknown,
+): HostedContactCommand | undefined {
+  if (!isRecord(value) || !isString(value.action)) return undefined;
+
+  if (value.action === "save") {
+    if (
+      !isString(value.handle) ||
+      value.handle.length < 1 ||
+      value.handle.length > 200 ||
+      !isString(value.nickname) ||
+      value.nickname.length > 80
+    ) {
+      return undefined;
+    }
+    return {
+      action: "save",
+      command: { handle: value.handle, nickname: value.nickname },
+    };
+  }
+
+  if (value.action === "pin") {
+    if (
+      !isString(value.contactId) ||
+      value.contactId.length < 4 ||
+      value.contactId.length > 100 ||
+      typeof value.pinned !== "boolean"
+    ) {
+      return undefined;
+    }
+    return {
+      action: "pin",
+      command: {
+        contactId: contactId(value.contactId),
+        pinned: value.pinned,
+      },
     };
   }
 
