@@ -1228,21 +1228,25 @@ function ContactDirectory({
         <p className="contact-empty">No saved contacts yet.</p>
       )}
       {recent.length > 0 ? (
-        <div
-          aria-label="Recent payees"
-          className="payid-suggestions"
-          role="group"
-        >
-          {recent.map((payee) => (
-            <button
-              aria-label={`Choose recent payee ${payee.displayName} ${payee.id}`}
-              key={payee.id}
-              onClick={() => onPick(payee.id)}
-              type="button"
-            >
-              {payee.displayName}
-            </button>
-          ))}
+        <div className="contact-recent">
+          <h4>Recent payees</h4>
+          <div
+            aria-label="Recent payees"
+            className="payid-suggestions"
+            role="group"
+          >
+            {recent.map((payee) => (
+              <button
+                aria-label={`Choose recent payee ${payee.displayName} ${payee.id}`}
+                key={payee.id}
+                onClick={() => onPick(payee.id)}
+                type="button"
+              >
+                {payee.displayName}
+                <span>{payee.id}</span>
+              </button>
+            ))}
+          </div>
         </div>
       ) : null}
       <label htmlFor="contact-nickname">

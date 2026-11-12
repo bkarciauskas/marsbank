@@ -1684,7 +1684,9 @@ html[data-theme="light"] .survey-select-list li.is-active {
 
 .contact-directory-heading p,
 .contact-empty,
-.contact-notice {
+.contact-notice,
+.contact-directory label > small,
+.contact-recent h4 {
   margin: 4px 0 0;
   color: var(--muted);
   font-family: var(--body-font);
@@ -1692,6 +1694,21 @@ html[data-theme="light"] .survey-select-list li.is-active {
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
+}
+
+.contact-recent {
+  display: grid;
+  gap: 8px;
+}
+
+.contact-recent h4 {
+  margin: 0;
+}
+
+.contact-recent .payid-suggestions button {
+  gap: 8px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .contact-list {

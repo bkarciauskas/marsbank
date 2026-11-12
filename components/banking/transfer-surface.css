@@ -173,10 +173,24 @@ html[data-theme="light"] .banking-shell .survey-select-list li.is-active {
 
 .banking-shell .contact-directory-heading p,
 .banking-shell .contact-empty,
-.banking-shell .contact-notice {
+.banking-shell .contact-notice,
+.banking-shell .contact-directory label > small,
+.banking-shell .contact-recent h4 {
   color: var(--desk-ink-soft);
   font-family: inherit;
   font-size: var(--desk-text-sm);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.banking-shell .contact-recent h4 {
+  margin: 0;
+  color: var(--desk-ink);
+}
+
+.banking-shell .contact-recent .payid-suggestions button span {
+  color: var(--desk-ink-soft);
 }
 
 .banking-shell .contact-row button {
