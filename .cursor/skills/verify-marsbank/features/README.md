@@ -45,3 +45,4 @@ Keep implementation details out of the map. Name only user paths, stable handles
 - [Transfer](./transfer.md) covers own-account and PayID sends through review to posted.
 - [Cards](./cards.md) covers the card desk and freeze / unfreeze.
 - [Activity](./activity.md) covers the movement ledger and transaction search.
+- [Notifications](./notifications.md) covers the incoming-transfer bell, the empty feed, and mark all as read.

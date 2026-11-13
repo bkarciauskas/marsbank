@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { formatDaypartGreeting } from "../../../../lib/daypart.ts";
 import {
   ensureDir,
   evidenceRoot,
@@ -10,18 +11,22 @@ import {
   writeJson,
 } from "./lib.mjs";
 
-const FEATURES = ["login", "accounts", "balances", "transfer", "cards", "activity"];
+const FEATURES = [
+  "login",
+  "accounts",
+  "balances",
+  "transfer",
+  "cards",
+  "activity",
+  "notifications",
+];
 const RECORDED = { login: "03-login-path.webm", balances: "03-balances.webm" };
 
 const residents = {
   cameron: { name: /cameron/i, firstName: "Cameron", member: "MB-104821" },
   aaron: { name: /aaron/i, firstName: "Aaron", member: "MB-110274" },
+  ben: { name: /ben/i, firstName: "Ben", member: "MB-118903" },
 };
-
-function expectedGreeting(firstName, hour) {
-  const daypart = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
-  return `Good ${daypart}, ${firstName}`;
-}
 
 function parseArgs(argv) {
   const args = { feature: "login", resident: "aaron", headed: false };
@@ -38,7 +43,7 @@ function parseArgs(argv) {
     fail(`Unknown feature "${args.feature}". Use one of: ${FEATURES.join(", ")}`);
   }
   if (!residents[args.resident]) {
-    fail(`Unknown resident "${args.resident}". Use cameron or aaron.`);
+    fail(`Unknown resident "${args.resident}". Use cameron, aaron, or ben.`);
   }
   return args;
 }
@@ -65,7 +70,7 @@ async function selectResident(page, residentKey) {
 async function waitForViewerGreeting(page, firstName) {
   for (;;) {
     const hour = await page.evaluate(() => new Date().getHours());
-    const heading = expectedGreeting(firstName, hour);
+    const heading = formatDaypartGreeting(firstName, hour);
     try {
       await page
         .getByRole("heading", { level: 1, name: heading })
@@ -315,6 +320,61 @@ async function expectVisible(locator) {
   }
 }
 
+async function driveNotifications(page, baseUrl, dir) {
+  const browser = page.context().browser();
+  const senderContext = await browser.newContext({
+    viewport: { width: 1440, height: 900 },
+    reducedMotion: "reduce",
+    baseURL: baseUrl,
+  });
+  try {
+    const sender = await senderContext.newPage();
+    await loginThroughRoster(page, baseUrl, "ben");
+    const quiet = page.getByRole("button", { name: "Notifications", exact: true });
+    await quiet.waitFor();
+    await quiet.click();
+    await page.getByText("No tokens from other residents yet.").waitFor();
+    const before = await capture(page, dir, "01-bell-quiet");
+    await page.keyboard.press("Escape");
+
+    await loginThroughRoster(sender, baseUrl, "aaron");
+    await sender.goto(`${baseUrl}/banking/transfer`, { waitUntil: "domcontentloaded" });
+    await sender.locator("#transfer-payid").fill("ben@marsbank.mars");
+    await sender.getByPlaceholder("0").fill("250");
+    await sender.locator("#transfer-description").fill("Dust filters");
+    await sender.getByRole("button", { name: "Review route" }).click();
+    await sender.getByRole("button", { name: "Send tokens" }).click();
+    await sender.getByRole("heading", { level: 2, name: "Tokens dispatched" }).waitFor();
+
+    const lit = page.getByRole("button", { name: "Notifications, 1 unread" });
+    await lit.waitFor({ timeout: 12_000 });
+    await lit.click();
+    await page.getByRole("region", { name: "Incoming transfers" }).getByText("Aaron sent 250 tokens").waitFor();
+    const unread = await capture(page, dir, "02-bell-unread");
+    await page.getByRole("button", { name: "Mark all as read" }).click();
+    await quiet.waitFor();
+    const read = await capture(page, dir, "03-bell-read");
+    return {
+      actions: [
+        "login Ben via demo roster",
+        'button "Notifications" shows an empty incoming feed',
+        "Aaron sends 250 tokens to ben@marsbank.mars",
+        'button "Notifications, 1 unread"',
+        'button "Mark all as read"',
+      ],
+      observed: {
+        empty: "No tokens from other residents yet.",
+        unreadLabel: "Notifications, 1 unread",
+        row: "Aaron sent 250 tokens",
+        readLabel: "Notifications",
+      },
+      artifacts: [before, unread, read],
+    };
+  } finally {
+    await senderContext.close();
+  }
+}
+
 const drivers = {
   login: driveLogin,
   accounts: driveAccounts,
@@ -322,6 +382,7 @@ const drivers = {
   transfer: driveTransfer,
   cards: driveCards,
   activity: driveActivity,
+  notifications: driveNotifications,
 };
 
 const args = parseArgs(process.argv.slice(2));

@@ -1,6 +1,6 @@
 ---
 name: verify-marsbank
-description: Drive Mars Bank's web UI at a dedicated local port and prove login plus banking user paths (accounts, transfers, cards, activity) with Playwright screenshots, ARIA snapshots, and register API evidence.
+description: Drive Mars Bank's web UI at a dedicated local port and prove login plus banking user paths (accounts, transfers, cards, activity, incoming notifications) with Playwright screenshots, ARIA snapshots, and register API evidence.
 ---
 
 # Verify Mars Bank
@@ -94,6 +94,7 @@ node .cursor/skills/verify-marsbank/scripts/drive.mjs balances
 node .cursor/skills/verify-marsbank/scripts/drive.mjs transfer
 node .cursor/skills/verify-marsbank/scripts/drive.mjs cards
 node .cursor/skills/verify-marsbank/scripts/drive.mjs activity
+node .cursor/skills/verify-marsbank/scripts/drive.mjs notifications
 ```
 
 Optional: `--resident cameron` (default is `aaron`, so login proves roster selection rather than the prefilled Cameron row). `--headed` opens a visible browser.
@@ -107,6 +108,7 @@ If you must drive by hand in Playwright, keep these selectors:
 - Transfer: `getByRole("link", { name: /Make a transfer/i })` → `getByRole("button", { name: "Between my accounts" })` → `getByPlaceholder("0")` → `getByRole("button", { name: "Review route" })` → `getByRole("button", { name: "Send tokens" })` → heading `Tokens dispatched`
 - Cards: `getByRole("button", { name: "Freeze card" })` / `Unfreeze card`
 - Activity search: `getByRole("searchbox", { name: "Search transactions, accounts and payees" })` then submit `form.desk-search`
+- Notifications: `getByRole("button", { name: "Notifications", exact: true })` when nothing is unread, or `Notifications, N unread`. The panel is `getByRole("region", { name: "Incoming transfers" })`. **Mark all as read** clears the count in that browser.
 - Settings restore: `getByRole("button", { name: "Restore shared demo" })` then `Restore all registers`
 
 Read the matching file under [features/](features/README.md) before driving. A proof that only opens `/banking` is incomplete when the map lists other entry points for that feature.
