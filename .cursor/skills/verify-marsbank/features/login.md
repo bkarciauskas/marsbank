@@ -36,6 +36,7 @@ Preconditions:
 ## Gotchas
 
 - Prefilling Cameron and clicking **Enter Mars Bank** is a valid smoke, but it does not prove roster selection. Prefer Aaron (the harness default) or another non-default resident.
+- `drive.mjs --resident` accepts only `aaron` and `cameron`. Pick Ben, Richard, Robin, or Blake by clicking that resident's roster label.
 - Setting `marsbank-demo-session` or `POST /api/session` is not login proof. Those are secondary APIs.
 - Submit copy becomes `Opening your register` while the request is in flight. Wait for `/banking`, not for the original button name to persist.
 - `/banking` without a valid demo cookie redirects to `/login`. A 200 on `/login` after a banking URL means the session was missing, not that login failed.

@@ -10,7 +10,7 @@ import {
   writeJson,
 } from "./lib.mjs";
 
-const FEATURES = ["login", "accounts", "balances", "transfer", "cards", "activity"];
+const FEATURES = ["login", "accounts", "balances", "transfer", "cards", "activity", "notifications"];
 const RECORDED = { login: "03-login-path.webm", balances: "03-balances.webm" };
 
 const residents = {
@@ -19,7 +19,7 @@ const residents = {
 };
 
 function expectedGreeting(firstName, hour) {
-  const daypart = hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+  const daypart = hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
   return `Good ${daypart}, ${firstName}`;
 }
 
@@ -238,18 +238,25 @@ async function driveCards(page, baseUrl, dir, residentKey) {
   await page.getByRole("navigation", { name: "Banking" }).getByRole("link", { name: "Cards" }).click();
   await page.waitForURL("**/banking/cards");
   await page.getByRole("heading", { level: 1, name: "Cards for every airlock" }).waitFor();
+  const firstCard = page.locator("article.card-panel").first();
   const before = await capture(page, dir, "01-active");
-  await page.getByRole("button", { name: "Freeze card" }).first().click();
-  await page.getByRole("button", { name: "Unfreeze card" }).first().waitFor();
-  await page.getByText("Frozen", { exact: true }).first().waitFor();
+  await firstCard.getByRole("button", { name: "Freeze card", exact: true }).click();
+  await firstCard.getByRole("button", { name: "Unfreeze card", exact: true }).waitFor();
+  await firstCard.getByText("Frozen", { exact: true }).waitFor();
   const frozen = await capture(page, dir, "02-frozen");
   const register = await writeRegister(page, dir);
   const frozenCard = register.body?.snapshot?.cards?.find((card) => card.status === "frozen");
   if (!frozenCard) {
     throw new Error("Register after freeze had no frozen card");
   }
-  await page.getByRole("button", { name: "Unfreeze card" }).first().click();
-  await page.getByRole("button", { name: "Freeze card" }).first().waitFor();
+  await firstCard.getByRole("button", { name: "Unfreeze card", exact: true }).click();
+  await firstCard.getByRole("button", { name: "Freeze card", exact: true }).waitFor();
+  await firstCard.getByText("Active", { exact: true }).waitFor();
+  const restored = await writeRegister(page, dir, "register-after-unfreeze.json");
+  const restoredCard = restored.body?.snapshot?.cards?.find((card) => card.id === frozenCard.id);
+  if (restoredCard?.status !== "active") {
+    throw new Error(`Card ${frozenCard.id} did not return to active`);
+  }
   return {
     actions: [
       "login via demo roster",
@@ -261,6 +268,7 @@ async function driveCards(page, baseUrl, dir, residentKey) {
       heading: "Cards for every airlock",
       frozenCardId: frozenCard.id,
       frozenLast4: frozenCard.last4,
+      restoredStatus: restoredCard.status,
     },
     artifacts: [before, frozen],
   };
@@ -315,6 +323,30 @@ async function expectVisible(locator) {
   }
 }
 
+async function driveNotifications(page, baseUrl, dir, residentKey) {
+  await loginThroughRoster(page, baseUrl, residentKey);
+  await page.getByRole("button", { name: "Notifications", exact: true }).click();
+  const panel = page.getByRole("region", { name: "Incoming transfers" });
+  await panel.getByRole("heading", { level: 2, name: "Incoming transfers" }).waitFor();
+  await panel.getByText("No tokens from other residents yet.").waitFor();
+  const markRead = panel.getByRole("button", { name: "Mark all as read" });
+  if (await markRead.isEnabled()) {
+    throw new Error("Mark all as read was enabled on an empty bell");
+  }
+  const open = await capture(page, dir, "01-bell-open");
+  return {
+    actions: [
+      "login via demo roster",
+      'button "Notifications"',
+    ],
+    observed: {
+      heading: "Incoming transfers",
+      empty: "No tokens from other residents yet.",
+    },
+    artifacts: [open],
+  };
+}
+
 const drivers = {
   login: driveLogin,
   accounts: driveAccounts,
@@ -322,6 +354,7 @@ const drivers = {
   transfer: driveTransfer,
   cards: driveCards,
   activity: driveActivity,
+  notifications: driveNotifications,
 };
 
 const args = parseArgs(process.argv.slice(2));
