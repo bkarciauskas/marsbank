@@ -18,7 +18,7 @@ Notifications is the bell on every signed-in banking page. It lists credits othe
 Preconditions:
 
 - Mars Bank is healthy at `http://127.0.0.1:4317`.
-- Signed in as Aaron (or Cameron) on a freshly seeded register. Seed data has no incoming credits and no open payment requests.
+- Signed in as Aaron (or Cameron). The empty panel needs no incoming credit from another resident and no open payment request. Seed data meets that. An own-account transfer does not fill the bell.
 - `node .cursor/skills/verify-marsbank/scripts/doctor.mjs` still passes.
 
 - **Open the bell.** Run `node .cursor/skills/verify-marsbank/scripts/drive.mjs notifications` or choose `getByRole("button", { name: "Notifications", exact: true })`.
@@ -29,5 +29,5 @@ Preconditions:
 ## Gotchas
 
 - Use an exact name on **Notifications**. A badge changes the name to `Notifications, N unread`.
-- The bell is empty only on a seeded register. A PayID credit from another resident, or an open request, replaces the empty line.
+- The empty line stays until another resident sends a credit or opens a request. An own-account transfer leaves the bell empty. The shipped drive proves that empty panel only.
 - Approving a request moves tokens. Decline, or restore the shared demo, before a later proof that needs seed balances.

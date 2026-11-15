@@ -166,28 +166,54 @@ async function driveBalances(page, baseUrl, dir, residentKey) {
   const firstFigure = page.locator(".account-value strong").first();
   const shownText = await firstFigure.innerText();
   if (!/\d/.test(shownText)) throw new Error(`Expected a balance before hiding, saw ${shownText}`);
+  await page.getByRole("button", { name: "Show register position" }).click();
+  const position = page.locator("#register-position");
+  await position.getByRole("heading", { name: "Register position" }).waitFor();
+  const positionShown = await position.innerText();
+  if (!/\d/.test(positionShown)) {
+    throw new Error(`Register position had no figure before hiding, saw ${positionShown}`);
+  }
   await pause();
   const shown = await capture(page, dir, "01-balances-shown");
-  await page.getByRole("button", { name: "Hide balances" }).click();
-  await page.getByRole("button", { name: "Show balances" }).waitFor();
+  const hideButton = page.getByRole("button", { name: "Hide balances" });
+  await hideButton.click();
+  const showButton = page.getByRole("button", { name: "Show balances" });
+  await showButton.waitFor();
+  if ((await showButton.getAttribute("aria-pressed")) !== "true") {
+    throw new Error("Show balances was not pressed after Hide balances");
+  }
   const figures = await page.locator(".account-value strong").allInnerTexts();
   if (figures.length === 0 || figures.some((text) => /\d/.test(text))) {
     throw new Error(`Balances still visible after Hide balances: ${figures.join(" | ")}`);
   }
+  const positionHidden = await position.innerText();
+  if (/\d/.test(positionHidden)) {
+    throw new Error(`Register position still showed a figure: ${positionHidden}`);
+  }
   await page.getByRole("heading", { level: 1, name: "Token register" }).waitFor();
   await pause();
   const hidden = await capture(page, dir, "02-balances-hidden");
+  await showButton.click();
+  await page.getByRole("button", { name: "Hide balances" }).waitFor();
+  const restoredText = await firstFigure.innerText();
+  if (!/\d/.test(restoredText)) {
+    throw new Error(`Balance did not return after Show balances, saw ${restoredText}`);
+  }
   await pause();
   return {
     actions: [
       "login via demo roster",
       'sidebar link "Accounts"',
+      'button "Show register position"',
       'button "Hide balances"',
+      'button "Show balances"',
     ],
     observed: {
       heading: "Token register",
       firstFigureBefore: shownText,
       figuresAfter: figures,
+      positionHidden,
+      firstFigureRestored: restoredText,
     },
     artifacts: [shown, hidden],
   };

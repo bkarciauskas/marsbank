@@ -7,7 +7,7 @@ description: Drive Mars Bank's web UI at a dedicated local port and prove login 
 
 Project-local control skill for [Mars Bank](https://github.com/bkarciauskas/marsbank), a Next.js demo bank. Write for the next agent: launch an isolated instance, doctor it, drive a mapped user path, keep the proof, then tear down only what this run started.
 
-Primary surface is the web UI. Secondary surfaces are the route handlers under `app/api/` (`/api/session`, `/api/register`, `/api/transfers`, `/api/cards`, `/api/reset`). Do not treat Vitest component tests as proof of the running app.
+Primary surface is the web UI. Secondary surfaces are the route handlers under `app/api/` (`/api/session`, `/api/register`, `/api/transfers`, `/api/cards`, `/api/requests`, `/api/reset`). Do not treat Vitest component tests as proof of the running app.
 
 ## Start and prove
 
