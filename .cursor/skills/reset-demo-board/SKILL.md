@@ -18,14 +18,19 @@ Do not reset unless the user asked. Do not edit `features.md`. Do not edit the p
 - The board has no sprints. Columns are To Do, In Progress, and Done. The workflow has no In Review status; never move a story to In Review.
 - Pull requests live in `github.com/bkarciauskas/marsbank`.
 
-## Starting state
+## Demo phases
 
-A reset restores this state. It does not put every story in unassigned To Do.
+A reset restores each story to its demo phase. It does not put every story in unassigned To Do.
 
-| Stories | Status | Assignee |
-| --- | --- | --- |
-| `MARS-1`, `MARS-2` | In Progress | Ben Karciauskas, accountId `712020:03561c63-15cd-478b-a933-718f6a201f8e` |
-| `MARS-3` through `MARS-11` | To Do | none (cleared) |
+Ben Karciauskas's accountId is `712020:03561c63-15cd-478b-a933-718f6a201f8e`. Set the assignee with `assignee: { "accountId": "..." }`, or `assignee: null` to clear it. Transition ids: `11` To Do, `21` In Progress, `31` Done.
+
+| Stories | Status | Assignee | Description | Pull requests |
+| --- | --- | --- | --- | --- |
+| `MARS-1`, `MARS-2` | In Progress | Ben | Leave as is | Keep open: PR 30 and PR 31 are the For Review pair. Do not close them or delete their branches. |
+| `MARS-3`, `MARS-4` | In Progress | Ben | Restore from `features.md` | None expected. Close any unmerged one that names the key and delete its head branch. |
+| `MARS-5` through `MARS-11` | To Do | none (cleared) | Restore from `features.md` | Close unmerged ones that name the key and delete their head branches. |
+
+`MARS-1` and `MARS-2` stay In Progress and their Cursor cards stay For Review. Never transition them to To Do.
 
 ## Scope
 
@@ -47,9 +52,12 @@ Match the key as a whole token. `MARS-1` is not `MARS-10` or `MARS-11`.
 
 ## For each story
 
-1. Read the current issue. Look up its starting status and assignee in the table above.
-   - If the status differs, transition it to that status.
-   - Set the assignee: Ben Karciauskas's accountId for `MARS-1` and `MARS-2`; clear it (null) for `MARS-3` through `MARS-11`.
-   - Restore the description from `features.md`. Leave the `marsbank-demo` label.
-2. Find open pull requests in `bkarciauskas/marsbank` whose title or body names that `MARS` key. Close each without merging and delete its head branch. Do not touch pull requests that do not name a `MARS` key. Do not touch merged pull requests.
-3. Tell the user the key, its restored status and assignee, and which pull requests were closed. If none were open, say so.
+1. Read the current issue. Look up its phase in the table above.
+   - If the status differs, transition it to that status (`21` In Progress for `MARS-1` through `MARS-4`, `11` To Do for `MARS-5` through `MARS-11`).
+   - Set the assignee: Ben's accountId for `MARS-1` through `MARS-4`; clear it (null) for `MARS-5` through `MARS-11`.
+   - Restore the description from `features.md` for `MARS-3` through `MARS-11`. Leave the `MARS-1` and `MARS-2` descriptions. Leave the `marsbank-demo` label.
+2. Pull requests in `bkarciauskas/marsbank`:
+   - `MARS-1`, `MARS-2`: do nothing. Do not close PR 30 or PR 31 and do not delete their branches.
+   - `MARS-3` through `MARS-11`: find unmerged open pull requests whose title or body names that key. Close each without merging and delete its head branch.
+   - Do not touch pull requests that do not name a `MARS` key. Do not touch merged pull requests.
+3. Tell the user the key, its restored status and assignee, and which pull requests were closed or kept. If none were open, say so.
