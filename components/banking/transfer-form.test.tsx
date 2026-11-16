@@ -9,13 +9,52 @@ import { BankProvider } from "@/lib/store";
 import { createLedgerFetch } from "@/test-utils/ledger-fetch";
 import { TransferForm } from "./transfer-form";
 
+let query = "";
+
 vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => new URLSearchParams(query),
 }));
 
 describe("TransferForm", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    query = "";
+  });
+
+  it("opens an own-account repayment prefilled from a link", () => {
+    query = "from=acc-everyday&to=acc-habitat-loan&amount=1000";
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Between my accounts" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByPlaceholderText("0")).toHaveValue("1000");
+    fireEvent.click(screen.getByRole("button", { name: "Review route" }));
+
+    expect(screen.getByText("Sol Account")).toBeInTheDocument();
+    expect(screen.getByText("Olympus Arc Habitat")).toBeInTheDocument();
+    expect(screen.getByText("1,000 tokens")).toBeInTheDocument();
+  });
+
+  it("prefills the linked destination and drops an amount that is not whole tokens", () => {
+    query = "from=acc-everyday&to=acc-reserve&amount=12.5";
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    expect(screen.getByPlaceholderText("0")).toHaveValue("");
+    fireEvent.change(screen.getByPlaceholderText("0"), {
+      target: { value: "2500" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Review route" }));
+
+    expect(screen.getByText("Long Horizon Reserve")).toBeInTheDocument();
   });
 
   it("reviews and posts an own-account transfer", async () => {
