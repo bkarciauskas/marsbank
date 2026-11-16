@@ -3670,6 +3670,96 @@ a.desk-demo-flag:focus-visible {
   font-weight: 600;
 }
 
+.desk-planner-view h3 {
+  margin: 0;
+  padding: 16px 22px 0;
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-md);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.desk-planner-fields,
+.desk-planner-fields + .desk-planner-view,
+.desk-planner-actions {
+  border-top: 1px solid var(--desk-rule);
+}
+
+.desk-planner-fields {
+  display: grid;
+  gap: 20px;
+  padding: 18px 22px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.desk-planner-field {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+
+.desk-planner-field label {
+  color: var(--desk-ink);
+  font-size: var(--desk-text-md);
+  font-weight: 500;
+}
+
+.desk-planner-field input {
+  min-height: 46px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  padding: 0 12px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  color-scheme: light;
+  font-size: var(--desk-text-xl);
+  font-variant-numeric: tabular-nums;
+}
+
+.desk-planner-field input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.desk-planner-field small {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.desk-planner-field .form-error {
+  color: var(--danger);
+}
+
+.desk-planner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px;
+}
+
+.desk-planner-actions p {
+  margin: 0;
+  color: var(--desk-ink);
+  font-size: var(--desk-text-lg);
+  font-weight: 600;
+}
+
+@media (max-width: 850px) {
+  .desk-planner-fields,
+  .desk-planner-view .desk-glance {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .desk-planner-view .desk-glance > div {
+    min-height: 0;
+    border-right: 0;
+    padding: 12px 22px;
+  }
+}
+
 .desk-primary-action {
   display: inline-flex;
   min-height: 46px;

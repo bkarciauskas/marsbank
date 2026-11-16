@@ -54,6 +54,7 @@ const domainFiles = [
   "lib/money.ts",
   "lib/domain.ts",
   "lib/ledger.ts",
+  "lib/loan-projection.ts",
   "lib/ids.ts",
   "lib/payid.ts",
   "lib/sol.ts",

@@ -9,6 +9,7 @@ import type {
 } from "./domain";
 import type { AccountId, CardId } from "./ids";
 import { txnId } from "./ids";
+import type { LoanPosition } from "./loan-projection";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
 import { solIndex } from "./sol";
@@ -363,4 +364,13 @@ export function offsetTotal(
       0,
     ),
   );
+}
+
+export function loanPosition(
+  snapshot: BankSnapshot,
+  loanId: AccountId,
+): LoanPosition | undefined {
+  const loan = accountById(snapshot, loanId);
+  if (loan?.kind !== "loan") return undefined;
+  return { remaining: loan.remaining, offset: offsetTotal(snapshot, loanId) };
 }

@@ -7,6 +7,7 @@ import {
   applyTransfer,
   availableBalance,
   displayBalance,
+  loanPosition,
   needsStepUp,
   registerPosition,
   offsetAccounts,
@@ -139,6 +140,15 @@ describe("Mars Bank ledger", () => {
       "Habitat Offset",
     ]);
     expect(offsetTotal(seedSnapshot, loanId)).toBe(4_002_644_620);
+  });
+
+  it("reads a habitat loan's position as its remaining principal and offsets", () => {
+    expect(loanPosition(seedSnapshot, accountId("acc-habitat-loan"))).toEqual({
+      remaining: 36_400_000_000,
+      offset: 4_002_644_620,
+    });
+    expect(loanPosition(seedSnapshot, accountId("acc-everyday"))).toBeUndefined();
+    expect(loanPosition(seedSnapshot, accountId("acc-missing"))).toBeUndefined();
   });
 
   it("rejects a credit draw that exceeds the limit", () => {

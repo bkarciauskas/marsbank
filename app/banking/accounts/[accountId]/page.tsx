@@ -3,13 +3,14 @@
 import { ArrowLeft, ArrowLeftRight, Copy, Home } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { LoanOffsetPlanner } from "@/components/banking/loan-offset-planner";
 import { TransactionList } from "@/components/banking/transaction-list";
 import type { Account } from "@/lib/domain";
 import {
   availableBalance,
   displayBalance,
+  loanPosition,
   offsetAccounts,
-  offsetTotal,
 } from "@/lib/ledger";
 import { formatTokens } from "@/lib/money";
 import { useBank } from "@/lib/store";
@@ -58,8 +59,9 @@ export default function AccountDetailPage() {
       : undefined;
   const linkedOffsets =
     account.kind === "loan" ? offsetAccounts(snapshot, account.id) : [];
-  const linkedOffsetTotal =
-    account.kind === "loan" ? offsetTotal(snapshot, account.id) : undefined;
+  const position =
+    account.kind === "loan" ? loanPosition(snapshot, account.id) : undefined;
+  const repaymentSource = linkedOffsets[0];
   const figure = heroFigure(account);
   const canSend = account.kind !== "loan";
   const canOpenLoan = account.kind === "offset" && linkedLoan;
@@ -125,7 +127,7 @@ export default function AccountDetailPage() {
         </section>
       ) : null}
 
-      {account.kind === "loan" && linkedOffsetTotal !== undefined ? (
+      {account.kind === "loan" && position ? (
         <section className="desk-card desk-offset-note">
           <Home aria-hidden="true" />
           <div>
@@ -133,10 +135,18 @@ export default function AccountDetailPage() {
               {linkedOffsets.map((offset) => offset.name).join(" · ")}
             </span>
             <strong>
-              {formatTokens(linkedOffsetTotal)} working against this habitat
+              {formatTokens(position.offset)} working against this habitat
             </strong>
           </div>
         </section>
+      ) : null}
+
+      {account.kind === "loan" && position && repaymentSource ? (
+        <LoanOffsetPlanner
+          loanId={account.id}
+          position={position}
+          source={repaymentSource}
+        />
       ) : null}
 
       <section className="desk-card">

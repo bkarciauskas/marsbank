@@ -148,14 +148,21 @@ export function TransferForm() {
   const initialDestination =
     snapshot.accounts.find((account) => account.id !== initialSource)?.id ??
     fallbackSource.id;
+  const requestedTo = snapshot.accounts.find(
+    (account) => account.id === searchParams.get("to"),
+  );
+  const requestedAmount = parseTokenInput(searchParams.get("amount") ?? "");
   const [state, setState] = useState<TransferState>({
     step: "collect",
-    destination: "payid",
+    destination: requestedTo ? "own" : "payid",
     from: initialSource,
-    to: initialDestination,
+    to: requestedTo?.id ?? initialDestination,
     payId: "",
     requestTarget: "",
-    amountInput: "",
+    amountInput:
+      requestedAmount !== null && requestedAmount > 0
+        ? String(requestedAmount)
+        : "",
     description: "",
   });
 

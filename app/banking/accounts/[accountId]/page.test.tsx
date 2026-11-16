@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { BankProvider } from "@/lib/store";
 import AccountDetailPage from "./page";
@@ -72,6 +72,87 @@ describe("AccountDetailPage", () => {
     expect(credit.container.querySelector(".desk-position")).not.toHaveClass(
       "spendable",
     );
+  });
+
+  it("plans a lump sum on the habitat loan and links a prefilled repayment", () => {
+    renderDetail("acc-habitat-loan");
+    const planner = screen.getByRole("region", { name: "Offset planner" });
+    const today = within(planner).getByRole("region", { name: "Today" });
+    const plan = within(planner).getByRole("region", { name: "With this plan" });
+
+    expect(within(today).getByText("4,002,644,620")).toBeInTheDocument();
+    expect(within(today).getByText("208,137,520")).toBeInTheDocument();
+    expect(
+      within(planner).getByRole("link", { name: /make a repayment/i }),
+    ).toHaveAttribute(
+      "href",
+      "/banking/transfer?from=acc-everyday&to=acc-habitat-loan",
+    );
+
+    fireEvent.change(within(planner).getByLabelText("Lump-sum payment"), {
+      target: { value: "600,000,000" },
+    });
+
+    expect(
+      within(planner).getByRole("link", { name: /repay 600,000,000 tokens/i }),
+    ).toHaveAttribute(
+      "href",
+      "/banking/transfer?from=acc-everyday&to=acc-habitat-loan&amount=600000000",
+    );
+    expect(within(planner).getByRole("status")).toHaveTextContent(
+      "100 sols sooner",
+    );
+    expect(within(plan).getByText("3,402,644,620")).toBeInTheDocument();
+  });
+
+  it("plans extra offset tokens without moving money", () => {
+    renderDetail("acc-habitat-loan");
+    const planner = screen.getByRole("region", { name: "Offset planner" });
+    const plan = within(planner).getByRole("region", { name: "With this plan" });
+
+    fireEvent.change(within(planner).getByLabelText("Move into offset"), {
+      target: { value: "1,000,000,000" },
+    });
+
+    expect(within(plan).getByText("5,002,644,620")).toBeInTheDocument();
+    expect(within(plan).getByText("260,137,520")).toBeInTheDocument();
+    expect(within(planner).getByRole("status")).toHaveTextContent(
+      /^[\d,]+ sols sooner$/,
+    );
+    expect(
+      within(planner).getByRole("link", { name: /make a repayment/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("flags what-if amounts it cannot plan instead of clamping them", () => {
+    renderDetail("acc-habitat-loan");
+    const planner = screen.getByRole("region", { name: "Offset planner" });
+    const plan = within(planner).getByRole("region", { name: "With this plan" });
+
+    fireEvent.change(within(planner).getByLabelText("Lump-sum payment"), {
+      target: { value: "2,000,000,000" },
+    });
+    fireEvent.change(within(planner).getByLabelText("Move into offset"), {
+      target: { value: "12.5" },
+    });
+
+    const issues = within(planner).getAllByRole("alert");
+    expect(issues.map((issue) => issue.textContent)).toEqual([
+      "Enter whole tokens, such as 250,000.",
+      "Sol Account has 1,000,184,220 tokens available.",
+    ]);
+    expect(within(plan).getByText("4,002,644,620")).toBeInTheDocument();
+    expect(within(planner).getByRole("status")).toBeEmptyDOMElement();
+    expect(
+      within(planner).getByRole("link", { name: /make a repayment/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the planner to habitat loans", () => {
+    renderDetail("acc-reserve");
+    expect(
+      screen.queryByRole("region", { name: "Offset planner" }),
+    ).not.toBeInTheDocument();
   });
 
   it("explains a missing account on the desk", () => {
