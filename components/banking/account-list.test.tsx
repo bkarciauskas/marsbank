@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom/vitest";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Account } from "@/lib/domain";
 import { accountId } from "@/lib/ids";
@@ -93,5 +93,38 @@ describe("AccountList", () => {
     // 184,220 deposit + 417,360 unused credit
     expect(totals[0]?.textContent).toBe("601,580");
     expect(totals[1]?.textContent).toBe("184,220");
+  });
+
+  const vault: Account = {
+    kind: "savings",
+    id: accountId("acc-vault"),
+    name: "Launch Window Cargo Reserve",
+    productName: "Mars Bank Goal Vault",
+    branch: "MARS-001",
+    number: "6600 0004",
+    openedOn: "2026-11-16",
+    available: tokens(30_000),
+    current: tokens(30_000),
+    goal: tokens(120_000),
+  };
+
+  it("shows progress toward a goal only on accounts that have one", () => {
+    render(<AccountList accounts={[...accounts, vault]} />);
+
+    const meter = screen.getByRole("progressbar", {
+      name: "Launch Window Cargo Reserve goal progress",
+    });
+    expect(meter).toHaveAttribute("value", "25");
+    expect(meter.parentElement).toHaveTextContent("30,000 of 120,000 MT · 25%");
+    expect(screen.getAllByRole("progressbar")).toHaveLength(1);
+  });
+
+  it("keeps the goal percent when balances are hidden", () => {
+    render(<AccountList accounts={[vault]} hideFigures />);
+
+    const goal = screen.getByRole("progressbar").parentElement;
+    expect(goal).toHaveTextContent("25%");
+    expect(goal).not.toHaveTextContent("30,000");
+    expect(goal).not.toHaveTextContent("120,000");
   });
 });

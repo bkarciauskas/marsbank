@@ -9,6 +9,7 @@ import type { Account } from "@/lib/domain";
 import { registerPosition } from "@/lib/ledger";
 import { groupTokens, tokens, type TokenAmount } from "@/lib/money";
 import { useBank } from "@/lib/store";
+import { OpenAccountForm } from "./open-account-form";
 
 function matches(account: Account, needle: string): boolean {
   if (needle.length === 0) {
@@ -31,8 +32,9 @@ function AccountsRegister() {
   const needle = query.toLowerCase();
   const visible = snapshot.accounts.filter((account) => matches(account, needle));
   const deposits = visible.filter(
-    (account) => account.kind !== "credit" && account.kind !== "loan",
+    (account) => account.kind === "transaction" || account.kind === "offset",
   );
+  const vaults = visible.filter((account) => account.kind === "savings");
   const lending = visible.filter(
     (account) => account.kind === "credit" || account.kind === "loan",
   );
@@ -117,7 +119,7 @@ function AccountsRegister() {
           </dl>
           <p className="desk-glance-note">
             {query.length === 0
-              ? "On hand is the balance of offset accounts. Owing is the habitat loan still to pay plus expedition credit. Net position is the difference."
+              ? "On hand is the balance of offset accounts and savings vaults. Owing is the habitat loan still to pay plus expedition credit. Net position is the difference."
               : `These figures cover the accounts matching “${query}”.`}
           </p>
         </section>
@@ -129,6 +131,18 @@ function AccountsRegister() {
           </div>
           <AccountList
             accounts={deposits}
+            ledger={snapshot.accounts}
+            hideFigures={figuresHidden}
+          />
+        </section>
+      ) : null}
+      {vaults.length > 0 ? (
+        <section aria-labelledby="register-vaults" className="desk-card">
+          <div className="desk-card-heading">
+            <h2 id="register-vaults">Savings vaults</h2>
+          </div>
+          <AccountList
+            accounts={vaults}
             ledger={snapshot.accounts}
             hideFigures={figuresHidden}
           />
@@ -154,6 +168,15 @@ function AccountsRegister() {
           </div>
         </section>
       ) : null}
+      <section aria-labelledby="open-account-heading" className="desk-card">
+        <div className="desk-card-heading">
+          <div>
+            <h2 id="open-account-heading">Open an account</h2>
+            <p>Opening moves no tokens. A goal is a target, not a transfer.</p>
+          </div>
+        </div>
+        <OpenAccountForm />
+      </section>
     </div>
   );
 }

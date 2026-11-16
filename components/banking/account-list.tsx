@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import type { Account } from "@/lib/domain";
-import { availableBalance } from "@/lib/ledger";
+import { availableBalance, goalProgress } from "@/lib/ledger";
 import { groupTokens, tokens, type TokenAmount } from "@/lib/money";
 
 function registerValues(account: Account, accounts: Account[]) {
@@ -122,11 +122,29 @@ export function AccountList({
         const values = registerValues(account, ledger);
         const labels = columnLabels(account);
         const restated = labels.available !== "Available";
+        const progress =
+          "goal" in account && account.goal
+            ? goalProgress(account.current, account.goal)
+            : null;
         return (
           <Link href={`/banking/accounts/${account.id}`} key={account.id}>
             <span className="account-name">
               <strong>{account.name}</strong>
               <small>{account.productName}</small>
+              {progress ? (
+                <span className="account-goal">
+                  <progress
+                    aria-label={`${account.name} goal progress`}
+                    max={100}
+                    value={progress.percent}
+                  />
+                  <small>
+                    <Figure amount={progress.saved} hidden={hideFigures} /> of{" "}
+                    <Figure amount={progress.goal} hidden={hideFigures} /> MT ·{" "}
+                    {progress.percent}%
+                  </small>
+                </span>
+              ) : null}
             </span>
             <span className="account-coordinates">
               <small>{account.branch}</small>
