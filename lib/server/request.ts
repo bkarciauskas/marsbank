@@ -3,6 +3,7 @@ import type {
   CardStatus,
   HostedPaymentRequestCommand,
   HostedTransferCommand,
+  OpenAccountCommand,
   PayIdScheme,
   ResolvedPayId,
 } from "../domain";
@@ -111,6 +112,31 @@ export function parseCardUpdate(
     return undefined;
   }
   return { cardId: cardId(value.cardId), status: value.status };
+}
+
+export function parseOpenAccount(value: unknown): OpenAccountCommand | undefined {
+  if (
+    !isRecord(value) ||
+    !isString(value.name) ||
+    typeof value.goal !== "number" ||
+    !Number.isSafeInteger(value.goal)
+  ) {
+    return undefined;
+  }
+
+  const goal = tokens(value.goal);
+  if (value.kind === "savings") {
+    return { kind: "savings", name: value.name, goal };
+  }
+  if (value.kind === "offset" && isString(value.linkedLoanId)) {
+    return {
+      kind: "offset",
+      name: value.name,
+      goal,
+      linkedLoanId: accountId(value.linkedLoanId),
+    };
+  }
+  return undefined;
 }
 
 export function parsePaymentRequestCommand(
