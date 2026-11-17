@@ -5,8 +5,6 @@ import sys
 
 DOTENV_RE = re.compile(r"(^|/)\.env(\..+)?$", re.IGNORECASE)
 DOTENV_ALLOW_RE = re.compile(r"(^|/)\.env\.(example|sample|template)$", re.IGNORECASE)
-DOCS_URL = "https://github.com/internalsphere/internal-app-orchestrator#environment-variables"
-TROUBLESHOOTING_URL = "https://github.com/internalsphere/internal-app-orchestrator/blob/main/docs/runbooks/troubleshooting.md"
 
 
 def run(command, cwd):
@@ -35,9 +33,7 @@ def fail_with_guidance(*lines):
     print("", file=sys.stderr)
     print("Run setup: sh scripts/setup-repo.sh", file=sys.stderr)
     print("IMPORTANT: Do not bypass hooks with --no-verify.", file=sys.stderr)
-    print("Server-side checks (secrets-policy and secret scanning) will still fail and may trigger security monitoring.", file=sys.stderr)
-    print(f"Docs: {DOCS_URL}", file=sys.stderr)
-    print(f"Troubleshooting: {TROUBLESHOOTING_URL}", file=sys.stderr)
+    print("The pre-commit and pre-push hooks run scripts/secrets-guard.py in this repo.", file=sys.stderr)
     return 1
 
 

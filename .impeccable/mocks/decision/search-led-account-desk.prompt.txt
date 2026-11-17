@@ -20,4 +20,4 @@ LAYOUT, top to bottom:
 
 All text must be legible, correctly spelled and consistently rendered. Reproduce only the Mars Bank data given here; invent no rates, prices, awards, marketing claims or dates.
 
-References: .impeccable/mocks/banking-register-a.png (Mars Bank data and identity), user-supplied Macquarie logged-in screenshot (calm density reference).
+References: .impeccable/mocks/banking-register-a.png (Mars Bank data and identity), Mars Bank's own calm-density desk (density reference).

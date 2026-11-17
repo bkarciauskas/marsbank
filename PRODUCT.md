@@ -39,14 +39,13 @@ The demo starts on a public banking website. The customer picks a demo resident 
 ## Brand commitments
 
 - The product name is Mars Bank.
-- The public site takes its layout, information architecture, and interaction cues from `macquarie.com.au`.
-- Replace Macquarie names and logos with Mars Bank.
+- The public site uses Mars Bank's own Orbital Registry: a graphite survey plate, a split first viewport, and oxide as the single action color.
 - Use the Mars Bank orbital-arc lockup and Orbital Registry theme (graphite, survey mint, oxide, coordinate blue) across public and banking surfaces.
 - The experience must feel like a legitimate premium bank, not a space-themed game.
 
 ## Evidence on hand
 
-- The public Macquarie website is the visual and structural reference.
+- The public site and the signed-in desk are Mars Bank's own design language: Orbital Registry outside, Search-led Account Desk inside.
 - No final Mars Bank logo, customer claims, awards, rates, or legal credentials exist. Do not fabricate them.
 - All customer and transaction data is synthetic.
 

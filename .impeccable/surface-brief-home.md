@@ -3,7 +3,7 @@
 - Mode: Persuade (homepage) with Operate inheritance for login and banking.
 - Audience: Mars residents entering a credible retail bank demo.
 - Job: Recognize Mars Bank, understand tokens as money, log in.
-- Constraints: Macquarie-like IA; premium bank, not a game; no fabricated rates or awards.
+- Constraints: Orbital Registry information architecture; premium bank, not a game; no fabricated rates or awards.
 - Direction: Orbital Registry / Coordinate Sheet. Seed 17f8c3cf.
 - Approved comp: `.impeccable/mocks/sheet.png`
 - Memorable moment: graphite copy column against the habitat survey sheet, oxide login on the seam, orbital-arc lockup.

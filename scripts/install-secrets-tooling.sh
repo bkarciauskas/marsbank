@@ -85,7 +85,7 @@ if ! have sops; then
 fi
 
 if [ "${missing}" -ne 0 ]; then
-  echo "Dependency setup incomplete. See docs: https://github.com/internalsphere/internal-app-orchestrator#environment-variables" >&2
+  echo "Dependency setup incomplete. Install python3, sops, and the Vercel CLI, then rerun sh scripts/setup-repo.sh." >&2
   exit 1
 fi
 

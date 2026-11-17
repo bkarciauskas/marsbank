@@ -8,7 +8,11 @@ from pathlib import Path
 
 APP_MANIFEST_PATH = Path("app-manifest.yml")
 VALID_ALIAS_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_-]*$")
-VALID_OWNER_EMAIL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._%+-]*@anysphere\.co$", re.IGNORECASE)
+NEUTRAL_OWNER = "unassigned"
+VALID_OWNER_EMAIL_RE = re.compile(
+    r"^[A-Za-z0-9][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$",
+    re.IGNORECASE,
+)
 VALID_INTEGRATION_TYPES = ("supabase", "upstash-kv", "blob")
 
 
@@ -112,9 +116,9 @@ def parse_manifest():
                 continue
             if key == "owner":
                 value = value.strip()
-                if not VALID_OWNER_EMAIL_RE.match(value):
+                if value.lower() != NEUTRAL_OWNER and not VALID_OWNER_EMAIL_RE.match(value):
                     fail(
-                        f"line {line_number}: owner must be an @anysphere.co email address"
+                        f"line {line_number}: owner must be 'unassigned' or an email address"
                     )
                 owner = value.lower()
                 continue

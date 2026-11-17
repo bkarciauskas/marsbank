@@ -274,7 +274,7 @@ The public palette is mineral and theme-responsive; the desk palette is cool, li
 
 ## Layout
 
-Public IA remains Macquarie-like: a 36px utility row, 78px primary nav, and `min(1240px, calc(100% - 48px))` public width. The split hero, token-story images, and mint security plate sit in that same column, not the viewport. The security row keeps lock, copy, and login link as one group. The four-cell explore grid and three-column service band follow the column. It changes at 1100px, 850px, and 560px.
+Public IA is Mars Bank's Orbital Registry: a 36px utility row, 78px primary nav, and `min(1240px, calc(100% - 48px))` public width. The split hero, token-story images, and mint security plate sit in that same column, not the viewport. The security row keeps lock, copy, and login link as one group. The four-cell explore grid and three-column service band follow the column. It changes at 1100px, 850px, and 560px.
 
 The authenticated shell is a 60px full-width top bar above a 118px sticky icon rail and a fluid stage. Register content sits in a centred column bounded by `--desk-measure-ledger` (1640px) for dense register surfaces — account tables, transaction registers, reports — with 32px inline padding, 30px top, and 64px bottom padding. Single-job form surfaces (transfer, settings) use `--desk-measure-task` (760px), centred inside the ledger column. The overview is a vertical 20px rhythm: greeting band, one account ledger, recent transactions, then the three-up sol summary; above 1200px, recent transactions and the sol summary sit side by side, as do card panels on the cards route. Account rows share six visible tracks: account, branch and number, available, held, total, and arrow.
 

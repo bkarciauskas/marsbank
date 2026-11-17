@@ -73,7 +73,6 @@ export default defineConfig([
     ".next/**",
     ".next-e2e/**",
     ".next-shots/**",
-    "capture/**",
     "public/assets/**",
   ]),
   {

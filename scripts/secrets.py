@@ -16,8 +16,6 @@ except ImportError:
     termios = None
     tty = None
 
-DOCS_URL = "https://github.com/internalsphere/internal-app-orchestrator#environment-variables"
-TROUBLESHOOTING_URL = "https://github.com/internalsphere/internal-app-orchestrator/blob/main/docs/runbooks/troubleshooting.md"
 INVENTORY_PATH = Path("secrets/inventory.yaml")
 VALID_KEY_RE = re.compile(r"^[A-Z][A-Z0-9_]*$")
 RECIPIENT_RE = re.compile(r"^age1[0-9a-z]+$")
@@ -66,8 +64,7 @@ def ensure_sops():
         return
     fail(
         "sops is required for this operation but is not installed.\n"
-        "Run: sh scripts/setup-repo.sh\n"
-        f"Docs: {DOCS_URL}"
+        "Run: sh scripts/setup-repo.sh"
     )
 
 

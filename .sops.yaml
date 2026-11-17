@@ -1,5 +1,4 @@
-# Managed by internal-app-orchestrator.
-# Informational metadata only.
+# Encryption recipients for secrets/. Informational metadata only.
 # Scripts read encryption recipient from checked-in .sops.yaml.
 creation_rules:
   - path_regex: ^secrets/shared/[^/]+\.sops\.json$
