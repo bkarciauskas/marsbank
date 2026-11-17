@@ -38,15 +38,6 @@ const directory: DirectoryEntry[] = [
     },
   },
   {
-    aliases: ["@anysphere", "anysphere", "anysphere@cursor.com"],
-    payee: {
-      scheme: "cursor",
-      id: "@anysphere",
-      displayName: "Anysphere",
-      institution: "Cursor",
-    },
-  },
-  {
     aliases: ["@spacexai", "spacexai", "spacexai@cursor.com"],
     payee: {
       scheme: "cursor",
@@ -157,7 +148,7 @@ export function lookupPayId(
 
   if (emailPattern.test(id)) {
     const domain = id.slice(id.lastIndexOf("@") + 1);
-    const cursorHosted = domain === "cursor.com" || domain === "anysphere.com";
+    const cursorHosted = domain === "cursor.com";
     return {
       kind: "ok",
       payee: {

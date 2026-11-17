@@ -38,4 +38,4 @@ COLOR DISCIPLINE: exactly five colors — canvas #F1F2F0, panel and sheet #FFFFF
 
 All text must be crisp, correctly spelled, and legible. Hairline dividers are true 1px light warm grey. Sharp square corners everywhere except the 2px corners of the depicted physical bank card. No shadows anywhere except a very faint soft shadow under the depicted physical bank card object only.
 
-[References used: Macquarie account-list screenshots (calm density and row interaction), .impeccable/mocks/banking-register-a.png (data truth only, not style).]
+[References used: calm account-list references (density and row interaction), .impeccable/mocks/banking-register-a.png (data truth only, not style).]

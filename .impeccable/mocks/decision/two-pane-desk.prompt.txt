@@ -1,4 +1,4 @@
-A pixel-crisp, full-fidelity desktop web application screenshot mockup, 1440x900 viewport, of the authenticated "Mars Bank" online banking overview. Flat vector UI rendering, no photography, no device frame, no browser chrome, no drop shadows, no rounded cards. Calm, quiet, premium retail-banking density in the character of the attached Macquarie online banking screenshots: generous whitespace, hairline horizontal rules, restrained color, real numbers set at readable sizes.
+A pixel-crisp, full-fidelity desktop web application screenshot mockup, 1440x900 viewport, of the authenticated "Mars Bank" online banking overview. Flat vector UI rendering, no photography, no device frame, no browser chrome, no drop shadows, no rounded cards. Calm, quiet, premium retail-banking density in Mars Bank's own calm retail-banking density: generous whitespace, hairline horizontal rules, restrained color, real numbers set at readable sizes.
 
 Typography throughout is a calm soft humanist grotesk in the character of Hanken Grotesk: friendly single-story g, open apertures, normal width. Absolutely no condensed type, no all-caps headings, no oversized display numerals, no serif, no monospace. Everything is sentence case except tiny 11px uppercase column labels with slight letterspacing.
 
@@ -24,5 +24,5 @@ Exact left-to-right structure of the first viewport:
 
 Color discipline: only #EFF0EE canvas, #FFFFFF detail pane, #101518 graphite ink and rail, #E4623F oxide used solely for the one primary button, the selected-row edge, and the orbital mark node, and #356CFF signal blue used solely for available amounts and credit amounts. Hairlines are a pale neutral gray. No gradients, no glow, no space imagery, no planets, no stars, no sci-fi HUD, no illustration, no charts, no graphs, no logos other than the described orbital mark. All text must be legible, correctly spelled, and exactly as specified.
 
-Reference images: Macquarie online banking screenshots (calm-density reference only).
+Reference images: Mars Bank's own orbital mark and calm desk density only.
 Aspect ratio: 16:9 (desktop 1440x900).

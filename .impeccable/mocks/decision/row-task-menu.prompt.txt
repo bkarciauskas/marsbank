@@ -1,6 +1,6 @@
 A pixel-crisp, full-fidelity desktop web application UI concept comp, rendered flat at 1440x900 with no browser chrome, no device frame, no annotations, no watermark. This is the first viewport of the authenticated "Mars Bank" banking overview for a fictional Mars retail bank. Money is measured in model tokens (MT).
 
-REFERENCE USE: The two Macquarie online-banking screenshots supply only the interaction pattern (an account row that lifts an open task menu) and the calm, low-density table rhythm. The dark graphite "MARS BANK" screenshot supplies only the orbital-arc mark shape and the account data; ignore its dark palette, its condensed all-caps type, and its layout entirely. Do not copy Macquarie blue, Macquarie logos, or any Macquarie wording.
+REFERENCE USE: The two calm banking references supply only the interaction pattern (an account row that lifts an open task menu) and the calm, low-density table rhythm. The dark graphite "MARS BANK" screenshot supplies only the orbital-arc mark shape and the account data; ignore its dark palette, its condensed all-caps type, and its layout entirely. Use Mars Bank's own oxide, orbital mark, and wording.
 
 TYPOGRAPHY: one calm, soft humanist grotesk throughout, in the character of Hanken Grotesk — open apertures, gentle curves, tabular lining figures for money. Absolutely no condensed type, no all-caps headings, no oversized display numerals, no serifs, no italics. Sentence case everywhere except the 11px column labels.
 

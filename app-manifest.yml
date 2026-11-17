@@ -1,5 +1,5 @@
 version: 1
-owner: cameron.huysmans@anysphere.co
+owner: unassigned
 integrations:
   db:
     type: supabase
