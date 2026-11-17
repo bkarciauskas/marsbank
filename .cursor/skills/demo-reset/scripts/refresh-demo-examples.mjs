@@ -166,6 +166,7 @@ async function refreshOne(pr) {
   const directory = mkdtempSync(join(tmpdir(), "demo-example-"));
   try {
     git(["worktree", "add", "--detach", directory, `origin/${branch}`]);
+    git(["fetch", "origin", "refs/heads/main:refs/remotes/origin/main"]);
     const rebasing = run("git", ["rebase", "origin/main"], directory);
     if (!rebasing.ok) {
       const files = conflictFiles(directory);
@@ -184,7 +185,7 @@ async function refreshOne(pr) {
           pr,
           rebase: "already on main",
           ci: `not re-run (${again.detail}); previous ${previous === "pending" ? ciText(previous, checks) : previous}`,
-          bad: true,
+          bad: previous !== "green",
         };
       }
       const waited = await waitForCi(after);
