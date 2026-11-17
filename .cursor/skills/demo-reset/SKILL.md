@@ -25,7 +25,7 @@ When the rebase conflicts, the script aborts that pull request and names the fil
 2. Require JSON `state` of `healthy`.
 3. Run `node .cursor/skills/verify-marsbank/scripts/cleanup.mjs` even when no instance exists.
 4. Run `git status` and report leftover files from `/demo-fix`. Leave them unless the human asks to drop them.
-5. In `bkarciauskas/marsbank`, close every open pull request whose title or body names a `MARS` key, without merging, and delete its head branch. Skip a pull request labeled `demo-example`. GitHub keeps the closed pull request. Do not touch a merged pull request.
-6. Delete the Cursor tracker card that links that pull request. Leave cards whose pull requests merged. Leave the card for a `demo-example` pull request.
+5. In `bkarciauskas/marsbank`, close every open pull request whose title or body names a `MARS` key, without merging, and delete its head branch. Skip any open pull request labeled `demo-example`, currently #30, #31, and #35, and keep its head branch. GitHub keeps each closed pull request. Do not touch a merged pull request or its branch, including #33 for `MARS-3`.
+6. Delete the Cursor tracker card that links each pull request closed in step 5. Leave the card for any `demo-example` pull request. Leave cards whose pull requests merged, including `MARS-3`.
 
 Do not run `git reset --hard`. Do not force-push. Do not merge. Do not delete the progress canvas or `verify-marsbank` evidence.
