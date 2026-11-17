@@ -76,6 +76,11 @@ describe("demo scenarios", () => {
     expect(shown).toContain(
       "Domain modules stay free of React, Next, and the database. Put I/O in lib/server or app/api, and UI in components/ or app/.",
     );
+    expect(shown).toContain("stayed on useBank() and @/lib/ledger");
+    expect(shown).toContain("never wrote the import");
+    expect(shown).toContain("before a mistake lands");
+    expect(shown).not.toContain("corrects itself");
+    expect(shown).not.toContain("The agent imports");
     expect(
       agentGuardrailsScenarios.every(
         (scenario) =>
