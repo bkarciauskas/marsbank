@@ -24,13 +24,13 @@ Preconditions:
 
 - **Open cards.** Run `node .cursor/skills/verify-marsbank/scripts/drive.mjs cards` or choose sidebar **Cards**: `page.getByRole("navigation", { name: "Banking" }).getByRole("link", { name: "Cards" }).click()`. URL is `/banking/cards`. Heading is `Cards for every airlock`.
 - **See seed cards.** Aaron shows last fours `2209` (physical Sol Account) and `4418` (virtual Expedition Credit). Cameron shows `4821` and `9072`.
-- **Freeze.** Choose the first **Freeze card**. Run `page.getByRole("button", { name: "Freeze card" }).first().click()`. That card shows **Frozen** and **Unfreeze card**.
+- **Freeze.** On the first `article.card-panel`, choose **Freeze card** with an exact name. Run `page.locator("article.card-panel").first().getByRole("button", { name: "Freeze card", exact: true }).click()`. That panel shows **Frozen** and **Unfreeze card**.
 - **Confirm side effect.** `GET /api/register` includes a card with `status: "frozen"`.
-- **Unfreeze.** Choose **Unfreeze card**. The same card returns to **Active** / **Freeze card**.
-- **Proof.** Keep `01-active.png`, `02-frozen.png`, matching `.aria.txt` files, `register.json`, and `proof.json` under `evidence/<runId>/cards/`.
+- **Unfreeze.** On that same panel, choose **Unfreeze card** with an exact name. The badge returns to **Active**, the button reads **Freeze card**, and `GET /api/register` shows that card with `status: "active"` in `register-after-unfreeze.json`.
+- **Proof.** Keep `01-active.png`, `02-frozen.png`, matching `.aria.txt` files, `register.json`, `register-after-unfreeze.json`, and `proof.json` under `evidence/<runId>/cards/`.
 
 ## Gotchas
 
-- There are two freeze buttons. Target `.first()` or scope to one `article.card-panel`. A loose `getByText("Frozen")` can match the status badge and the `FROZEN` overlay on the same panel — not the security heading `Lost beyond the airlock?`. Prefer `{ exact: true }` on the badge or the button name.
+- There are two freeze buttons. Scope to one `article.card-panel`. A button name of `Freeze card` also matches **Unfreeze card** unless `exact: true` is set. A loose `getByText("Frozen")` can match the status badge and the `FROZEN` overlay on the same panel, not the security heading `Lost beyond the airlock?`. Prefer `{ exact: true }` on the badge and the button name.
 - Freeze is a real mutation on this process's ledger. Unfreeze (or Settings restore) before a later cards proof.
 - `/api/cards` PATCH is the backend for the button. Calling it directly is not cards-desk proof.

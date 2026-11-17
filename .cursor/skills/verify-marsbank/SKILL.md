@@ -1,13 +1,13 @@
 ---
 name: verify-marsbank
-description: Drive Mars Bank's web UI at a dedicated local port and prove login plus banking user paths (accounts, transfers, cards, activity) with Playwright screenshots, ARIA snapshots, and register API evidence.
+description: Drive Mars Bank's web UI at a dedicated local port and prove login plus banking user paths (accounts, transfers, cards, activity, notifications) with Playwright screenshots, ARIA snapshots, and register API evidence.
 ---
 
 # Verify Mars Bank
 
 Project-local control skill for [Mars Bank](https://github.com/bkarciauskas/marsbank), a Next.js demo bank. Write for the next agent: launch an isolated instance, doctor it, drive a mapped user path, keep the proof, then tear down only what this run started.
 
-Primary surface is the web UI. Secondary surfaces are the route handlers under `app/api/` (`/api/session`, `/api/register`, `/api/transfers`, `/api/cards`, `/api/reset`). Do not treat Vitest component tests as proof of the running app.
+Primary surface is the web UI. Secondary surfaces are the route handlers under `app/api/` (`/api/session`, `/api/register`, `/api/transfers`, `/api/cards`, `/api/requests`, `/api/reset`). Do not treat Vitest component tests as proof of the running app.
 
 ## Start and prove
 
@@ -94,6 +94,7 @@ node .cursor/skills/verify-marsbank/scripts/drive.mjs balances
 node .cursor/skills/verify-marsbank/scripts/drive.mjs transfer
 node .cursor/skills/verify-marsbank/scripts/drive.mjs cards
 node .cursor/skills/verify-marsbank/scripts/drive.mjs activity
+node .cursor/skills/verify-marsbank/scripts/drive.mjs notifications
 ```
 
 Optional: `--resident cameron` (default is `aaron`, so login proves roster selection rather than the prefilled Cameron row). `--headed` opens a visible browser.
@@ -105,7 +106,8 @@ If you must drive by hand in Playwright, keep these selectors:
 - Banking home: `waitForURL("**/banking")` then wait for the heading `formatDaypartGreeting(firstName, hour)` produces from `page.evaluate(() => new Date().getHours())`. Retry that wait only if the hour rolls between the sample and the locator. Login proof records that sample as `proof.observed.heading` and `proof.observed.hour`. The login drive always records video and saves `03-login-path.webm` after the context closes, including failed runs.
 - Sidebar: `getByRole("navigation", { name: "Banking" }).getByRole("link", { name: "Accounts" })` — also `Cards`, `Send`, `Position`, `Reports`
 - Transfer: `getByRole("link", { name: /Make a transfer/i })` → `getByRole("button", { name: "Between my accounts" })` → `getByPlaceholder("0")` → `getByRole("button", { name: "Review route" })` → `getByRole("button", { name: "Send tokens" })` → heading `Tokens dispatched`
-- Cards: `getByRole("button", { name: "Freeze card" })` / `Unfreeze card`
+- Cards: on the first `article.card-panel`, `getByRole("button", { name: "Freeze card", exact: true })` then `Unfreeze card` with `exact: true`
+- Notifications: `getByRole("button", { name: "Notifications", exact: true })`, then the region named `Incoming transfers`
 - Activity search: `getByRole("searchbox", { name: "Search transactions, accounts and payees" })` then submit `form.desk-search`
 - Settings restore: `getByRole("button", { name: "Restore shared demo" })` then `Restore all registers`
 

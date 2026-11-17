@@ -13,6 +13,7 @@ Activity is the Mars-local movement ledger: every posted debit and credit across
 ## How to get to it (user POV)
 
 - Choose **View all** next to **Recent transactions** on `/banking`.
+- Choose **Open full ledger** on `/banking/reports`.
 - Submit the desk search (scope **Everything** or **Movements**) with a query, which routes to `/banking/activity?q=…`.
 - Open `/banking/activity` or `/banking/activity?q=Habitat` while signed in.
 
