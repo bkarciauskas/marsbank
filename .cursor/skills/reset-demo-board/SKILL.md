@@ -1,66 +1,88 @@
 ---
 name: reset-demo-board
-description: Resets the Mars Bank Jira demo board and its demo pull requests. Use when the user says reset the board, reset the Jira tickets, reset MARS-N, or reset the demo pull requests.
+description: Resets the Mars Bank Jira demo board, GitHub demo pull requests, and Cursor Project board to demo-ready state without touching marsbank-plan work or demo-example pull requests. Use when the user says reset the board, reset the Jira tickets, reset MARS-N, or reset the demo pull requests.
 disable-model-invocation: true
 ---
 
 # Reset the Mars Bank demo board
 
-Do not reset unless the user asked. Do not edit `features.md`. Do not edit the plan file.
+Do not reset unless the user asked. Do not edit `features.md`. Do not edit `demo-plan.md`.
+
+## How the reset skills fit together
+
+A full pre-demo reset pairs [.cursor/skills/demo-reset/SKILL.md](../demo-reset/SKILL.md) with this skill.
+
+1. Run `demo-reset` Teardown to revert any planted hold, stop `verify-marsbank`, restore the Mars Bank app ledger and `/demo` scenarios, and close disposable demo pull requests.
+2. Run `reset-demo-board` to restore the Jira `MARS` board, retire `slack-demo` artifacts, and sync the Cursor Project board.
+3. Run `demo-reset` Pre-demo (`refresh-demo-examples.mjs`) to rebase open `demo-example` pull requests (#30, #31, and #35) onto `origin/main` and confirm green CI.
+
+A board reset on its own runs this skill only. It does not rebase `demo-example` branches unless asked.
 
 ## Where
 
-- Site: https://fe-anysphere-demo.atlassian.net
-- cloudId: `564eb250-21c1-45d7-81f9-527d6bf705ad`
-- Project: `MARS`
-- Board: https://fe-anysphere-demo.atlassian.net/jira/software/projects/MARS/board
-- Stories: `MARS-1` through `MARS-11`, label `marsbank-demo`
-- The board has no sprints. Columns are To Do, In Progress, and Done. The workflow has no In Review status. Never move a story to In Review.
+- The Jira site is https://fe-anysphere-demo.atlassian.net with cloudId `564eb250-21c1-45d7-81f9-527d6bf705ad`.
+- The Jira board is https://fe-anysphere-demo.atlassian.net/jira/software/projects/MARS/board in project `MARS`.
+- Feature demo stories are `MARS-1` through `MARS-11` with label `marsbank-demo`.
+- Engineering plan stories are `MARS-12` through `MARS-20` and any future story with label `marsbank-plan`.
+- Temporary Slack showcase items carry the `slack-demo` label on Jira or GitHub.
+- The Jira board has no sprints. Columns are `To Do`, `In Progress`, and `Done`. The workflow has no `In Review` status. Never move a story to `In Review`.
 - Pull requests live in `github.com/bkarciauskas/marsbank`.
+- Inside the Mars Bank Cursor Project, the Project coordinator runs `UpdateTrackedTasks` and `CreateTrackedTasks`. Worker subagents only have read-only `ListTrackedTasks` access. They report needed board updates to the coordinator with `SendToAgent`. Outside the Cursor Project, skip tracker tool calls and report any board updates needed.
 
-## Demo phases
+## Demo-ready state
 
-A reset restores each story to its demo phase. It does not put every story in unassigned To Do.
+A reset puts each group into its demo phase. It never touches `marsbank-plan` engineering work.
 
-Ben Karciauskas's accountId is `712020:03561c63-15cd-478b-a933-718f6a201f8e`. Set the assignee with `assignee: { "accountId": "..." }`, or `assignee: null` to clear it. Transition ids are `11` for To Do, `21` for In Progress, and `31` for Done.
+Ben Karciauskas's Jira accountId is `712020:03561c63-15cd-478b-a933-718f6a201f8e`. Set the Jira assignee with `assignee: { "accountId": "..." }` or clear it with `assignee: null`. Jira transition ids are `11` for `To Do`, `21` for `In Progress`, and `31` for `Done`.
 
-| Stories | Status | Assignee | Description | Pull requests |
-| --- | --- | --- | --- | --- |
-| `MARS-1`, `MARS-2` | In Progress | Ben Karciauskas | Leave as is | Keep any `demo-example` pull request open with its branch, including #30 and #31. Close other open pull requests for the key and delete their branches. |
-| `MARS-3` | Done | Leave as is | Leave as is | Merged in #33. Do not transition the story. Leave #33, its branch, and its Cursor card untouched. |
-| `MARS-4`, `MARS-5` | In Progress | Ben Karciauskas | Restore from `features.md` | Keep any `demo-example` pull request open with its branch, including #35 on `MARS-4`. Close other open pull requests for the key and delete their branches. |
-| `MARS-6` through `MARS-11` | To Do | Cleared to `null` | Restore from `features.md` | Keep any `demo-example` pull request open with its branch. Close other open pull requests for the key and delete their branches. |
-
-`MARS-1` and `MARS-2` stay In Progress. Never transition them to To Do. `MARS-3` stays Done. Never transition it. Cursor cards for `demo-example` pull requests and merged pull requests, including `MARS-3`, stay untouched.
+| Stories | Jira | GitHub pull requests | Cursor Project board |
+| --- | --- | --- | --- |
+| `MARS-1` (#30), `MARS-2` (#31), `MARS-4` (#35) | `In Progress`, assigned to Ben Karciauskas. Keep current descriptions. | Keep open `demo-example` pull requests (#30, #31, #35) and their branches open. Close other unmerged pull requests for the key and delete their branches. | `For Review` (`for-review`), owned by Ben, `Feature` tag, linked to PRs #30, #31, and #35. |
+| `MARS-3` (#33) | `Done`, assigned to Ben. Keep current description. Do not transition. | Merged in #33. Leave #33 and its branch untouched. | `Done` (`done`), owned by Ben, `Feature` tag, linked to PR #33. |
+| `MARS-5` | `In Progress`, assigned to Ben. Restore description from `features.md`. | Close any unmerged non-`demo-example` pull request naming `MARS-5`. Delete its branch. | `In Progress` (`in-progress`), owned by Ben, `Feature` tag, with no PR or active worker link. |
+| `MARS-6` through `MARS-11` | `To Do`, assignee cleared to `null`. Restore descriptions from `features.md`. | Close any unmerged non-`demo-example` pull request naming the key and delete its branch. Leave merged pull requests untouched. | `Queued` (`queued`), unowned, `Feature` tag, with stale PR and worker links removed. |
+| `MARS-12` through `MARS-20` and any `marsbank-plan` story | Preserve as real engineering state. Never move status, change assignee, or overwrite descriptions. | Never close open pull requests or delete branches for `marsbank-plan` stories. | Preserve `Demo Plan` tasks (`MARS-14` owned by Ben and `MARS-15` through `MARS-20` unowned in `Queued`, plus `Done` items). |
+| Temporary `slack-demo` items | Transition to `Done` (`31`), clear assignee to `null`, and add a reset comment. | Close any unmerged `slack-demo` pull request without merging. Delete its branch. | Move any ad-hoc `slack-demo` task to `Canceled` (`canceled`) and remove stale PR or worker links. |
 
 ## Scope
 
-- When the user names one key with `reset MARS-N`, reset only that story. `N` is 1 through 11.
-- When the user says reset the board, reset the Jira tickets, reset the demo pull requests, or reset everything, reset `MARS-1` through `MARS-11`.
-- Token payment requests is checked in the source file and its pull request is already merged. It is not a demo ticket. Leave it alone.
-- Any open pull request labeled `demo-example`, currently #30, #31, and #35, stays open and keeps its head branch. Never close it or delete its branch during a reset, even for `MARS-4`. To rebase those pull requests onto `main` before a demo, follow Pre-demo in [.cursor/skills/demo-reset/SKILL.md](../demo-reset/SKILL.md). A board reset does not run Pre-demo.
+- When the user names one key with `reset MARS-N` for `N` in `1` through `11`, reset only that story across Jira, GitHub, and the Cursor Project board.
+- When the user names `MARS-12` through `MARS-20` or any `marsbank-plan` story, refuse unless the user explicitly confirms editing engineering plan work.
+- When the user says reset the board, reset the Jira tickets, reset the demo pull requests, or reset everything, reset `MARS-1` through `MARS-11` and retire all `slack-demo` artifacts across Jira, GitHub, and the Cursor Project board.
+- Token Payment Requests is checked in `features.md` and its pull request (#25) is already merged. Leave it alone.
+- Any open pull request labeled `demo-example` (#30, #31, and #35) stays open and keeps its head branch. Never close it or delete its branch during a reset.
 
 ## Description source
 
-Original descriptions live in `/cursor/stores/bc-7f1a60e0-ea46-4d78-9dca-57979f5bcd65/docs/features.md`. Each demo feature links its `MARS` key. Do not tick or untick those checkboxes during a reset.
+Original descriptions for `MARS-5` through `MARS-11` live in `/cursor/stores/bc-7f1a60e0-ea46-4d78-9dca-57979f5bcd65/docs/features.md`. Each demo feature links its `MARS` key. Do not tick or untick checkboxes during a reset.
 
-The description to restore is that feature's sentence plus its Layers line:
+Restore that feature's sentence plus its Layers line.
 
-1. Find the bullet whose link is that exact key.
-2. The sentence is the prose after the em dash on that bullet.
-3. The Layers line is the following `*Layers:*` line. Keep it on its own line under the sentence.
+1. Find the bullet whose link matches that exact key as a whole token (`MARS-1` is not `MARS-10` or `MARS-11`).
+2. Take the sentence after the dash on that bullet.
+3. Place the following `*Layers:*` line on its own line under the sentence.
 
-Match the key as a whole token. `MARS-1` is not `MARS-10` or `MARS-11`.
+## Steps
 
-## For each story
-
-1. Read the current issue and look up its phase in the table above.
-   - Leave `MARS-3` in Done. Do not transition it, and do not change its assignee or description.
-   - If the status differs, transition the issue to `21` In Progress for `MARS-1`, `MARS-2`, `MARS-4`, and `MARS-5`, or `11` To Do for `MARS-6` through `MARS-11`.
-   - Set the assignee to Ben Karciauskas's accountId for `MARS-1`, `MARS-2`, `MARS-4`, and `MARS-5`. Clear it with `null` for `MARS-6` through `MARS-11`.
-   - Restore the description from `features.md` for `MARS-4` through `MARS-11`. Leave the `MARS-1`, `MARS-2`, and `MARS-3` descriptions as they are. Leave the `marsbank-demo` label.
-2. Check open pull requests in `bkarciauskas/marsbank` whose title or body names that `MARS` key as a whole token.
-   - Skip any open pull request labeled `demo-example`, currently #30, #31, and #35. Leave it open and keep its head branch, even for `MARS-4`.
-   - Close every other open pull request for that key without merging, and delete its head branch.
-   - Do not touch merged pull requests or their branches, including #33 on `MARS-3`. Do not touch pull requests that do not name a `MARS` key.
-3. Report the key, its restored status and assignee, and which pull requests were closed or kept. If none were open, say so.
+1. Update Jira stories in scope.
+   - Leave `MARS-3` in `Done` assigned to Ben with its current description.
+   - Keep `MARS-1`, `MARS-2`, and `MARS-4` in `21` `In Progress`, assigned to Ben Karciauskas. Leave their current descriptions untouched.
+   - Transition `MARS-5` to `21` `In Progress` if needed. Set Ben Karciauskas as assignee and restore its description from `features.md` with `editJiraIssue`.
+   - Transition `MARS-6` through `MARS-11` to `11` `To Do` if needed. Clear `assignee` to `null` and restore each description from `features.md`. Keep the `marsbank-demo` label.
+   - Never touch `MARS-12` through `MARS-20` or any issue carrying the `marsbank-plan` label.
+   - On a full board reset, query `project = MARS AND labels = slack-demo` with `searchJiraIssuesUsingJql`. The Atlassian MCP server has no delete-issue tool. Transition each open `slack-demo` issue to `31` `Done` with `transitionJiraIssue`. Clear `assignee` to `null` with `editJiraIssue`. Post a short reset note with `addOrEditJiraIssueComment`.
+2. Clean up disposable GitHub pull requests in `bkarciauskas/marsbank`.
+   - Skip every open pull request labeled `demo-example` (#30, #31, and #35) and keep its head branch.
+   - Skip every open pull request for `marsbank-plan` stories (`MARS-12` through `MARS-20` or any `marsbank-plan` issue).
+   - Close any other unmerged pull request whose title or body names a `MARS-1` through `MARS-11` key in scope as a whole token, without merging. Delete its head branch.
+   - On a full board reset, close any unmerged pull request labeled `slack-demo` or referencing a `slack-demo` issue without merging. Delete its head branch.
+   - Leave all merged pull requests and their branches untouched, including #33 on `MARS-3`.
+3. Sync the Cursor Project board.
+   - The Project coordinator writes task updates with `UpdateTrackedTasks` (and `CreateTrackedTasks` only if a canonical `Feature` task is missing). Workers read with `ListTrackedTasks` and send needed updates to the coordinator.
+   - Keep `MARS-1` (#30), `MARS-2` (#31), and `MARS-4` (#35) in `For Review`, owned by Ben, tagged `Feature`, linked to PRs #30, #31, and #35.
+   - Keep `MARS-3` (#33) in `Done`, owned by Ben, tagged `Feature`.
+   - Set `MARS-5` to `In Progress`, owned by Ben, tagged `Feature`, with no PR or active worker link.
+   - Set `MARS-6` through `MARS-11` to `Queued`, unowned, tagged `Feature`, with stale PR and worker links removed.
+   - Move any ad-hoc `slack-demo` task to `Canceled` and clear active links.
+   - Leave all `Demo Plan` tasks (`MARS-12` through `MARS-20` and any `marsbank-plan` items) untouched.
+4. Report each updated key, its Jira and Cursor Project board state, and which pull requests were closed or kept. If no pull requests were closed, say so.
