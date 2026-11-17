@@ -1,0 +1,29 @@
+name: demo-example
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
+jobs:
+  demo-example:
+    name: demo-example
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail while the pull request has demo-example
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -eu
+          names="$(gh api --jq '.[].name' "repos/${REPO}/issues/${NUMBER}/labels")"
+          if printf '%s\n' "$names" | grep -qx 'demo-example'; then
+            echo "This pull request has the demo-example label. Keep it open. Do not merge it."
+            exit 1
+          fi
+          echo "No demo-example label."

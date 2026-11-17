@@ -1,0 +1,21 @@
+name: describe-demo-example
+
+on:
+  pull_request:
+
+permissions:
+  issues: write
+
+jobs:
+  describe:
+    name: describe demo-example
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set the demo-example description
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          gh api --method PATCH "repos/${REPO}/labels/demo-example" \
+            -f description='Demo showcase PR - keep open, do not merge'
