@@ -32,6 +32,7 @@ A reset restores this state. It does not put every story in unassigned To Do.
 - The user names one key (`reset MARS-N`): reset only that story. `N` is 1 through 11.
 - The user says reset the board, reset the Jira tickets, reset the demo pull requests, or reset everything: reset `MARS-1` through `MARS-11`.
 - Token payment requests is checked in the source file and its pull request is already merged. It is not a demo ticket. Leave it alone.
+- A pull request labeled `demo-example` stays open. Do not close it during a reset. To rebase those pull requests onto main before a demo, follow Pre-demo in `.cursor/skills/demo-reset/SKILL.md`. A board reset does not run Pre-demo.
 
 ## Description source
 
@@ -51,5 +52,5 @@ Match the key as a whole token. `MARS-1` is not `MARS-10` or `MARS-11`.
    - If the status differs, transition it to that status.
    - Set the assignee: Ben Karciauskas's accountId for `MARS-1` and `MARS-2`; clear it (null) for `MARS-3` through `MARS-11`.
    - Restore the description from `features.md`. Leave the `marsbank-demo` label.
-2. Find open pull requests in `bkarciauskas/marsbank` whose title or body names that `MARS` key. Close each without merging and delete its head branch. Do not touch pull requests that do not name a `MARS` key. Do not touch merged pull requests.
+2. Find open pull requests in `bkarciauskas/marsbank` whose title or body names that `MARS` key. Close each without merging and delete its head branch. Skip a pull request labeled `demo-example`. Do not touch pull requests that do not name a `MARS` key. Do not touch merged pull requests.
 3. Tell the user the key, its restored status and assignee, and which pull requests were closed. If none were open, say so.
