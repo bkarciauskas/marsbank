@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -10,6 +10,21 @@ const label = "demo-example";
 const ciJobs = ["typecheck", "lint", "test"];
 const waitMs = 6 * 60 * 1000;
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+export const isolatedHooks = mkdtempSync(join(tmpdir(), "demo-example-hooks-"));
+
+export function headGitArgs(args) {
+  return ["-c", `core.hooksPath=${isolatedHooks}`, ...args];
+}
+
+function startedAsScript() {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  try {
+    return realpathSync(fileURLToPath(import.meta.url)) === realpathSync(entry);
+  } catch {
+    return false;
+  }
+}
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -135,7 +150,7 @@ function rerunCi(branch, sha) {
 }
 
 function conflictFiles(worktree) {
-  const listed = run("git", ["diff", "--name-only", "--diff-filter=U"], worktree);
+  const listed = run("git", headGitArgs(["diff", "--name-only", "--diff-filter=U"]), worktree);
   return listed.stdout
     .split("\n")
     .map((line) => line.trim())
@@ -143,8 +158,8 @@ function conflictFiles(worktree) {
 }
 
 function removeWorktree(directory) {
-  run("git", ["rebase", "--abort"], directory);
-  run("git", ["worktree", "remove", "--force", directory]);
+  run("git", headGitArgs(["rebase", "--abort"]), directory);
+  run("git", headGitArgs(["worktree", "remove", "--force", directory]));
   rmSync(directory, { recursive: true, force: true });
   run("git", ["worktree", "prune"]);
 }
@@ -165,17 +180,17 @@ async function refreshOne(pr) {
   const before = git(["rev-parse", `origin/${branch}`]);
   const directory = mkdtempSync(join(tmpdir(), "demo-example-"));
   try {
-    git(["worktree", "add", "--detach", directory, `origin/${branch}`]);
+    git(headGitArgs(["worktree", "add", "--detach", directory, `origin/${branch}`]));
     git(["fetch", "origin", "refs/heads/main:refs/remotes/origin/main"]);
-    const rebasing = run("git", ["rebase", "origin/main"], directory);
+    const rebasing = run("git", headGitArgs(["rebase", "origin/main"]), directory);
     if (!rebasing.ok) {
       const files = conflictFiles(directory);
-      run("git", ["rebase", "--abort"], directory);
+      run("git", headGitArgs(["rebase", "--abort"]), directory);
       const detail = files.length > 0 ? files.join(", ") : publicText(rebasing.stderr).split("\n")[0];
       return { pr, rebase: `conflict: ${detail}`, ci: "not re-run", bad: true };
     }
 
-    const after = git(["rev-parse", "HEAD"], directory);
+    const after = git(headGitArgs(["rev-parse", "HEAD"]), directory);
     if (after === before) {
       const again = rerunCi(branch, after);
       if (!again.ok) {
@@ -199,7 +214,7 @@ async function refreshOne(pr) {
 
     const pushed = run(
       "git",
-      ["push", `--force-with-lease=refs/heads/${branch}:${before}`, "origin", `HEAD:refs/heads/${branch}`],
+      headGitArgs(["push", `--force-with-lease=refs/heads/${branch}:${before}`, "origin", `HEAD:refs/heads/${branch}`]),
       directory,
     );
     if (!pushed.ok) {
@@ -230,32 +245,35 @@ function printTable(rows) {
   }
 }
 
-const slug = originSlug();
-if (slug !== repo) throw new Error(`origin is ${slug}`);
+async function main() {
+  const slug = originSlug();
+  if (slug !== repo) throw new Error(`origin is ${slug}`);
 
-git(["fetch", "origin", "refs/heads/main:refs/remotes/origin/main"]);
+  git(["fetch", "origin", "refs/heads/main:refs/remotes/origin/main"]);
 
-const prs = JSON.parse(
-  gh([
-    "pr",
-    "list",
-    "--repo",
-    repo,
-    "--state",
-    "open",
-    "--label",
-    label,
-    "--limit",
-    "50",
-    "--json",
-    "number,title,headRefName,baseRefName",
-  ]),
-).sort((a, b) => a.number - b.number);
+  const prs = JSON.parse(
+    gh([
+      "pr",
+      "list",
+      "--repo",
+      repo,
+      "--state",
+      "open",
+      "--label",
+      label,
+      "--limit",
+      "50",
+      "--json",
+      "number,title,headRefName,baseRefName",
+    ]),
+  ).sort((a, b) => a.number - b.number);
 
-if (prs.length === 0) {
-  console.log("No open pull requests labeled demo-example.");
-  process.exitCode = 1;
-} else {
+  if (prs.length === 0) {
+    console.log("No open pull requests labeled demo-example.");
+    process.exitCode = 1;
+    return;
+  }
+
   const rows = [];
   for (const pr of prs) {
     console.error(`#${pr.number} ${pr.headRefName}`);
@@ -268,4 +286,8 @@ if (prs.length === 0) {
   }
   printTable(rows);
   if (rows.some((row) => row.bad)) process.exitCode = 1;
+}
+
+if (startedAsScript()) {
+  await main();
 }
