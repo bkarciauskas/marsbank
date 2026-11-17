@@ -30,7 +30,7 @@ export default function HomePage() {
           <div className="section-heading">
             <h2>Money for life off Earth</h2>
             <p>
-              Air, water, power and time all count here. Your money should be
+              Air, water, power, and time all count here. Your money should be
               just as exact.
             </p>
           </div>
