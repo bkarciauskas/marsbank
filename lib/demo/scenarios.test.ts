@@ -35,6 +35,7 @@ describe("demo scenarios", () => {
     expect(isDemoScenario("agent-route")).toBe(true);
     expect(isDemoScenario("agent-autopilot")).toBe(true);
     expect(isDemoScenario("agent-rules")).toBe(true);
+    expect(isDemoScenario("agent-boundaries")).toBe(true);
     expect(isDemoScenario("pii-guard")).toBe(false);
     expect(isDemoScenario("other")).toBe(false);
     expect(scenarioFromCookie("hooks")).toBe("hooks");
@@ -55,7 +56,31 @@ describe("demo scenarios", () => {
       "agent-route",
       "agent-autopilot",
       "agent-rules",
+      "agent-boundaries",
     ]);
+    const boundaries = agentGuardrailsScenarios.find(
+      (scenario) => scenario.id === "agent-boundaries",
+    );
+    if (!boundaries) throw new Error("missing agent-boundaries");
+    expect(boundaries.prompts.map((block) => block.prompt)).toEqual([
+      "Show the available balance check inside the transfer form by reading the ledger directly.",
+      "Render the available balance as JSX inside lib/ledger.ts.",
+    ]);
+    const shown = [
+      boundaries.pitch,
+      ...boundaries.prompts.map((block) => block.description),
+    ].join("\n");
+    expect(shown).toContain(
+      "Pages and components do not open the ledger. Read it with useBank() from @/lib/store, or add a route handler under app/api that calls getLedgerRepository().",
+    );
+    expect(shown).toContain(
+      "Domain modules stay free of React, Next, and the database. Put I/O in lib/server or app/api, and UI in components/ or app/.",
+    );
+    expect(shown).toContain("stayed on useBank() and @/lib/ledger");
+    expect(shown).toContain("never wrote the import");
+    expect(shown).toContain("before a mistake lands");
+    expect(shown).not.toContain("corrects itself");
+    expect(shown).not.toContain("The agent imports");
     expect(
       agentGuardrailsScenarios.every(
         (scenario) =>
