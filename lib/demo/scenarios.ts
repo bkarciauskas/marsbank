@@ -8,6 +8,7 @@ export const demoScenarioIds = [
   "agent-route",
   "agent-autopilot",
   "agent-rules",
+  "agent-boundaries",
 ] as const;
 
 export type DemoScenarioId = (typeof demoScenarioIds)[number];
@@ -126,6 +127,28 @@ export const agentGuardrailsScenarios: readonly DemoScenario[] = [
           "Outside both: lib/money.ts gets the comment and neither header.",
         prompt:
           "Add a one-line comment above parseTokenInput in lib/money.ts saying it rejects fractional and negative input.",
+      },
+    ],
+  },
+  {
+    id: "agent-boundaries",
+    title: "Architecture boundaries the agent can't cross",
+    pitch:
+      "Money logic in lib/ is pure TypeScript, including ledger, money, and payid. Only lib/server/ledger-repository.ts talks to Postgres. The UI reads the bank with useBank() from @/lib/store, or through a route under app/api. eslint.config.mjs no-restricted-imports enforces those boundaries, and lint is a required check on main. The codebase steers the agent before rules or human review. Ledger tests run with no browser and no database.",
+    prompts: [
+      {
+        id: "read-ledger",
+        description:
+          "The agent imports @/lib/server/ledger-repository into components/banking/transfer-form.tsx. Lint fails with \"Pages and components do not open the ledger. Read it with useBank() from @/lib/store, or add a route handler under app/api that calls getLedgerRepository().\" The agent corrects itself.",
+        prompt:
+          "Show the available balance check inside the transfer form by reading the ledger directly.",
+      },
+      {
+        id: "react-in-ledger",
+        description:
+          "A React import in lib/ledger.ts fails lint with \"Domain modules stay free of React, Next, and the database. Put I/O in lib/server or app/api, and UI in components/ or app/.\"",
+        prompt:
+          "Render the available balance as JSX inside lib/ledger.ts.",
       },
     ],
   },
