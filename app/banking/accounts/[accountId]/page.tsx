@@ -1,13 +1,16 @@
 "use client";
 
-import { ArrowLeft, ArrowLeftRight, Copy, Home } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Check, Copy, Home } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { CreditUtilizationPanel } from "@/components/banking/credit-utilization-panel";
 import { LoanOffsetPlanner } from "@/components/banking/loan-offset-planner";
 import { TransactionList } from "@/components/banking/transaction-list";
 import type { Account } from "@/lib/domain";
 import {
   availableBalance,
+  currentSolCardSpend,
   displayBalance,
   loanPosition,
   offsetAccounts,
@@ -31,9 +34,16 @@ function heroFigure(account: Account): { label: string; spendable: boolean } {
 export default function AccountDetailPage() {
   const params = useParams<{ accountId: string }>();
   const { snapshot } = useBank();
+  const [copiedCoordinates, setCopiedCoordinates] = useState(false);
   const account = snapshot.accounts.find(
     (candidate) => candidate.id === params.accountId,
   );
+
+  useEffect(() => {
+    if (!copiedCoordinates) return;
+    const timer = window.setTimeout(() => setCopiedCoordinates(false), 2_000);
+    return () => window.clearTimeout(timer);
+  }, [copiedCoordinates]);
 
   if (!account) {
     return (
@@ -46,6 +56,19 @@ export default function AccountDetailPage() {
         </div>
       </div>
     );
+  }
+
+  const coordinates = `${account.branch} · ${account.number}`;
+
+  async function copyCoordinates() {
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(coordinates);
+        setCopiedCoordinates(true);
+      }
+    } catch {
+      setCopiedCoordinates(false);
+    }
   }
 
   const transactions = snapshot.transactions.filter(
@@ -62,6 +85,17 @@ export default function AccountDetailPage() {
   const position =
     account.kind === "loan" ? loanPosition(snapshot, account.id) : undefined;
   const repaymentSource = linkedOffsets[0];
+  const creditSettlementSource =
+    account.kind === "credit"
+      ? (snapshot.accounts.find((candidate) => candidate.id === "acc-everyday") ??
+        snapshot.accounts.find(
+          (candidate) => candidate.kind !== "loan" && candidate.kind !== "credit",
+        ))
+      : undefined;
+  const cardSpend =
+    account.kind === "credit"
+      ? currentSolCardSpend(snapshot, account.id)
+      : undefined;
   const figure = heroFigure(account);
   const canSend = account.kind !== "loan";
   const canOpenLoan = account.kind === "offset" && linkedLoan;
@@ -74,9 +108,30 @@ export default function AccountDetailPage() {
       <div className="desk-intro">
         <div>
           <h1>{account.name}</h1>
-          <p>
-            {account.productName} · {account.branch} · {account.number}{" "}
-            <Copy aria-hidden="true" />
+          <p className="desk-account-coordinates">
+            <span>
+              {account.productName} · {coordinates}
+            </span>
+            <button
+              aria-label={
+                copiedCoordinates
+                  ? "Account coordinates copied"
+                  : "Copy account coordinates"
+              }
+              className="desk-copy-button"
+              onClick={() => void copyCoordinates()}
+              type="button"
+            >
+              {copiedCoordinates ? (
+                <>
+                  <Check aria-hidden="true" /> Copied
+                </>
+              ) : (
+                <>
+                  <Copy aria-hidden="true" /> Copy coordinates
+                </>
+              )}
+            </button>
           </p>
         </div>
         <div
@@ -98,7 +153,11 @@ export default function AccountDetailPage() {
         <div className="desk-account-actions">
           {canSend ? (
             <Link
-              className="desk-primary-action"
+              className={
+                account.kind === "credit"
+                  ? "desk-quiet-action"
+                  : "desk-primary-action"
+              }
               href={`/banking/transfer?from=${account.id}`}
             >
               <ArrowLeftRight aria-hidden="true" /> Send tokens
@@ -113,6 +172,14 @@ export default function AccountDetailPage() {
             </Link>
           ) : null}
         </div>
+      ) : null}
+
+      {account.kind === "credit" && cardSpend ? (
+        <CreditUtilizationPanel
+          account={account}
+          cardSpend={cardSpend}
+          source={creditSettlementSource}
+        />
       ) : null}
 
       {account.kind === "offset" && linkedLoan ? (

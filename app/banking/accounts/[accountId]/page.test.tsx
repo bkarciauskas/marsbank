@@ -1,7 +1,10 @@
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { seedSnapshot } from "@/lib/fixtures";
+import { tokens } from "@/lib/money";
 import { BankProvider } from "@/lib/store";
+import { createLedgerFetch } from "@/test-utils/ledger-fetch";
 import AccountDetailPage from "./page";
 
 const params = { accountId: "acc-reserve" };
@@ -167,5 +170,95 @@ describe("AccountDetailPage", () => {
     expect(
       screen.getByRole("link", { name: /return to your token register/i }),
     ).toHaveAttribute("href", "/banking/accounts");
+  });
+
+  it("shows credit utilization, sol card spend, and settlement routes on Expedition Credit", () => {
+    renderDetail("acc-credit");
+
+    const panel = screen.getByRole("region", { name: "Credit utilization" });
+    const meter = within(panel).getByRole("progressbar", {
+      name: "Credit utilization",
+    });
+    expect(meter).toHaveAttribute("aria-valuenow", "82640");
+    expect(meter).toHaveAttribute("aria-valuemax", "50000000");
+    expect(within(panel).getByText("0.17%")).toBeInTheDocument();
+    expect(within(panel).getByText("49,917,360")).toBeInTheDocument();
+
+    const spend = within(panel).getByRole("region", {
+      name: "Sol 21 card spend",
+    });
+    expect(within(spend).getByText("Valles Lift Transit")).toBeInTheDocument();
+    expect(within(spend).getByText("−8,960 tokens")).toBeInTheDocument();
+
+    expect(
+      within(panel).getByRole("link", { name: /clear balance/i }),
+    ).toHaveAttribute(
+      "href",
+      "/banking/transfer?from=acc-everyday&to=acc-credit&amount=82640",
+    );
+    expect(
+      within(panel).getByRole("link", { name: /pay custom amount/i }),
+    ).toHaveAttribute(
+      "href",
+      "/banking/transfer?from=acc-everyday&to=acc-credit",
+    );
+  });
+
+  it("disables Clear balance when Expedition Credit is settled", async () => {
+    const settled = structuredClone(seedSnapshot);
+    settled.accounts = settled.accounts.map((account) =>
+      account.id === "acc-credit" && account.kind === "credit"
+        ? { ...account, owed: tokens(0) }
+        : account,
+    );
+    vi.stubGlobal("fetch", createLedgerFetch(settled));
+
+    renderDetail("acc-credit");
+
+    await waitFor(() =>
+      expect(screen.getByText("Balance settled · 0 tokens owing")).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("button", { name: /clear balance/i }),
+    ).toBeDisabled();
+    expect(
+      screen.getByRole("link", { name: /pay custom amount/i }),
+    ).toHaveAttribute(
+      "href",
+      "/banking/transfer?from=acc-everyday&to=acc-credit",
+    );
+  });
+
+  it("keeps credit utilization off deposit and loan account pages", () => {
+    renderDetail("acc-reserve");
+    expect(
+      screen.queryByRole("region", { name: "Credit utilization" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("copies account coordinates across account detail pages", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    for (const [accountId, expected] of [
+      ["acc-reserve", "MARS-001 · 2047 1903"],
+      ["acc-credit", "MARS-001 · •••• 9072"],
+      ["acc-habitat-loan", "MARS-001 · 7702 0418"],
+    ] as const) {
+      const view = renderDetail(accountId);
+      fireEvent.click(
+        screen.getByRole("button", { name: "Copy account coordinates" }),
+      );
+      await waitFor(() =>
+        expect(writeText).toHaveBeenCalledWith(expected),
+      );
+      expect(
+        screen.getByRole("button", { name: "Account coordinates copied" }),
+      ).toHaveTextContent("Copied");
+      view.unmount();
+    }
   });
 });

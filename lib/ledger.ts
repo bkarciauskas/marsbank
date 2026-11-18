@@ -2,17 +2,23 @@ import type {
   Account,
   BankSnapshot,
   CardStatus,
+  CreditAccount,
   OffsetAccount,
   PayIdTransferCommand,
   TransferCommand,
   TransferResult,
 } from "./domain";
-import type { AccountId, CardId } from "./ids";
+import type { AccountId, CardId, TxnId } from "./ids";
 import { txnId } from "./ids";
 import type { LoanPosition } from "./loan-projection";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
-import { solIndex } from "./sol";
+import {
+  latestPostedTime,
+  LEDGER_SOL,
+  solIndex,
+  solNumberFromLatest,
+} from "./sol";
 
 /**
  * Risk controls on PayID sends. Only PayID sends leave the resident's register;
@@ -373,4 +379,97 @@ export function loanPosition(
   const loan = accountById(snapshot, loanId);
   if (loan?.kind !== "loan") return undefined;
   return { remaining: loan.remaining, offset: offsetTotal(snapshot, loanId) };
+}
+
+export type CreditUtilization = {
+  owed: TokenAmount;
+  limit: TokenAmount;
+  available: TokenAmount;
+  utilizationBps: number;
+};
+
+export function creditUtilization(account: CreditAccount): CreditUtilization {
+  const available = availableBalance(account);
+  const utilizationBps =
+    account.limit > 0
+      ? Math.min(
+          10_000,
+          Math.max(0, Math.round((account.owed / account.limit) * 10_000)),
+        )
+      : 0;
+  return {
+    owed: account.owed,
+    limit: account.limit,
+    available,
+    utilizationBps,
+  };
+}
+
+export type CardSpendItem = {
+  id: TxnId;
+  description: string;
+  amount: TokenAmount;
+  postedOn: string;
+  shareBps: number;
+};
+
+export type CurrentSolCardSpend = {
+  solNumber: number;
+  total: TokenAmount;
+  items: readonly CardSpendItem[];
+};
+
+export function currentSolCardSpend(
+  snapshot: BankSnapshot,
+  targetAccountId: AccountId,
+): CurrentSolCardSpend {
+  const accountTransactions = snapshot.transactions.filter(
+    (transaction) => transaction.accountId === targetAccountId,
+  );
+  if (accountTransactions.length === 0) {
+    return { solNumber: LEDGER_SOL, total: tokens(0), items: [] };
+  }
+
+  const latestAt = latestPostedTime(
+    accountTransactions.map((transaction) => transaction.postedOn),
+  );
+  const currentSol = solIndex(latestAt);
+  const solNumber = solNumberFromLatest(
+    new Date(latestAt).toISOString(),
+    latestAt,
+  );
+  const spend = accountTransactions
+    .filter(
+      (transaction) =>
+        transaction.direction === "debit" &&
+        !transaction.counterpartyAccountId &&
+        solIndex(Date.parse(transaction.postedOn)) === currentSol,
+    )
+    .sort((left, right) => {
+      const byAmount = right.amount - left.amount;
+      return byAmount !== 0
+        ? byAmount
+        : Date.parse(right.postedOn) - Date.parse(left.postedOn);
+    });
+
+  const total = spend.reduce(
+    (sum, transaction) => addTokens(sum, transaction.amount),
+    tokens(0),
+  );
+
+  const items: CardSpendItem[] = spend.map((transaction) => ({
+    id: transaction.id,
+    description: transaction.description,
+    amount: transaction.amount,
+    postedOn: transaction.postedOn,
+    shareBps:
+      total > 0
+        ? Math.min(
+            10_000,
+            Math.max(0, Math.round((transaction.amount / total) * 10_000)),
+          )
+        : 0,
+  }));
+
+  return { solNumber, total, items };
 }

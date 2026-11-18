@@ -40,6 +40,32 @@ describe("TransferForm", () => {
     expect(screen.getByText("1,000 tokens")).toBeInTheDocument();
   });
 
+  it("prefills and posts an Expedition Credit settlement route", async () => {
+    query = "from=acc-everyday&to=acc-credit&amount=82640";
+    render(
+      <BankProvider>
+        <TransferForm />
+      </BankProvider>,
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Between my accounts" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByPlaceholderText("0")).toHaveValue("82640");
+
+    fireEvent.click(screen.getByRole("button", { name: "Review route" }));
+    expect(screen.getByText("Sol Account")).toBeInTheDocument();
+    expect(screen.getByText("Expedition Credit")).toBeInTheDocument();
+    expect(screen.getByText("82,640 tokens")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Send tokens" }));
+    expect(
+      await screen.findByText(
+        /82,640 tokens moved from Sol Account to Expedition Credit/,
+      ),
+    ).toBeInTheDocument();
+  });
+
   it("prefills the linked destination and drops an amount that is not whole tokens", () => {
     query = "from=acc-everyday&to=acc-reserve&amount=12.5";
     render(

@@ -6,6 +6,8 @@ import {
   applyPayIdTransfer,
   applyTransfer,
   availableBalance,
+  creditUtilization,
+  currentSolCardSpend,
   displayBalance,
   loanPosition,
   needsStepUp,
@@ -18,6 +20,7 @@ import {
   solSendRemaining,
   STEP_UP_THRESHOLD,
 } from "./ledger";
+import { txnId } from "./ids";
 import { tokens } from "./money";
 
 describe("Mars Bank ledger", () => {
@@ -319,5 +322,102 @@ describe("PayID send limits", () => {
     );
 
     expect(sentThisSol(posted(moved), morning)).toBe(0);
+  });
+});
+
+describe("Expedition Credit utilization and sol spend", () => {
+  it("computes utilization basis points and available credit", () => {
+    const credit = seedSnapshot.accounts.find(
+      (account) => account.id === "acc-credit",
+    );
+    if (!credit || credit.kind !== "credit") {
+      throw new Error("missing credit account");
+    }
+
+    expect(creditUtilization(credit)).toEqual({
+      owed: tokens(82_640),
+      limit: tokens(DEMO_CREDIT_LIMIT),
+      available: tokens(49_917_360),
+      utilizationBps: 17,
+    });
+    expect(creditUtilization({ ...credit, owed: tokens(0) })).toEqual({
+      owed: tokens(0),
+      limit: tokens(DEMO_CREDIT_LIMIT),
+      available: tokens(DEMO_CREDIT_LIMIT),
+      utilizationBps: 0,
+    });
+    expect(
+      creditUtilization({ ...credit, owed: tokens(DEMO_CREDIT_LIMIT) }),
+    ).toEqual({
+      owed: tokens(DEMO_CREDIT_LIMIT),
+      limit: tokens(DEMO_CREDIT_LIMIT),
+      available: tokens(0),
+      utilizationBps: 10_000,
+    });
+  });
+
+  it("breaks down current-sol card spend and ignores internal transfers", () => {
+    const seeded = currentSolCardSpend(seedSnapshot, accountId("acc-credit"));
+    expect(seeded.solNumber).toBe(21);
+    expect(seeded.total).toBe(8_960);
+    expect(seeded.items).toHaveLength(1);
+    expect(seeded.items[0]).toMatchObject({
+      description: "Valles Lift Transit",
+      amount: 8_960,
+      shareBps: 10_000,
+    });
+
+    const snapshot = structuredClone(seedSnapshot);
+    snapshot.transactions.unshift(
+      {
+        id: txnId("txn-credit-today-1"),
+        accountId: accountId("acc-credit"),
+        postedOn: "2026-08-23T20:10:00.000Z",
+        description: "Areology Coffee · Crater Gate",
+        amount: tokens(1_040),
+        direction: "debit",
+      },
+      {
+        id: txnId("txn-credit-internal"),
+        accountId: accountId("acc-credit"),
+        postedOn: "2026-08-23T21:00:00.000Z",
+        description: "Transfer to Sol Account",
+        amount: tokens(5_000),
+        direction: "debit",
+        counterpartyAccountId: accountId("acc-everyday"),
+      },
+    );
+
+    const grouped = currentSolCardSpend(snapshot, accountId("acc-credit"));
+    expect(grouped.total).toBe(10_000);
+    expect(grouped.items.map((item) => [item.description, item.amount, item.shareBps])).toEqual([
+      ["Valles Lift Transit", 8_960, 8_960],
+      ["Areology Coffee · Crater Gate", 1_040, 1_040],
+    ]);
+  });
+
+  it("reports zero card spend in the current sol right after settlement", () => {
+    const settled = applyTransfer(
+      structuredClone(seedSnapshot),
+      {
+        from: accountId("acc-everyday"),
+        to: accountId("acc-credit"),
+        amount: tokens(82_640),
+        description: "Settle balance",
+      },
+      new Date("2026-08-26T10:00:00.000Z"),
+    );
+    expect(settled.kind).toBe("ok");
+    if (settled.kind !== "ok") return;
+
+    const spend = currentSolCardSpend(
+      settled.snapshot,
+      accountId("acc-credit"),
+    );
+    expect(spend).toEqual({
+      solNumber: 21,
+      total: tokens(0),
+      items: [],
+    });
   });
 });

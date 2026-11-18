@@ -3760,6 +3760,129 @@ a.desk-demo-flag:focus-visible {
   }
 }
 
+.desk-account-coordinates {
+  row-gap: 6px;
+  column-gap: 10px;
+}
+
+.desk-copy-button {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  padding: 0 9px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  cursor: pointer;
+  font-size: var(--desk-text-xs);
+  font-weight: 500;
+}
+
+.desk-copy-button:hover {
+  background: var(--desk-shade);
+}
+
+.desk-copy-button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.desk-utilization-meter {
+  border-bottom: 1px solid var(--desk-rule);
+  padding: 18px 22px;
+}
+
+.desk-utilization-track {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--desk-canvas);
+}
+
+.desk-utilization-fill {
+  height: 100%;
+  background: var(--blue);
+  transition: width 200ms ease;
+}
+
+.desk-utilization-fill.is-high {
+  background: var(--oxide);
+}
+
+.desk-credit-spend {
+  border-top: 1px solid var(--desk-rule);
+  padding: 18px 22px;
+}
+
+.desk-credit-spend-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.desk-credit-spend-header h3 {
+  margin: 0;
+  color: var(--desk-ink);
+  font-size: var(--desk-text-md);
+  font-weight: 600;
+}
+
+.desk-credit-spend-header span {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.desk-credit-empty {
+  margin: 10px 0 0;
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.desk-credit-spend-list {
+  display: grid;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desk-credit-spend-row {
+  display: grid;
+  align-items: baseline;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  font-size: var(--desk-text-md);
+}
+
+.desk-credit-spend-share {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.desk-credit-spend-row strong {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.desk-credit-spend-bar {
+  height: 4px;
+  overflow: hidden;
+  margin-top: 6px;
+  border-radius: 2px;
+  background: var(--desk-canvas);
+}
+
+.desk-credit-spend-bar > div {
+  height: 100%;
+  background: var(--oxide);
+}
+
 .desk-primary-action {
   display: inline-flex;
   min-height: 46px;
@@ -3788,6 +3911,15 @@ button.desk-primary-action {
   cursor: pointer;
   font: inherit;
   color: var(--desk-sheet);
+}
+
+button.desk-primary-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+button.desk-primary-action:disabled:hover {
+  background: var(--oxide);
 }
 
 .banking-shell .desk .theme-toggle {
