@@ -35,14 +35,14 @@ When a rebase conflicts, the script aborts that pull request and names the files
 5. In `bkarciauskas/marsbank`, close only disposable unmerged demo pull requests without merging. Delete their head branches.
    - Disposable pull requests are open pull requests without the `demo-example` label that name `MARS-1` through `MARS-11` as a whole token, carry or reference `slack-demo`, or come from `/demo` or `/demo-fix` test runs.
    - Skip every open pull request labeled `demo-example` (#30 on `MARS-1`, #31 on `MARS-2`, and #35 on `MARS-4`) and keep its head branch.
-   - Never close or touch open pull requests that belong to `marsbank-plan` stories (`MARS-12` through `MARS-20` or any future `marsbank-plan` story) or general engineering pull requests.
+   - Never close or touch open pull requests that belong to `marsbank-plan` stories (`MARS-12` through `MARS-21` or any future `marsbank-plan` story) or general engineering pull requests.
    - Never touch merged pull requests or their branches, including #33 for `MARS-3`.
 6. Sync the Cursor Project board for any pull request closed in step 5 (run by the Project coordinator with `UpdateTrackedTasks`).
    - Keep `MARS-1` (#30), `MARS-2` (#31), and `MARS-4` (#35) in `For Review` (`Feature` tag, owned by Ben, PR links intact).
    - Keep `MARS-3` (#33) in `Done` (`Feature` tag, owned by Ben).
-   - Restore `MARS-5` to `In Progress` (`Feature` tag, owned by Ben, with no PR or active worker link).
+   - Restore `MARS-5` to `Queued` (`queued`, `Feature` tag, owned by Ben Karciauskas, with stale PR and active worker links removed).
    - Restore `MARS-6` through `MARS-11` to `Queued` (`Feature` tag, unowned, with stale PR and worker links removed).
    - Move any ad-hoc `slack-demo` task or disposable `/demo-fix` test task to `Canceled` and clear active links.
-   - Leave all `Demo Plan` tasks (`MARS-12` through `MARS-20` and any `marsbank-plan` stories) untouched.
+   - Leave all `Demo Plan` tasks (`MARS-12` through `MARS-21` and any `marsbank-plan` stories) untouched.
 
 Do not run `git reset --hard`. Do not force-push `main`. Do not merge. Do not delete the progress canvas or `verify-marsbank` evidence.
