@@ -1,0 +1,23 @@
+---
+description: Move MARS Jira tickets to the next stage whenever work progresses
+alwaysApply: true
+---
+
+# Jira Stage Progression
+
+When working on a `MARS` Jira issue (`cloudId`: `564eb250-21c1-45d7-81f9-527d6bf705ad`), transition it with `transitionJiraIssue` as work advances.
+
+Live `MARS` workflow defines three statuses: `To Do` (`11`), `In Progress` (`21`), and `Done` (`31`). `MARS` has no `In Review` status; never pass `In Review` to `transitionJiraIssue` on `MARS`.
+
+| Stage | Jira transition (`MARS`) | Comment / linked tracker action |
+| --- | --- | --- |
+| Work begins | `To Do` -> `In Progress` (`21`) | Transition before starting implementation. |
+| PR opens (review) | Stay in `In Progress` (`21`) (or `In Review` if workflow defines it) | Comment the PR URL via `addOrEditJiraIssueComment`. In Cursor Project, coordinator moves task to `For Review`. |
+| PR merges | `In Progress` (or `In Review`) -> `Done` (`31`) | Comment the merged PR URL via `addOrEditJiraIssueComment`. |
+| Kept-open `demo-example` PR | Stay in `In Progress` (`21`) | Never merge, close, or move `#30`, `#31`, `#35`, or any `demo-example` PR to `Done`. |
+
+## Rules
+
+- Always verify transition IDs with `listJiraIssueTransitions` before assuming another project shares `MARS` IDs.
+- If an unmerged non-`demo-example` PR is closed without replacement, move the issue back to `To Do` (`11`) unless `reset-demo-board` dictates otherwise.
+- Project workers have read-only `ListTrackedTasks`; notify the coordinator via `SendToAgent` when the Cursor Project board needs `For Review` or `Done`.
