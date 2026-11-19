@@ -5,8 +5,29 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { TransactionList } from "@/components/banking/transaction-list";
+import type { Account, Transaction } from "@/lib/domain";
 import { statementCsv, type StatementCsv } from "@/lib/statement-csv";
 import { useBank } from "@/lib/store";
+
+function transactionMatchesSearch(
+  transaction: Transaction,
+  accounts: Account[],
+  needle: string,
+): boolean {
+  if (needle.length === 0) {
+    return true;
+  }
+  if (transaction.description.toLowerCase().includes(needle)) {
+    return true;
+  }
+  const account = accounts.find((entry) => entry.id === transaction.accountId);
+  if (!account) {
+    return false;
+  }
+  return [account.name, account.productName].some((field) =>
+    field.toLowerCase().includes(needle),
+  );
+}
 
 function saveFile(file: StatementCsv): void {
   const url = URL.createObjectURL(
@@ -27,7 +48,7 @@ function ActivityRegister() {
     needle.length === 0
       ? snapshot.transactions
       : snapshot.transactions.filter((transaction) =>
-          transaction.description.toLowerCase().includes(needle),
+          transactionMatchesSearch(transaction, snapshot.accounts, needle),
         );
 
   return (
