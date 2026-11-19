@@ -33,6 +33,7 @@ describe("DemoPage", () => {
     expect(
       screen.getByRole("tab", { name: "Agent Guardrails" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Agent SDK" })).toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /PII & secrets/ })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Reset all" })).toBeInTheDocument();
     expect(

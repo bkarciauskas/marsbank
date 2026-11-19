@@ -1,5 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DemoConsole } from "./demo-console";
 
@@ -86,6 +92,45 @@ describe("DemoConsole", () => {
     expect(
       (await screen.findAllByText("Staged · hooks installed")).length,
     ).toBeGreaterThan(0);
+  });
+
+  it("lists the four customer bug triage prompts on the Agent SDK tab and copies one", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+    render(<DemoConsole />);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Agent SDK" }));
+
+    const panel = screen.getByRole("tabpanel", { name: "Agent SDK" });
+    expect(
+      within(panel).getByRole("heading", { name: "Customer Bug Triage Prompts" }),
+    ).toBeInTheDocument();
+    expect(within(panel).getAllByRole("listitem")).toHaveLength(4);
+    expect(
+      within(panel).getAllByText("Existing Jira Bug (Duplicate Catch)"),
+    ).toHaveLength(2);
+    expect(
+      within(panel).getAllByText("New Bug (Live Repro + Auto-Fix PR)"),
+    ).toHaveLength(2);
+    expect(within(panel).getAllByText("What happens")).toHaveLength(4);
+    expect(screen.queryByText("Hooks activity")).not.toBeInTheDocument();
+
+    const card = within(panel).getByRole("listitem", {
+      name: "Received tokens block sending",
+    });
+    fireEvent.click(within(card).getByRole("button", { name: /^Copy prompt/ }));
+
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(
+        expect.stringMatching(/^@Mars Triage Aaron paid my 200,000 token request/),
+      ),
+    );
+    expect(
+      await within(card).findByRole("button", { name: /^Copied prompt/ }),
+    ).toBeInTheDocument();
   });
 
   it("resets every walk from the console header", async () => {
