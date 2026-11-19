@@ -12,6 +12,7 @@ import {
   type DemoScenario,
   type DemoScenarioId,
 } from "@/lib/demo/scenarios";
+import { SdkTriagePanel } from "./sdk-triage-panel";
 import "./demo-console.css";
 
 function scenarioForTab(tab: DemoScenarioId): DemoScenario {
@@ -35,7 +36,7 @@ type DemoStatus = {
   guardrail?: DemoGuardrail | null;
 };
 
-type ConsoleTab = "hooks" | "debug-mode" | "agent-guardrails";
+type ConsoleTab = "hooks" | "debug-mode" | "agent-guardrails" | "agent-sdk";
 
 function consoleTab(active: DemoScenarioId | null): ConsoleTab {
   if (isAgentGuardrailsScenario(active)) return "agent-guardrails";
@@ -219,7 +220,8 @@ export function DemoConsole() {
     }, 1600);
   }
 
-  const selected = tab === "agent-guardrails" ? null : scenarioForTab(tab);
+  const selected =
+    tab === "hooks" || tab === "debug-mode" ? scenarioForTab(tab) : null;
 
   return (
     <div className="demo-console">
@@ -234,7 +236,8 @@ export function DemoConsole() {
             hook changes take effect. Agent Guardrails Setup plants a lint break,
             a heading change, or a stub route, or adds a style hook or scoped
             rules, and Reset removes exactly that. Reset also restores transfer-form sources, the
-            ledger, and the activity log.
+            ledger, and the activity log. Agent SDK lists the customer bug
+            reports to post in Slack.
           </p>
         </div>
         <button
@@ -291,8 +294,23 @@ export function DemoConsole() {
           Agent Guardrails
           {isAgentGuardrailsScenario(active) ? <span>Staged</span> : null}
         </button>
+        <button
+          aria-controls="demo-panel-agent-sdk"
+          aria-selected={tab === "agent-sdk"}
+          className={
+            tab === "agent-sdk" ? "demo-tab demo-tab-selected" : "demo-tab"
+          }
+          id="demo-tab-agent-sdk"
+          onClick={() => setTab("agent-sdk")}
+          role="tab"
+          type="button"
+        >
+          Agent SDK
+        </button>
       </div>
-      {tab === "agent-guardrails" ? (
+      {tab === "agent-sdk" ? (
+        <SdkTriagePanel copied={copied} onCopy={copyPrompt} />
+      ) : tab === "agent-guardrails" ? (
         <div
           className="demo-agent-stack"
           id="demo-panel-agent-guardrails"

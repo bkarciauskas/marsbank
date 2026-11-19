@@ -401,6 +401,119 @@
   white-space: pre-wrap;
 }
 
+.demo-triage {
+  display: grid;
+  gap: 14px;
+}
+
+.demo-triage-heading h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demo-triage-heading p {
+  margin: 6px 0 0;
+  color: var(--mineral);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.demo-triage-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+  gap: 22px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-triage-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 2px solid var(--line);
+  padding-top: 12px;
+}
+
+.demo-triage-card[data-kind="duplicate"] {
+  border-top-color: var(--blue);
+}
+
+.demo-triage-card[data-kind="new"] {
+  border-top-color: var(--oxide);
+}
+
+.demo-triage-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.demo-triage-kind,
+.demo-triage-trigger {
+  border: 1px solid var(--line);
+  padding: 2px 7px;
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.demo-triage-card[data-kind="duplicate"] .demo-triage-kind {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.demo-triage-card[data-kind="new"] .demo-triage-kind {
+  border-color: var(--oxide);
+  color: var(--oxide);
+}
+
+.demo-triage-trigger {
+  color: var(--muted);
+}
+
+.demo-triage-card .demo-prompt {
+  flex: 1;
+}
+
+.demo-prompt-bar h4 {
+  margin: 0;
+  color: var(--paper);
+  font-family: var(--display);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.demo-triage-notes {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.demo-triage-notes dt {
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.demo-triage-notes dd {
+  margin: 2px 0 0;
+  color: var(--mineral);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 @media (max-width: 860px) {
   .demo-console {
     width: min(100% - 32px, 1080px);
