@@ -38,6 +38,7 @@ export function sentThisSol(snapshot: BankSnapshot, now: Date): TokenAmount {
   return snapshot.transactions.reduce(
     (total, transaction) =>
       transaction.payee &&
+      transaction.direction === "debit" &&
       solIndex(Date.parse(transaction.postedOn)) === sol
         ? addTokens(total, transaction.amount)
         : total,
