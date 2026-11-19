@@ -6,6 +6,12 @@ import {
   solsBeforeLatest,
 } from "./sol";
 
+describe("latestPostedTime", () => {
+  it("returns 0 when there are no posted transactions (MARS-22)", () => {
+    expect(latestPostedTime([])).toBe(0);
+  });
+});
+
 describe("ledger sol numbering", () => {
   it("keeps Sol 21 as the latest posted earth-day", () => {
     const latest = latestPostedTime([

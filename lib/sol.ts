@@ -8,6 +8,9 @@ export function solIndex(time: number): number {
 }
 
 export function latestPostedTime(postedOn: readonly string[]): number {
+  if (postedOn.length === 0) {
+    return 0;
+  }
   return Math.max(...postedOn.map((value) => Date.parse(value)));
 }
 
