@@ -14,7 +14,7 @@ Work from the repository root. Read the request and pick the matching flow.
 
 ## How the reset skills fit together
 
-`demo-reset` owns the local checkout, the Mars Bank app ledger, disposable demo pull requests, and rebasing `demo-example` branches onto `main`. [.cursor/skills/reset-demo-board/SKILL.md](../reset-demo-board/SKILL.md) owns the Jira `MARS` board (`MARS-1` through `MARS-11` and `slack-demo` cleanup) and the Cursor Project board.
+`demo-reset` owns the local checkout, the Mars Bank app ledger, disposable demo pull requests, and rebasing `demo-example` branches onto `main`. [.cursor/skills/reset-demo-board/SKILL.md](../reset-demo-board/SKILL.md) owns the Jira `MARS` board (`MARS-1` through `MARS-11`, `slack-demo` cleanup, and Agent SDK bug-triage demo artifacts including `demo-bug-seed` preservation and EC2 `slack-bug-triage` bot state) and the Cursor Project board.
 
 Inside the Mars Bank Cursor Project, the Project coordinator runs `UpdateTrackedTasks` and `CreateTrackedTasks`. Worker subagents only have read-only `ListTrackedTasks` access. They report needed board updates to the coordinator with `SendToAgent`.
 
@@ -33,10 +33,10 @@ When a rebase conflicts, the script aborts that pull request and names the files
 3. Run `git status` and report leftover files from `/demo-fix`. Leave them unless the human asks to drop them.
 4. Reset the Mars Bank app ledger and `/demo` state when a local server is running (such as port `3021` or `3000`). Send `POST /api/demo` with `{"action":"reset-all"}` to restore all six resident registers, clear active `/demo` scenarios, uninstall hook kits, and revert `/demo` guardrail files. Use `POST /api/reset` with `{"confirmation":"RESET ALL REGISTERS"}` while signed in if `git status` showed local `transfer-form.tsx` edits to keep. When no server is running and `DATABASE_URL` is unset, the in-memory ledger starts seeded on next launch.
 5. In `bkarciauskas/marsbank`, close only disposable unmerged demo pull requests without merging. Delete their head branches.
-   - Disposable pull requests are open pull requests without the `demo-example` label that name `MARS-1` through `MARS-11` as a whole token, carry or reference `slack-demo`, or come from `/demo` or `/demo-fix` test runs.
+   - Disposable pull requests are open pull requests without the `demo-example` label that name `MARS-1` through `MARS-11` as a whole token, carry or reference `slack-demo`, come from `/demo` or `/demo-fix` test runs, or were opened by a `slack-bug-triage` demo run.
    - Skip every open pull request labeled `demo-example` (#30 on `MARS-1`, #31 on `MARS-2`, and #35 on `MARS-4`) and keep its head branch.
    - Never close or touch open pull requests that belong to `marsbank-plan` stories (`MARS-12` through `MARS-21` or any future `marsbank-plan` story) or general engineering pull requests.
-   - Never touch merged pull requests or their branches, including #33 for `MARS-3`.
+   - Never touch merged pull requests or their branches, including #33 for `MARS-3`. (If a `slack-bug-triage` fix PR for an unfiled demo bug was merged into `main`, flag it for revert per `reset-demo-board` rather than force-pushing `main`.)
 6. Sync the Cursor Project board for any pull request closed in step 5 (run by the Project coordinator with `UpdateTrackedTasks`).
    - Keep `MARS-1` (#30), `MARS-2` (#31), and `MARS-4` (#35) in `For Review` (`Feature` tag, owned by Ben, PR links intact).
    - Keep `MARS-3` (#33) in `Done` (`Feature` tag, owned by Ben).
