@@ -1087,6 +1087,12 @@ export function TransferForm() {
                       setNickname(event.target.value);
                       setContactIssue(null);
                     }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void saveCurrentContact();
+                      }
+                    }}
                     placeholder="Habitat crew"
                     value={nickname}
                   />
