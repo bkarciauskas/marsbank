@@ -12,6 +12,9 @@ import type {
   BankSnapshot,
   CardStatus,
   CreatePaymentRequestCommand,
+  OpenAccountCommand,
+  OpenAccountFailure,
+  OpenAccountResult,
   PayIdTransferCommand,
   PaymentRequest,
   PaymentRequestFailure,
@@ -41,6 +44,7 @@ type BankStore = {
     paymentRequestId: PaymentRequestId,
   ) => Promise<PaymentRequestResult>;
   updateCardStatus: (cardId: CardId, status: CardStatus) => Promise<void>;
+  openAccount: (command: OpenAccountCommand) => Promise<OpenAccountResult>;
   reset: () => Promise<void>;
 };
 
@@ -96,6 +100,14 @@ const paymentRequestFailureKinds: Record<PaymentRequestFailure["kind"], true> = 
   "request-not-open": true,
 };
 
+const openAccountFailureKinds: Record<OpenAccountFailure["kind"], true> = {
+  "name-empty": true,
+  "name-too-long": true,
+  "goal-not-positive": true,
+  "unknown-loan": true,
+  network: true,
+};
+
 const paymentRequestStatuses: Record<PaymentRequestStatus, true> = {
   open: true,
   paid: true,
@@ -115,6 +127,14 @@ function isPaymentRequestFailureKind(
   return (
     typeof value === "string" &&
     Object.hasOwn(paymentRequestFailureKinds, value)
+  );
+}
+
+function isOpenAccountFailureKind(
+  value: unknown,
+): value is OpenAccountFailure["kind"] {
+  return (
+    typeof value === "string" && Object.hasOwn(openAccountFailureKinds, value)
   );
 }
 
@@ -158,6 +178,15 @@ function paymentRequestFromPayload(
   return isPaymentRequestFailureKind(value.kind)
     ? { kind: value.kind }
     : undefined;
+}
+
+function openAccountFromPayload(value: unknown): OpenAccountResult | undefined {
+  if (!isRecord(value) || typeof value.kind !== "string") return undefined;
+  if (value.kind === "ok") {
+    const snapshot = registerFromPayload({ snapshot: value.snapshot });
+    return snapshot ? { kind: "ok", snapshot } : undefined;
+  }
+  return isOpenAccountFailureKind(value.kind) ? { kind: value.kind } : undefined;
 }
 
 export function BankProvider({
@@ -263,6 +292,21 @@ export function BankProvider({
       if (!response.ok) return;
       const next = registerFromPayload(await response.json());
       if (next) setSnapshot(next);
+    },
+    async openAccount(command) {
+      try {
+        const response = await fetch("/api/accounts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(command),
+        });
+        const result = openAccountFromPayload(await response.json());
+        if (!result) return { kind: "network" };
+        if (result.kind === "ok") setSnapshot(result.snapshot);
+        return result;
+      } catch {
+        return { kind: "network" };
+      }
     },
     async reset() {
       const response = await fetch("/api/reset", {

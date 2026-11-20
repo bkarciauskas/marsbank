@@ -4,6 +4,8 @@ import type {
   CardStatus,
   HostedPaymentRequestCommand,
   HostedTransferCommand,
+  OpenAccountCommand,
+  OpenAccountResult,
   PaymentRequestResult,
   TransferResult,
 } from "../domain";
@@ -13,8 +15,8 @@ import {
   type DemoResident,
   seedSnapshotForSlug,
 } from "../fixtures";
-import { paymentRequestId, type CardId } from "../ids";
-import { setCardStatus } from "../ledger";
+import { accountId, paymentRequestId, type CardId } from "../ids";
+import { openAccount, setCardStatus } from "../ledger";
 import { lookupResidentPayId } from "../payid";
 import {
   applyApprovePaymentRequest,
@@ -47,6 +49,10 @@ export type LedgerRepository = {
     cardId: CardId,
     status: CardStatus,
   ) => Promise<BankSnapshot>;
+  openAccount: (
+    slug: string,
+    command: OpenAccountCommand,
+  ) => Promise<OpenAccountResult>;
   resetAll: (slug: string) => Promise<BankSnapshot>;
 };
 
@@ -233,6 +239,21 @@ class MemoryLedgerRepository implements LedgerRepository {
       const next = setCardStatus(current, cardId, status);
       this.registers.set(slug, next);
       return structuredClone(next);
+    });
+  }
+
+  openAccount(
+    slug: string,
+    command: OpenAccountCommand,
+  ): Promise<OpenAccountResult> {
+    return this.exclusive(() => {
+      const current = this.registers.get(slug) ?? seedSnapshotForSlug(slug);
+      const result = openAccount(current, command, {
+        id: accountId(`acc-${crypto.randomUUID()}`),
+        now: new Date(),
+      });
+      if (result.kind === "ok") this.registers.set(slug, result.snapshot);
+      return structuredClone(result);
     });
   }
 
@@ -457,6 +478,34 @@ class PostgresLedgerRepository implements LedgerRepository {
         WHERE resident_slug = ${slug}
       `;
       return next;
+    });
+  }
+
+  async openAccount(
+    slug: string,
+    command: OpenAccountCommand,
+  ): Promise<OpenAccountResult> {
+    await this.ensureSeeded();
+    return this.sql.begin(async (transaction) => {
+      const [row] = await transaction<RegisterRow[]>`
+        SELECT resident_slug, snapshot
+        FROM marsbank_registers
+        WHERE resident_slug = ${slug}
+        FOR UPDATE
+      `;
+      const result = openAccount(
+        normalizeSnapshot(row?.snapshot ?? seedSnapshotForSlug(slug)),
+        command,
+        { id: accountId(`acc-${crypto.randomUUID()}`), now: new Date() },
+      );
+      if (result.kind === "ok") {
+        await transaction`
+          UPDATE marsbank_registers
+          SET snapshot = ${transaction.json(result.snapshot)}, updated_at = now()
+          WHERE resident_slug = ${slug}
+        `;
+      }
+      return result;
     });
   }
 

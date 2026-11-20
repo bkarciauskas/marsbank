@@ -124,6 +124,33 @@ describe("shared ledger repository", () => {
     expect(sol && availableBalance(sol)).toBe(1_000_312_750);
   });
 
+  it("keeps an opened vault for its resident until reset", async () => {
+    const repository = createMemoryLedgerRepository();
+    const opened = await repository.openAccount("aaron", {
+      kind: "savings",
+      name: "Launch Window Cargo Reserve",
+      goal: tokens(120_000),
+    });
+    expect(opened.kind).toBe("ok");
+
+    const names = async (slug: string) =>
+      (await repository.getRegister(slug)).accounts.map((account) => account.name);
+    expect(await names("aaron")).toContain("Launch Window Cargo Reserve");
+    expect(await names("ben")).not.toContain("Launch Window Cargo Reserve");
+    expect(
+      await repository.openAccount("aaron", {
+        kind: "offset",
+        name: "Dust Storm Buffer",
+        goal: tokens(50_000),
+        linkedLoanId: accountId("acc-everyday"),
+      }),
+    ).toEqual({ kind: "unknown-loan" });
+    expect(await names("aaron")).not.toContain("Dust Storm Buffer");
+
+    await repository.resetAll("aaron");
+    expect(await names("aaron")).not.toContain("Launch Window Cargo Reserve");
+  });
+
   it("manages resident payment requests across creation, approval, decline, cancel, and reset", async () => {
     const repository = createMemoryLedgerRepository();
 
