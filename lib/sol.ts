@@ -7,6 +7,20 @@ export function solIndex(time: number): number {
   return Math.floor(time / EARTH_DAY_MS);
 }
 
+/** One UTC earth-day. `startsAt` is inclusive and `endsAt` is the next 00:00 UTC. */
+export type UtcSol = {
+  index: number;
+  startsAt: number;
+  endsAt: number;
+};
+
+/** The UTC sol that contains `time`. */
+export function utcSol(time: number): UtcSol {
+  const index = solIndex(time);
+  const startsAt = index * EARTH_DAY_MS;
+  return { index, startsAt, endsAt: startsAt + EARTH_DAY_MS };
+}
+
 export function latestPostedTime(postedOn: readonly string[]): number {
   return Math.max(...postedOn.map((value) => Date.parse(value)));
 }
