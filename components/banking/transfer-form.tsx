@@ -268,6 +268,7 @@ export function TransferForm() {
 
   async function saveCurrentContact() {
     if (state.step !== "collect" || state.destination !== "payid") return;
+    if (contactBusy) return;
     if (!nickname.trim()) {
       setContactIssue(contactErrors["invalid-nickname"]);
       setContactNotice(null);
