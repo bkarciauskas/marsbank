@@ -6,7 +6,7 @@ Notifications is the bell on every signed-in banking page. It lists credits othe
 
 - `notifications-open` opens the bell from the desk identity bar.
 - `notifications-empty` shows an empty seeded register, with **Mark all as read** disabled.
-- `notifications-request` approves or declines an open request when one is waiting. A request above 50,000 tokens asks for confirmation before **Confirm payment** when that amount still fits the remaining 250,000-token PayID limit for this sol. Above the remaining limit, **Approve** posts immediately and shows the limit message.
+- `notifications-request` approves or declines an open request when one is waiting. A request above 50,000 tokens asks for confirmation before **Confirm payment** when that amount still fits the remaining 250,000-token PayID limit for this sol. Above the remaining limit, **Approve** skips the checkbox and the bell shows the limit message. The tokens do not move.
 
 ## How to get to it (user POV)
 
@@ -32,5 +32,5 @@ Preconditions:
 - Use an exact name on **Notifications**. A badge changes the name to `Notifications, N unread`.
 - The empty line stays until another resident sends a credit or opens a request. An own-account transfer leaves the bell empty.
 - The panel closes on Escape and on a click outside it. A click meant for the page can dismiss the request before **Decline**.
-- Approving past the remaining sol PayID limit skips the checkbox and shows `Passes your 250,000 tokens PayID limit for this sol.`
+- Approving past the remaining sol PayID limit skips the checkbox. The bell shows `Passes your 250,000 tokens PayID limit for this sol.` The tokens stay put.
 - Approving a request moves tokens. Decline, or restore the shared demo, before a later proof that needs seed balances.
