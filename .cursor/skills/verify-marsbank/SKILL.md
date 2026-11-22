@@ -95,13 +95,17 @@ node .cursor/skills/verify-marsbank/scripts/drive.mjs transfer
 node .cursor/skills/verify-marsbank/scripts/drive.mjs cards
 node .cursor/skills/verify-marsbank/scripts/drive.mjs activity
 node .cursor/skills/verify-marsbank/scripts/drive.mjs notifications
+node .cursor/skills/verify-marsbank/scripts/drive.mjs reports
+node .cursor/skills/verify-marsbank/scripts/drive.mjs settings
 ```
+
+`settings` restores every resident to the seed register. Run it after a drive that posts a transfer, or whenever the next drive needs those seed balances.
 
 Optional: `--resident cameron` (default is `aaron`, so login proves roster selection rather than the prefilled Cameron row). `--headed` opens a visible browser.
 
 If you must drive by hand in Playwright, keep these selectors:
 
-- Login roster: click the `label` that wraps `getByRole("radio", { name: /aaron/i })` — the radio itself is covered by the label (same names for cameron, ben, richard, robin, blake)
+- Login roster: click the `label` that wraps `getByRole("radio", { name: /aaron/i })`. The radio is clipped to 1px, so do not click the input. The same names work for cameron, ben, richard, robin, and blake.
 - Login submit: `getByRole("button", { name: "Enter Mars Bank" })`
 - Banking home: `waitForURL("**/banking")` then wait for the heading `formatDaypartGreeting(firstName, hour)` produces from `page.evaluate(() => new Date().getHours())`. Retry that wait only if the hour rolls between the sample and the locator. Login proof records that sample as `proof.observed.heading` and `proof.observed.hour`. The login drive always records video and saves `03-login-path.webm` after the context closes, including failed runs.
 - Sidebar: `getByRole("navigation", { name: "Banking" }).getByRole("link", { name: "Accounts" })` — also `Cards`, `Send`, `Position`, `Reports`

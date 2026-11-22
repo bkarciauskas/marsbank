@@ -28,9 +28,9 @@ Preconditions:
 - **Search from the desk.** Run `node .cursor/skills/verify-marsbank/scripts/drive.mjs activity` or fill the searchbox `Search transactions, accounts and payees` with `Areology Coffee` and submit `form.desk-search`. URL is `/banking/activity?q=Areology%20Coffee`.
 - **Read results.** Heading `Token movement` and `Results for “Areology Coffee”`. Every `.transaction-row` contains Areology Coffee. The result count in the subtitle is greater than zero.
 - **Clear.** Choose **Clear search**. Run `page.getByRole("link", { name: /Clear search/i }).click()`. URL is `/banking/activity` and the section heading returns to `Posted by sol`.
-- **Empty query.** Open `/banking/activity?q=phobos%20shipyard`. Copy includes `0 matching movements` and `No movement on this account`. **Download CSV** is disabled.
-- **Download the list.** Choose **Download CSV**. The file contains the rows currently listed, including after a search.
-- **Proof.** Keep `01-search-results.png`, `02-full-ledger.png`, matching `.aria.txt` files, and `proof.json` under `evidence/<runId>/activity/`.
+- **Empty query.** The same command then opens `/banking/activity?q=phobos%20shipyard`. Copy includes `0 matching movements` and `No movement on this account`. **Download CSV** is disabled. It keeps `03-empty.png`.
+- **Download the list.** The command returns to the Areology Coffee results and chooses **Download CSV**. The seed file is `mars-bank-statement-2026-08-07-to-2026-08-25.csv`. It contains `txn-001`, `txn-018`, and `txn-022`, and it does not contain `txn-002`. Run this before posting a new Areology Coffee line, or the filename and rows change.
+- **Proof.** Keep `01-search-results.png`, `02-full-ledger.png`, `03-empty.png`, the CSV, matching `.aria.txt` files, and `proof.json` under `evidence/<runId>/activity/`.
 
 ## Gotchas
 

@@ -16,7 +16,8 @@ This directory is the maintained source for verifying the user-facing behavior o
 - Prefer ARIA roles and accessible names over CSS selectors or DOM position.
 - Treat every command as literal. Keep quoted names and flags unchanged.
 - Default harness resident is Aaron (`--resident cameron` to use the prefilled row).
-- After a mutation, restore with **Restore shared demo** → **Restore all registers** on `/banking/settings` if a later feature needs seed balances. Do not remove proof artifacts during cleanup.
+- `drive.mjs balances` is the Accounts hide-balances recipe. It has no feature file of its own.
+- `drive.mjs settings` restores all six seed registers. Run it after a drive that posts tokens when a later drive needs those balances. Do not remove proof artifacts during cleanup.
 
 ## Proof and skip reporting
 
@@ -41,8 +42,10 @@ Keep implementation details out of the map. Name only user paths, stable handles
 ## Features
 
 - [Login](./login.md) covers the public Enter path, demo roster, banking home, and logout.
-- [Accounts](./accounts.md) covers the token register, account detail, and account-scoped search.
+- [Accounts](./accounts.md) covers the token register, account detail, the habitat loan offset planner, and account-scoped search.
 - [Transfer](./transfer.md) covers own-account and PayID sends through review to posted.
 - [Cards](./cards.md) covers the card desk and freeze / unfreeze.
 - [Activity](./activity.md) covers the movement ledger and transaction search.
 - [Notifications](./notifications.md) covers the incoming-transfer bell on a seeded register.
+- [Reports](./reports.md) covers posted-movement totals and the spend groupings.
+- [Settings](./settings.md) covers the resident profile and restoring the shared demo.
