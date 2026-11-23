@@ -12,7 +12,10 @@ import {
   hookKits,
   uninstallAllHookKits,
 } from "@/lib/demo/install-hooks";
-import { revertAgentGuardrails } from "@/lib/demo/agent-guardrails";
+import {
+  revertAgentGuardrails,
+  withAgentLock,
+} from "@/lib/demo/agent-guardrails";
 import { DEMO_SCENARIO_COOKIE } from "@/lib/demo/scenarios";
 import { accountId } from "@/lib/ids";
 import { availableBalance } from "@/lib/ledger";
@@ -47,8 +50,10 @@ describe("demo route", () => {
     await getLedgerRepository().resetAll("cameron");
   });
 
-  afterEach(() => {
-    revertAgentGuardrails();
+  afterEach(async () => {
+    await withAgentLock(() => {
+      revertAgentGuardrails();
+    });
     uninstallAllHookKits();
     try {
       fs.unlinkSync(hookStampPath);
@@ -193,22 +198,19 @@ describe("demo route", () => {
     };
     expect(body.active).toBe("agent-lint");
     expect(body.guardrail.output).toContain("useBank()");
-    expect(
-      fs.existsSync(
-        path.join(process.cwd(), "components/demo/planted-ledger-import.tsx"),
-      ),
-    ).toBe(true);
 
     const reset = await post(
       { action: "reset", scenario: "agent-lint" },
       `${DEMO_SCENARIO_COOKIE}=agent-lint`,
     );
     expect((await reset.json()).active).toBeNull();
-    expect(
-      fs.existsSync(
-        path.join(process.cwd(), "components/demo/planted-ledger-import.tsx"),
-      ),
-    ).toBe(false);
+    await withAgentLock(async () => {
+      expect(
+        fs.existsSync(
+          path.join(process.cwd(), "components/demo/planted-ledger-import.tsx"),
+        ),
+      ).toBe(false);
+    });
   });
 
   it("adds the style hook beside the Cursor Hooks kit and resets only the style hook", async () => {

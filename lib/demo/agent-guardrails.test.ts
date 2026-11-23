@@ -19,8 +19,10 @@ function read(relativePath: string): string {
 }
 
 describe("agent-guardrails plants", () => {
-  afterEach(() => {
-    revertAgentGuardrails();
+  afterEach(async () => {
+    await withAgentLock(() => {
+      revertAgentGuardrails();
+    });
   });
 
   it("writes a UI ledger import that lint rejects, then deletes it", async () => {
