@@ -20,7 +20,7 @@ import { txnId } from "./ids";
 import type { LoanPosition } from "./loan-projection";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
-import { latestPostedTime, solIndex } from "./sol";
+import { latestPostedTime, solIndex, solsBeforeLatest } from "./sol";
 
 /**
  * Risk controls on PayID sends. Only PayID sends leave the resident's register;
@@ -397,12 +397,13 @@ export function solCardSpend(
   const movements = snapshot.transactions.filter(
     (transaction) => transaction.accountId === accountId,
   );
-  const sol = solIndex(
-    latestPostedTime(movements.map((transaction) => transaction.postedOn)),
+  const latestPostedAt = latestPostedTime(
+    movements.map((transaction) => transaction.postedOn),
   );
   const purchases = movements.filter(
     (transaction) =>
-      !transaction.payee && solIndex(Date.parse(transaction.postedOn)) === sol,
+      !transaction.payee &&
+      solsBeforeLatest(transaction.postedOn, latestPostedAt) === 0,
   );
   return spendGrouping(
     flowPage({ ...snapshot, transactions: purchases }, { kind: "overview" })
