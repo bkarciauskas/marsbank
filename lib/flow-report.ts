@@ -251,7 +251,7 @@ function shareBps(value: number): ShareBps {
   return value as ShareBps;
 }
 
-function shareOf(part: number, whole: number): ShareBps {
+export function shareOf(part: number, whole: number): ShareBps {
   if (whole <= 0) return shareBps(0);
   return shareBps(
     Math.min(10_000, Math.max(0, Math.round((part / whole) * 10_000))),

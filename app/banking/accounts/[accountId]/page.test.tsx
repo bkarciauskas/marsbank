@@ -1,7 +1,16 @@
 import "@testing-library/jest-dom/vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { seedSnapshot } from "@/lib/fixtures";
+import { tokens } from "@/lib/money";
 import { BankProvider } from "@/lib/store";
+import { createLedgerFetch } from "@/test-utils/ledger-fetch";
 import AccountDetailPage from "./page";
 
 const params = { accountId: "acc-reserve" };
@@ -146,6 +155,86 @@ describe("AccountDetailPage", () => {
     expect(
       within(planner).getByRole("link", { name: /make a repayment/i }),
     ).toBeInTheDocument();
+  });
+
+  it("meters Expedition Credit and routes one-click settlement to it", () => {
+    renderDetail("acc-credit");
+    const utilization = screen.getByRole("region", {
+      name: "Credit utilization",
+    });
+
+    expect(
+      within(utilization).getByRole("meter", { name: "Credit utilization" }),
+    ).toHaveAttribute("aria-valuenow", "82640");
+    expect(
+      within(utilization).getByText(
+        "0.17% of the 50,000,000 tokens limit drawn.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(utilization).getByRole("link", { name: "Clear balance" }),
+    ).toHaveAttribute("href", "/banking/transfer?to=acc-credit&amount=82640");
+    expect(
+      within(utilization).getByRole("link", { name: "Pay custom amount" }),
+    ).toHaveAttribute("href", "/banking/transfer?to=acc-credit");
+
+    const spend = screen
+      .getByRole("heading", { name: "Sol 21 card spend" })
+      .closest("section");
+    expect(spend).toHaveTextContent("8,960 MT posted out.");
+    expect(spend).toHaveTextContent("Transit");
+  });
+
+  it("offers no settlement once Expedition Credit owes nothing", async () => {
+    vi.stubGlobal(
+      "fetch",
+      createLedgerFetch({
+        ...seedSnapshot,
+        accounts: seedSnapshot.accounts.map((account) =>
+          account.kind === "credit" ? { ...account, owed: tokens(0) } : account,
+        ),
+      }),
+    );
+    renderDetail("acc-credit");
+
+    expect(await screen.findByText("Nothing owing")).toBeInTheDocument();
+    expect(
+      screen.getByText("0% of the 50,000,000 tokens limit drawn."),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Clear balance" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Pay custom amount" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("keeps credit panels to Expedition Credit", () => {
+    renderDetail("acc-everyday");
+    expect(
+      screen.queryByRole("region", { name: "Credit utilization" }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/card spend/)).not.toBeInTheDocument();
+  });
+
+  it("copies account coordinates from every account page", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    for (const [accountId, coordinates] of [
+      ["acc-everyday", "MARS-001 · 1038 4821"],
+      ["acc-credit", "MARS-001 · •••• 9072"],
+      ["acc-habitat-loan", "MARS-001 · 7702 0418"],
+    ] as const) {
+      const view = renderDetail(accountId);
+      fireEvent.click(screen.getByRole("button", { name: "Copy coordinates" }));
+      await waitFor(() => expect(writeText).toHaveBeenCalledWith(coordinates));
+      expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument();
+      view.unmount();
+    }
   });
 
   it("keeps the planner to habitat loans", () => {

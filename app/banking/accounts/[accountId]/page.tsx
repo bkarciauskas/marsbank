@@ -1,19 +1,98 @@
 "use client";
 
-import { ArrowLeft, ArrowLeftRight, Copy, Home } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Check, Copy, Home } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 import { LoanOffsetPlanner } from "@/components/banking/loan-offset-planner";
+import { SpendGroupingPanel } from "@/components/banking/spend-grouping";
 import { TransactionList } from "@/components/banking/transaction-list";
-import type { Account } from "@/lib/domain";
+import "@/components/banking/reports-surface.css";
+import type { Account, CreditAccount } from "@/lib/domain";
+import type { SpendGrouping } from "@/lib/flow-report";
 import {
   availableBalance,
+  creditUtilization,
   displayBalance,
   loanPosition,
   offsetAccounts,
+  solCardSpend,
 } from "@/lib/ledger";
 import { formatTokens } from "@/lib/money";
+import { LEDGER_SOL } from "@/lib/sol";
 import { useBank } from "@/lib/store";
+
+const percent = new Intl.NumberFormat("en-AU", {
+  style: "percent",
+  maximumFractionDigits: 2,
+});
+
+function CreditPanels({
+  account,
+  spend,
+}: {
+  account: CreditAccount;
+  spend: SpendGrouping;
+}) {
+  const used = creditUtilization(account);
+  const drawn = percent.format(used / 10_000);
+  const settle = `/banking/transfer?to=${account.id}`;
+  return (
+    <>
+      <section
+        aria-labelledby="credit-utilization-heading"
+        className="desk-card"
+      >
+        <div className="desk-card-heading">
+          <div>
+            <h2 id="credit-utilization-heading">Credit utilization</h2>
+            <p>
+              {drawn} of the {formatTokens(account.limit)} limit drawn.
+            </p>
+          </div>
+        </div>
+        <div
+          aria-label="Credit utilization"
+          aria-valuemax={account.limit}
+          aria-valuemin={0}
+          aria-valuenow={account.owed}
+          aria-valuetext={`${drawn} drawn`}
+          className="desk-utilization"
+          role="meter"
+        >
+          {used > 0 ? <span style={{ width: `${used / 100}%` }} /> : null}
+        </div>
+        <div className="desk-planner-actions">
+          <p>
+            {account.owed > 0
+              ? `${formatTokens(account.owed)} owing`
+              : "Nothing owing"}
+          </p>
+          {account.owed > 0 ? (
+            <div className="desk-account-actions">
+              <Link
+                className="desk-primary-action"
+                href={`${settle}&amount=${account.owed}`}
+              >
+                <ArrowLeftRight aria-hidden="true" /> Clear balance
+              </Link>
+              <Link className="desk-quiet-action" href={settle}>
+                Pay custom amount
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      </section>
+      {spend.series.length > 0 ? (
+        <SpendGroupingPanel
+          copy="Purchases on this card, by habit."
+          grouping={spend}
+          title={`Sol ${LEDGER_SOL} card spend`}
+        />
+      ) : null}
+    </>
+  );
+}
 
 function heroFigure(account: Account): { label: string; spendable: boolean } {
   switch (account.kind) {
@@ -31,6 +110,7 @@ function heroFigure(account: Account): { label: string; spendable: boolean } {
 export default function AccountDetailPage() {
   const params = useParams<{ accountId: string }>();
   const { snapshot } = useBank();
+  const [copied, setCopied] = useState(false);
   const account = snapshot.accounts.find(
     (candidate) => candidate.id === params.accountId,
   );
@@ -46,6 +126,13 @@ export default function AccountDetailPage() {
         </div>
       </div>
     );
+  }
+
+  const coordinates = `${account.branch} · ${account.number}`;
+  async function copyCoordinates() {
+    await navigator.clipboard.writeText(coordinates);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2_000);
   }
 
   const transactions = snapshot.transactions.filter(
@@ -75,8 +162,19 @@ export default function AccountDetailPage() {
         <div>
           <h1>{account.name}</h1>
           <p>
-            {account.productName} · {account.branch} · {account.number}{" "}
-            <Copy aria-hidden="true" />
+            {account.productName} · {coordinates}
+            <button
+              className="desk-copy"
+              onClick={() => void copyCoordinates()}
+              type="button"
+            >
+              {copied ? (
+                <Check aria-hidden="true" />
+              ) : (
+                <Copy aria-hidden="true" />
+              )}
+              {copied ? "Copied" : "Copy coordinates"}
+            </button>
           </p>
         </div>
         <div
@@ -113,6 +211,13 @@ export default function AccountDetailPage() {
             </Link>
           ) : null}
         </div>
+      ) : null}
+
+      {account.kind === "credit" ? (
+        <CreditPanels
+          account={account}
+          spend={solCardSpend(snapshot, account.id)}
+        />
       ) : null}
 
       {account.kind === "offset" && linkedLoan ? (

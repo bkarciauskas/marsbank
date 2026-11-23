@@ -3576,6 +3576,23 @@ a.desk-demo-flag:focus-visible {
   width: 14px;
 }
 
+.desk-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--blue);
+  cursor: pointer;
+  font: inherit;
+}
+
+.desk-copy:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .desk-intro h1,
 .banking-shell .page-intro h1 {
   margin: 0;
@@ -3745,6 +3762,21 @@ a.desk-demo-flag:focus-visible {
   color: var(--desk-ink);
   font-size: var(--desk-text-lg);
   font-weight: 600;
+}
+
+.desk-utilization {
+  height: 10px;
+  overflow: hidden;
+  margin: 18px 22px;
+  border-radius: 2px;
+  background: var(--desk-rule);
+}
+
+.desk-utilization span {
+  display: block;
+  min-width: 3px;
+  height: 100%;
+  background: var(--oxide);
 }
 
 @media (max-width: 850px) {

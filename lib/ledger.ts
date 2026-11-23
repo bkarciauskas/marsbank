@@ -2,17 +2,25 @@ import type {
   Account,
   BankSnapshot,
   CardStatus,
+  CreditAccount,
   OffsetAccount,
   PayIdTransferCommand,
   TransferCommand,
   TransferResult,
 } from "./domain";
+import {
+  flowPage,
+  shareOf,
+  spendGrouping,
+  type ShareBps,
+  type SpendGrouping,
+} from "./flow-report";
 import type { AccountId, CardId } from "./ids";
 import { txnId } from "./ids";
 import type { LoanPosition } from "./loan-projection";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
-import { solIndex } from "./sol";
+import { latestPostedTime, solIndex } from "./sol";
 
 /**
  * Risk controls on PayID sends. Only PayID sends leave the resident's register;
@@ -372,4 +380,33 @@ export function loanPosition(
   const loan = accountById(snapshot, loanId);
   if (loan?.kind !== "loan") return undefined;
   return { remaining: loan.remaining, offset: offsetTotal(snapshot, loanId) };
+}
+
+export function creditUtilization(account: CreditAccount): ShareBps {
+  return shareOf(account.owed, account.limit);
+}
+
+/**
+ * Card purchases on the account, by habit, in the sol of its latest movement.
+ * That is the sol `TransactionList` labels `LEDGER_SOL` on the account page.
+ */
+export function solCardSpend(
+  snapshot: BankSnapshot,
+  accountId: AccountId,
+): SpendGrouping {
+  const movements = snapshot.transactions.filter(
+    (transaction) => transaction.accountId === accountId,
+  );
+  const sol = solIndex(
+    latestPostedTime(movements.map((transaction) => transaction.postedOn)),
+  );
+  const purchases = movements.filter(
+    (transaction) =>
+      !transaction.payee && solIndex(Date.parse(transaction.postedOn)) === sol,
+  );
+  return spendGrouping(
+    flowPage({ ...snapshot, transactions: purchases }, { kind: "overview" })
+      .report,
+    "habit",
+  );
 }

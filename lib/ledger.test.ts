@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { BankSnapshot, TransferResult } from "./domain";
 import { DEMO_CREDIT_LIMIT, seedSnapshot } from "./fixtures";
-import { accountId, cardId } from "./ids";
+import { accountId, cardId, txnId } from "./ids";
 import {
   applyPayIdTransfer,
   applyTransfer,
   availableBalance,
+  creditUtilization,
   displayBalance,
   loanPosition,
   needsStepUp,
@@ -14,11 +15,17 @@ import {
   offsetTotal,
   sentThisSol,
   setCardStatus,
+  solCardSpend,
   SOL_SEND_LIMIT,
   solSendRemaining,
   STEP_UP_THRESHOLD,
 } from "./ledger";
 import { tokens } from "./money";
+
+function posted(result: TransferResult): BankSnapshot {
+  if (result.kind !== "ok") throw new Error(`expected ok, got ${result.kind}`);
+  return result.snapshot;
+}
 
 describe("Mars Bank ledger", () => {
   it("tallies on-hand deposits against habitat debt", () => {
@@ -240,11 +247,6 @@ describe("PayID send limits", () => {
     );
   }
 
-  function posted(result: TransferResult): BankSnapshot {
-    if (result.kind !== "ok") throw new Error(`expected ok, got ${result.kind}`);
-    return result.snapshot;
-  }
-
   it("rejects a send that passes the per-sol limit and leaves the register alone", () => {
     const afterFirst = posted(
       sendToCursor(structuredClone(seedSnapshot), 200_000, morning),
@@ -319,5 +321,109 @@ describe("PayID send limits", () => {
     );
 
     expect(sentThisSol(posted(moved), morning)).toBe(0);
+  });
+});
+
+describe("Expedition Credit", () => {
+  const credit = accountId("acc-credit");
+
+  it("reads utilization as basis points of the limit drawn", () => {
+    const account = seedSnapshot.accounts.find(({ id }) => id === credit);
+    if (account?.kind !== "credit") throw new Error("missing credit");
+
+    expect(creditUtilization(account)).toBe(17);
+    expect(creditUtilization({ ...account, owed: tokens(0) })).toBe(0);
+    expect(
+      creditUtilization({ ...account, owed: tokens(DEMO_CREDIT_LIMIT) }),
+    ).toBe(10_000);
+  });
+
+  it("breaks down card spend in the sol of the latest movement", () => {
+    expect(solCardSpend(seedSnapshot, credit)).toEqual({
+      axis: "habit",
+      total: 8_960,
+      series: [
+        {
+          key: "transit",
+          label: "Transit",
+          href: "/banking/reports?view=habit&habit=transit",
+          amount: 8_960,
+          share: 10_000,
+          count: 1,
+        },
+      ],
+    });
+  });
+
+  it("groups same-sol purchases by habit and leaves out transfers and PayID sends", () => {
+    const sameSol = new Date("2026-08-23T21:00:00.000Z");
+    const coffee = structuredClone(seedSnapshot);
+    coffee.transactions.unshift({
+      id: txnId("txn-credit-coffee"),
+      accountId: credit,
+      postedOn: "2026-08-23T20:10:00.000Z",
+      description: "Areology Coffee · Crater Gate",
+      amount: tokens(1_040),
+      direction: "debit",
+    });
+    const drawn = posted(
+      applyTransfer(
+        coffee,
+        {
+          from: credit,
+          to: accountId("acc-everyday"),
+          amount: tokens(3_000),
+          description: "",
+        },
+        sameSol,
+      ),
+    );
+    const sent = posted(
+      applyPayIdTransfer(
+        drawn,
+        {
+          from: credit,
+          amount: tokens(5_000),
+          description: "",
+          payee: {
+            scheme: "cursor",
+            id: "@cursor",
+            displayName: "Cursor",
+            institution: "Cursor",
+          },
+        },
+        sameSol,
+      ),
+    );
+
+    const spend = solCardSpend(sent, credit);
+    expect(spend.total).toBe(10_000);
+    expect(
+      spend.series.map(({ key, amount, share }) => [key, amount, share]),
+    ).toEqual([
+      ["transit", 8_960, 8_960],
+      ["food", 1_040, 1_040],
+    ]);
+  });
+
+  it("shows no card spend once a settlement opens a new sol", () => {
+    const settled = posted(
+      applyTransfer(
+        structuredClone(seedSnapshot),
+        {
+          from: accountId("acc-everyday"),
+          to: credit,
+          amount: tokens(82_640),
+          description: "",
+        },
+        new Date("2026-08-26T10:00:00.000Z"),
+      ),
+    );
+
+    expect(solCardSpend(settled, credit)).toEqual({
+      axis: "habit",
+      total: 0,
+      series: [],
+    });
   });
 });
