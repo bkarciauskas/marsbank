@@ -1,6 +1,7 @@
 import type {
   AccountId,
   CardId,
+  ContactId,
   CustomerId,
   PaymentRequestId,
   TxnId,
@@ -42,10 +43,7 @@ export type LoanAccount = AccountBase & {
 };
 
 export type Account =
-  | DepositAccount
-  | OffsetAccount
-  | CreditAccount
-  | LoanAccount;
+  DepositAccount | OffsetAccount | CreditAccount | LoanAccount;
 
 export type CardStatus = "active" | "frozen";
 
@@ -80,6 +78,35 @@ export type ResolvedPayId = {
   displayName: string;
   institution: string;
 };
+
+export type SavedContact = {
+  id: ContactId;
+  nickname: string;
+  payee: ResolvedPayId;
+  pinned: boolean;
+  savedAt: string;
+};
+
+export type SaveContactCommand = {
+  handle: string;
+  nickname: string;
+};
+
+export type PinContactCommand = {
+  contactId: ContactId;
+  pinned: boolean;
+};
+
+export type HostedContactCommand =
+  | { action: "save"; command: SaveContactCommand }
+  | { action: "pin"; command: PinContactCommand };
+
+export type ContactFailure =
+  | { kind: "invalid-payid" }
+  | { kind: "own-payid" }
+  | { kind: "invalid-nickname" }
+  | { kind: "unknown-contact" }
+  | { kind: "network" };
 
 export type TransferFailure =
   | { kind: "same-account" }
@@ -176,12 +203,16 @@ export type BankSnapshot = {
   cards: Card[];
   transactions: Transaction[];
   paymentRequests: PaymentRequest[];
+  contacts: SavedContact[];
   revision: number;
 };
 
+export type ContactResult =
+  | { kind: "ok"; snapshot: BankSnapshot; contact: SavedContact }
+  | ContactFailure;
+
 export type TransferResult =
-  | { kind: "ok"; snapshot: BankSnapshot }
-  | TransferFailure;
+  { kind: "ok"; snapshot: BankSnapshot } | TransferFailure;
 
 export type PaymentRequestResult =
   | { kind: "ok"; snapshot: BankSnapshot; request: PaymentRequest }
