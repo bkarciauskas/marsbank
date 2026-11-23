@@ -15,6 +15,7 @@ Login lets a visitor pick one of six fictional Mars residents, enter the demo ba
 
 - Open `/login` directly.
 - Choose **Enter** in the public header, **Mars Bank online** in the utility nav, **Enter Mars Bank** in the hero or footer, or **Enter secure banking** on the public site.
+- On the public home, choose **Sol accounts**, **Expedition cards**, **Send tokens**, or **Start spending tokens**. Each link goes to `/login`.
 - After a session expires or `/banking` is opened without a cookie, the app redirects to `/login`.
 
 ## Driving it with Playwright
@@ -26,7 +27,7 @@ Preconditions:
 - No `marsbank-demo-session` cookie is set in the browser context.
 
 - **Open login.** Run `node .cursor/skills/verify-marsbank/scripts/drive.mjs login` (or `page.goto("http://127.0.0.1:4317/login")`). The heading reads `Your accounts can't.` and a radiogroup legend `Demo resident` is visible. Cameron is checked by default.
-- **Pick a resident.** Choose the Aaron roster card. Run `page.locator("label").filter({ has: page.getByRole("radio", { name: /aaron/i }) }).click()`. The Aaron radio is checked and the ID field shows `aaron@marsbank.mars`. The radio input itself is covered by its label — do not click the `input` directly.
+- **Pick a resident.** Choose the Aaron roster card. Run `page.locator("label").filter({ has: page.getByRole("radio", { name: /aaron/i }) }).click()`. The Aaron radio is checked and the ID field shows `aaron@marsbank.mars`. The drive fails if either check misses. The radio is clipped to a 1px box, so click the label. Do not click the `input` directly.
 - **Enter.** Choose **Enter Mars Bank**. Run `page.getByRole("button", { name: "Enter Mars Bank" }).click()` and `page.waitForURL("**/banking")`. Sample `page.evaluate(() => new Date().getHours())` and wait for the heading `formatDaypartGreeting("Aaron", hour)` produces. Retry only if that hour rolls. The intro includes `Client MB-110274`.
 - **Confirm session.** `GET /api/register` with the browser cookies returns 200 and `snapshot.customer.email` is `aaron@marsbank.mars`.
 - **Reject bad password.** On a fresh context, open `/login`, replace the password with `wrong`, and submit. An alert reads `That ID and password do not match the demo access record.` and the URL stays on `/login`.
