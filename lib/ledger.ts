@@ -2,8 +2,10 @@ import type {
   Account,
   BankSnapshot,
   CardStatus,
+  CreditAccount,
   OffsetAccount,
   PayIdTransferCommand,
+  Transaction,
   TransferCommand,
   TransferResult,
 } from "./domain";
@@ -12,7 +14,7 @@ import { txnId } from "./ids";
 import type { LoanPosition } from "./loan-projection";
 import { addTokens, subtractTokens, tokens, type TokenAmount } from "./money";
 import { payIdLabel } from "./payid";
-import { solIndex } from "./sol";
+import { latestPostedTime, solIndex, solsBeforeLatest } from "./sol";
 
 /**
  * Risk controls on PayID sends. Only PayID sends leave the resident's register;
@@ -363,6 +365,51 @@ export function offsetTotal(
       0,
     ),
   );
+}
+
+/** Share of the credit limit drawn, from 0 to 1. */
+export function creditUtilization(account: CreditAccount): number {
+  if (account.limit <= 0) return 0;
+  return Math.min(1, account.owed / account.limit);
+}
+
+export type SolCardSpend = {
+  total: TokenAmount;
+  purchases: Transaction[];
+};
+
+/**
+ * Card purchases on `accountId` in its current sol. A card purchase is a debit
+ * with no own-account counterparty and no PayID payee. The sol is the rolling
+ * earth-day ending at the account's latest posting, the window
+ * `TransactionList` stamps as the newest sol.
+ */
+export function solCardSpend(
+  snapshot: BankSnapshot,
+  accountId: AccountId,
+): SolCardSpend {
+  const movements = snapshot.transactions.filter(
+    (transaction) => transaction.accountId === accountId,
+  );
+  if (movements.length === 0) return { total: tokens(0), purchases: [] };
+
+  const latestPostedAt = latestPostedTime(
+    movements.map((transaction) => transaction.postedOn),
+  );
+  const purchases = movements.filter(
+    (transaction) =>
+      transaction.direction === "debit" &&
+      !transaction.counterpartyAccountId &&
+      !transaction.payee &&
+      solsBeforeLatest(transaction.postedOn, latestPostedAt) === 0,
+  );
+  return {
+    total: purchases.reduce(
+      (total, transaction) => addTokens(total, transaction.amount),
+      tokens(0),
+    ),
+    purchases,
+  };
 }
 
 export function loanPosition(

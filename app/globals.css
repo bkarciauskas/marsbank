@@ -3670,6 +3670,118 @@ a.desk-demo-flag:focus-visible {
   font-weight: 600;
 }
 
+.desk-copy-coordinates {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  padding: 2px;
+  background: none;
+  color: var(--desk-ink-soft);
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.desk-copy-coordinates:hover {
+  color: var(--desk-ink);
+}
+
+.desk-copy-coordinates svg {
+  width: 14px;
+  height: 14px;
+}
+
+.desk-copy-status {
+  margin-left: 4px;
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.desk-credit-meter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+}
+
+.desk-credit-meter-track {
+  flex: 1;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--desk-rule);
+}
+
+.desk-credit-meter-track span {
+  display: block;
+  min-width: 2px;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--desk-ink);
+}
+
+.desk-credit-meter strong {
+  font-size: var(--desk-text-lg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.desk-credit-spend {
+  border-top: 1px solid var(--desk-rule);
+  padding: 16px 22px 18px;
+}
+
+.desk-credit-spend h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--desk-ink);
+  font-family: inherit;
+  font-size: var(--desk-text-md);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.desk-credit-spend h3 svg {
+  width: 18px;
+  color: var(--desk-ink-soft);
+}
+
+.desk-credit-spend h3 strong {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.desk-credit-spend h3 small,
+.desk-credit-spend p {
+  color: var(--desk-ink-soft);
+  font-size: var(--desk-text-sm);
+}
+
+.desk-credit-spend p {
+  margin: 10px 0 0;
+}
+
+.desk-credit-spend ul {
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desk-credit-spend li {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--desk-rule);
+  padding: 8px 0;
+  font-size: var(--desk-text-base);
+}
+
+.desk-credit-spend li strong {
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
 .desk-planner-view h3 {
   margin: 0;
   padding: 16px 22px 0;

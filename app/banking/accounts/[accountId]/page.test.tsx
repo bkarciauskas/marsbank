@@ -155,6 +155,61 @@ describe("AccountDetailPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("meters Expedition Credit and links one-click settlement", () => {
+    renderDetail("acc-credit");
+    const card = screen.getByRole("region", { name: "Credit utilization" });
+
+    expect(
+      within(card).getByRole("meter", { name: "Credit utilization" }),
+    ).toHaveAttribute("aria-valuetext", "0.17%");
+    expect(
+      within(card).getByText("82,640 tokens owed of a 50,000,000 tokens limit."),
+    ).toBeInTheDocument();
+    expect(
+      within(card).getByRole("link", { name: /clear balance/i }),
+    ).toHaveAttribute("href", "/banking/transfer?to=acc-credit&amount=82640");
+    expect(
+      within(card).getByRole("link", { name: /pay custom amount/i }),
+    ).toHaveAttribute("href", "/banking/transfer?to=acc-credit");
+
+    const spend = within(card).getByRole("region", {
+      name: /card spend this sol/i,
+    });
+    expect(spend).toHaveTextContent("8,960 MT");
+    expect(within(spend).getByText("Valles Lift Transit")).toBeInTheDocument();
+    expect(within(spend).getAllByRole("listitem")).toHaveLength(1);
+  });
+
+  it("keeps the credit meter off other accounts", () => {
+    renderDetail("acc-reserve");
+    expect(
+      screen.queryByRole("region", { name: "Credit utilization" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("copies account coordinates on every account", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText },
+    });
+
+    for (const id of ["acc-reserve", "acc-credit", "acc-habitat-loan"]) {
+      const view = renderDetail(id);
+      fireEvent.click(
+        screen.getByRole("button", { name: /copy account coordinates/i }),
+      );
+      expect(await screen.findByText("Copied")).toHaveAttribute(
+        "role",
+        "status",
+      );
+      view.unmount();
+    }
+
+    expect(writeText).toHaveBeenCalledTimes(3);
+    expect(writeText.mock.calls[1]?.[0]).toMatch(/^MARS-001 •••• \d{4}$/);
+  });
+
   it("explains a missing account on the desk", () => {
     renderDetail("acc-missing");
 

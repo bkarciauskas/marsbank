@@ -1,8 +1,10 @@
 "use client";
 
-import { ArrowLeft, ArrowLeftRight, Copy, Home } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, Check, Copy, Home } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+import { CreditSettlement } from "@/components/banking/credit-settlement";
 import { LoanOffsetPlanner } from "@/components/banking/loan-offset-planner";
 import { TransactionList } from "@/components/banking/transaction-list";
 import type { Account } from "@/lib/domain";
@@ -11,6 +13,7 @@ import {
   displayBalance,
   loanPosition,
   offsetAccounts,
+  solCardSpend,
 } from "@/lib/ledger";
 import { formatTokens } from "@/lib/money";
 import { useBank } from "@/lib/store";
@@ -26,6 +29,32 @@ function heroFigure(account: Account): { label: string; spendable: boolean } {
     case "offset":
       return { label: "Available", spendable: true };
   }
+}
+
+function CopyCoordinates({ account }: { account: Account }) {
+  const [copied, setCopied] = useState(false);
+  const coordinates = `${account.branch} ${account.number}`;
+
+  async function copy() {
+    await navigator.clipboard.writeText(coordinates);
+    setCopied(true);
+  }
+
+  return (
+    <>
+      <button
+        aria-label={`Copy account coordinates ${coordinates}`}
+        className="desk-copy-coordinates"
+        onClick={copy}
+        type="button"
+      >
+        {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+      </button>
+      <span className="desk-copy-status" role="status">
+        {copied ? "Copied" : null}
+      </span>
+    </>
+  );
 }
 
 export default function AccountDetailPage() {
@@ -76,7 +105,7 @@ export default function AccountDetailPage() {
           <h1>{account.name}</h1>
           <p>
             {account.productName} · {account.branch} · {account.number}{" "}
-            <Copy aria-hidden="true" />
+            <CopyCoordinates account={account} />
           </p>
         </div>
         <div
@@ -139,6 +168,13 @@ export default function AccountDetailPage() {
             </strong>
           </div>
         </section>
+      ) : null}
+
+      {account.kind === "credit" ? (
+        <CreditSettlement
+          account={account}
+          spend={solCardSpend(snapshot, account.id)}
+        />
       ) : null}
 
       {account.kind === "loan" && position && repaymentSource ? (

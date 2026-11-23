@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { BankSnapshot, TransferResult } from "./domain";
+import type { BankSnapshot, Transaction, TransferResult } from "./domain";
 import { DEMO_CREDIT_LIMIT, seedSnapshot } from "./fixtures";
-import { accountId, cardId } from "./ids";
+import { accountId, cardId, txnId } from "./ids";
 import {
   applyPayIdTransfer,
   applyTransfer,
   availableBalance,
+  creditUtilization,
   displayBalance,
   loanPosition,
   needsStepUp,
@@ -14,6 +15,7 @@ import {
   offsetTotal,
   sentThisSol,
   setCardStatus,
+  solCardSpend,
   SOL_SEND_LIMIT,
   solSendRemaining,
   STEP_UP_THRESHOLD,
@@ -319,5 +321,105 @@ describe("PayID send limits", () => {
     );
 
     expect(sentThisSol(posted(moved), morning)).toBe(0);
+  });
+});
+
+describe("Expedition Credit", () => {
+  const creditId = accountId("acc-credit");
+
+  function credit(owed: number) {
+    const account = seedSnapshot.accounts.find(
+      (candidate) => candidate.id === creditId,
+    );
+    if (account?.kind !== "credit") throw new Error("missing credit");
+    return { ...account, owed: tokens(owed) };
+  }
+
+  function movement(
+    id: string,
+    postedOn: string,
+    amount: number,
+    extra: Partial<Transaction> = {},
+  ): Transaction {
+    return {
+      id: txnId(id),
+      accountId: creditId,
+      postedOn,
+      description: id,
+      amount: tokens(amount),
+      direction: "debit",
+      ...extra,
+    };
+  }
+
+  function withMovements(transactions: Transaction[]): BankSnapshot {
+    return { ...seedSnapshot, transactions };
+  }
+
+  it("reads utilization as owed against the 50,000,000 MT limit", () => {
+    expect(creditUtilization(credit(0))).toBe(0);
+    expect(creditUtilization(credit(82_640))).toBeCloseTo(0.0016528);
+    expect(creditUtilization(credit(12_500_000))).toBe(0.25);
+    expect(creditUtilization(credit(DEMO_CREDIT_LIMIT))).toBe(1);
+  });
+
+  it("sums the seeded current-sol card spend on the credit line", () => {
+    const spend = solCardSpend(seedSnapshot, creditId);
+
+    expect(spend.purchases.map((purchase) => purchase.id)).toEqual(["txn-003"]);
+    expect(spend.total).toBe(8_960);
+  });
+
+  it("keeps the rolling sol window across 00:00 UTC", () => {
+    const spend = solCardSpend(
+      withMovements([
+        movement("after-midnight", "2026-08-24T00:30:00.000Z", 400),
+        movement("before-midnight", "2026-08-23T23:30:00.000Z", 300),
+        movement("last-sol", "2026-08-23T00:29:00.000Z", 200),
+      ]),
+      creditId,
+    );
+
+    expect(spend.purchases.map((purchase) => purchase.description)).toEqual([
+      "after-midnight",
+      "before-midnight",
+    ]);
+    expect(spend.total).toBe(700);
+  });
+
+  it("leaves repayments, own-account moves and PayID sends out of card spend", () => {
+    const spend = solCardSpend(
+      withMovements([
+        movement("repayment", "2026-08-24T10:00:00.000Z", 5_000, {
+          direction: "credit",
+          counterpartyAccountId: accountId("acc-everyday"),
+        }),
+        movement("cash-move", "2026-08-24T09:00:00.000Z", 1_000, {
+          counterpartyAccountId: accountId("acc-reserve"),
+        }),
+        movement("payid", "2026-08-24T08:00:00.000Z", 900, {
+          payee: {
+            scheme: "payid",
+            id: "robin@marsbank.mars",
+            displayName: "Robin",
+            institution: "Mars Bank",
+          },
+        }),
+        movement("purchase", "2026-08-24T07:00:00.000Z", 120),
+      ]),
+      creditId,
+    );
+
+    expect(spend.purchases.map((purchase) => purchase.description)).toEqual([
+      "purchase",
+    ]);
+    expect(spend.total).toBe(120);
+  });
+
+  it("reports no spend on an account without movement", () => {
+    expect(solCardSpend(withMovements([]), creditId)).toEqual({
+      total: 0,
+      purchases: [],
+    });
   });
 });
