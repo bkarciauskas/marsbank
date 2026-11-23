@@ -105,7 +105,7 @@ export default function AccountDetailPage() {
           <h1>{account.name}</h1>
           <p>
             {account.productName} · {account.branch} · {account.number}{" "}
-            <CopyCoordinates account={account} />
+            <CopyCoordinates account={account} key={account.id} />
           </p>
         </div>
         <div

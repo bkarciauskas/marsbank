@@ -40,7 +40,9 @@ export function CreditSettlement({
           className="desk-credit-meter-track"
           role="meter"
         >
-          <span style={{ width: `${utilization * 100}%` }} />
+          {utilization > 0 ? (
+            <span style={{ width: `${utilization * 100}%` }} />
+          ) : null}
         </div>
         <strong>{percent.format(utilization)}</strong>
       </div>
