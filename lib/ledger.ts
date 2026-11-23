@@ -387,8 +387,8 @@ export function creditUtilization(account: CreditAccount): ShareBps {
 }
 
 /**
- * Card purchases on the account, by habit, in the sol of its latest movement.
- * That is the sol `TransactionList` labels `LEDGER_SOL` on the account page.
+ * Card purchases on the account, by habit, in the 24 hours up to its latest
+ * movement: the rows `TransactionList` labels `LEDGER_SOL` on the account page.
  */
 export function solCardSpend(
   snapshot: BankSnapshot,

@@ -302,6 +302,30 @@ describe("Expedition Credit", () => {
     ]);
   });
 
+  it("follows the movement list's sol across midnight UTC", () => {
+    const lateNight = structuredClone(seedSnapshot);
+    lateNight.transactions.push(
+      {
+        id: txnId("txn-credit-late-coffee"),
+        accountId: credit,
+        postedOn: "2026-08-22T22:30:00.000Z",
+        description: "Areology Coffee · Crater Gate",
+        amount: tokens(1_040),
+        direction: "debit",
+      },
+      {
+        id: txnId("txn-credit-sol-20-coffee"),
+        accountId: credit,
+        postedOn: "2026-08-22T18:00:00.000Z",
+        description: "Areology Coffee · Crater Gate",
+        amount: tokens(500),
+        direction: "debit",
+      },
+    );
+
+    expect(solCardSpend(lateNight, credit).total).toBe(10_000);
+  });
+
   it("shows no card spend once a settlement opens a new sol", () => {
     const settled = posted(
       applyTransfer(
