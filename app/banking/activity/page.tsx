@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { TransactionList } from "@/components/banking/transaction-list";
+import { transactionsMatchingSearch } from "@/lib/activity-search";
 import { statementCsv, type StatementCsv } from "@/lib/statement-csv";
 import { useBank } from "@/lib/store";
 
@@ -22,13 +23,7 @@ function saveFile(file: StatementCsv): void {
 function ActivityRegister() {
   const { snapshot } = useBank();
   const query = (useSearchParams().get("q") ?? "").trim();
-  const needle = query.toLowerCase();
-  const transactions =
-    needle.length === 0
-      ? snapshot.transactions
-      : snapshot.transactions.filter((transaction) =>
-          transaction.description.toLowerCase().includes(needle),
-        );
+  const transactions = transactionsMatchingSearch(snapshot, query);
 
   return (
     <div className="desk-register">

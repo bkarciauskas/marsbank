@@ -65,6 +65,22 @@ describe("ActivityPage", () => {
     ).toHaveAttribute("href", "/banking/activity");
   });
 
+  it("finds card movements when the query is an account name", () => {
+    searchParams.set("q", "Expedition Credit");
+    const { container } = renderActivity();
+
+    const rows = container.querySelectorAll(".transaction-row");
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(screen.getByText(/matching movements/i).textContent).toMatch(
+      /[1-9]\d* matching movements/,
+    );
+    for (const row of rows) {
+      expect(row.textContent).toMatch(/tram|rover|transit/i);
+    }
+    expect(container.querySelectorAll(".transaction-row").length).toBe(rows.length);
+  });
+
   it("reports an empty result rather than a silently empty ledger", () => {
     searchParams.set("q", "phobos shipyard");
     renderActivity();
