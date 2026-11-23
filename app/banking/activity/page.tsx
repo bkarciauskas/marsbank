@@ -23,12 +23,19 @@ function ActivityRegister() {
   const { snapshot } = useBank();
   const query = (useSearchParams().get("q") ?? "").trim();
   const needle = query.toLowerCase();
+  const accountById = new Map(
+    snapshot.accounts.map((account) => [account.id, account]),
+  );
   const transactions =
     needle.length === 0
       ? snapshot.transactions
-      : snapshot.transactions.filter((transaction) =>
-          transaction.description.toLowerCase().includes(needle),
-        );
+      : snapshot.transactions.filter((transaction) => {
+          if (transaction.description.toLowerCase().includes(needle)) {
+            return true;
+          }
+          const account = accountById.get(transaction.accountId);
+          return account?.name.toLowerCase().includes(needle) ?? false;
+        });
 
   return (
     <div className="desk-register">
