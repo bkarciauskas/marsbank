@@ -3,12 +3,15 @@ import type { BankSnapshot, TransferResult } from "./domain";
 import { DEMO_CREDIT_LIMIT, seedSnapshot } from "./fixtures";
 import { accountId, cardId } from "./ids";
 import {
+  ACCOUNT_NAME_LIMIT,
   applyPayIdTransfer,
   applyTransfer,
   availableBalance,
   displayBalance,
+  goalProgress,
   loanPosition,
   needsStepUp,
+  openAccount,
   registerPosition,
   offsetAccounts,
   offsetTotal,
@@ -319,5 +322,142 @@ describe("PayID send limits", () => {
     );
 
     expect(sentThisSol(posted(moved), morning)).toBe(0);
+  });
+});
+
+describe("opening goal accounts", () => {
+  const opened = {
+    id: accountId("acc-opened"),
+    now: new Date("2026-11-16T10:00:00.000Z"),
+  };
+
+  it("opens an empty savings vault with its goal and moves no tokens", () => {
+    const result = openAccount(
+      structuredClone(seedSnapshot),
+      {
+        kind: "savings",
+        name: "  Launch Window Cargo Reserve  ",
+        goal: tokens(120_000),
+      },
+      opened,
+    );
+
+    expect(result.kind).toBe("ok");
+    if (result.kind !== "ok") return;
+    expect(result.snapshot.accounts).toHaveLength(
+      seedSnapshot.accounts.length + 1,
+    );
+    expect(result.snapshot.accounts.at(-1)).toMatchObject({
+      id: "acc-opened",
+      kind: "savings",
+      name: "Launch Window Cargo Reserve",
+      openedOn: "2026-11-16",
+      available: 0,
+      current: 0,
+      goal: 120_000,
+    });
+    expect(registerPosition(result.snapshot.accounts)).toEqual(
+      registerPosition(seedSnapshot.accounts),
+    );
+    expect(result.snapshot.transactions).toEqual(seedSnapshot.transactions);
+    expect(result.snapshot.revision).toBe(seedSnapshot.revision + 1);
+  });
+
+  it("opens an offset bucket linked to the habitat loan", () => {
+    const loanId = accountId("acc-habitat-loan");
+    const result = openAccount(
+      structuredClone(seedSnapshot),
+      {
+        kind: "offset",
+        name: "Dust Storm Buffer",
+        goal: tokens(50_000),
+        linkedLoanId: loanId,
+      },
+      opened,
+    );
+
+    expect(result.kind).toBe("ok");
+    if (result.kind !== "ok") return;
+    expect(result.snapshot.accounts.at(-1)).toMatchObject({
+      id: "acc-opened",
+      kind: "offset",
+      linkedLoanId: loanId,
+      available: 0,
+      current: 0,
+      goal: 50_000,
+    });
+    expect(
+      offsetAccounts(result.snapshot, loanId).map((account) => account.name),
+    ).toContain("Dust Storm Buffer");
+    expect(offsetTotal(result.snapshot, loanId)).toBe(
+      offsetTotal(seedSnapshot, loanId),
+    );
+    expect(result.snapshot.transactions).toEqual(seedSnapshot.transactions);
+  });
+
+  it("rejects an empty, blank, or overlong name", () => {
+    const open = (name: string) =>
+      openAccount(
+        structuredClone(seedSnapshot),
+        { kind: "savings", name, goal: tokens(1) },
+        opened,
+      );
+
+    expect(open("")).toEqual({ kind: "name-empty" });
+    expect(open("   ")).toEqual({ kind: "name-empty" });
+    expect(open("x".repeat(ACCOUNT_NAME_LIMIT + 1))).toEqual({
+      kind: "name-too-long",
+    });
+    expect(open(` ${"x".repeat(ACCOUNT_NAME_LIMIT)} `).kind).toBe("ok");
+  });
+
+  it("rejects a goal of zero tokens", () => {
+    expect(
+      openAccount(
+        structuredClone(seedSnapshot),
+        { kind: "savings", name: "Vault", goal: tokens(0) },
+        opened,
+      ),
+    ).toEqual({ kind: "goal-not-positive" });
+  });
+
+  it("links an offset only to a habitat loan the resident holds", () => {
+    const linkTo = (id: string) =>
+      openAccount(
+        structuredClone(seedSnapshot),
+        {
+          kind: "offset",
+          name: "Bucket",
+          goal: tokens(1),
+          linkedLoanId: accountId(id),
+        },
+        opened,
+      );
+
+    expect(linkTo("acc-everyday")).toEqual({ kind: "unknown-loan" });
+    expect(linkTo("acc-credit")).toEqual({ kind: "unknown-loan" });
+    expect(linkTo("acc-missing")).toEqual({ kind: "unknown-loan" });
+  });
+
+  it("reports progress toward a goal, clamped once it is met", () => {
+    expect(goalProgress(tokens(0), tokens(120_000))).toEqual({
+      saved: 0,
+      goal: 120_000,
+      remaining: 120_000,
+      percent: 0,
+    });
+    expect(goalProgress(tokens(30_000), tokens(120_000))).toEqual({
+      saved: 30_000,
+      goal: 120_000,
+      remaining: 90_000,
+      percent: 25,
+    });
+    expect(goalProgress(tokens(1), tokens(3)).percent).toBe(33);
+    expect(goalProgress(tokens(150_000), tokens(120_000))).toEqual({
+      saved: 150_000,
+      goal: 120_000,
+      remaining: 0,
+      percent: 100,
+    });
   });
 });

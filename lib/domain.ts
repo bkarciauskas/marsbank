@@ -20,6 +20,7 @@ export type DepositAccount = AccountBase & {
   kind: "transaction" | "savings";
   available: TokenAmount;
   current: TokenAmount;
+  goal?: TokenAmount;
 };
 
 export type OffsetAccount = AccountBase & {
@@ -27,6 +28,7 @@ export type OffsetAccount = AccountBase & {
   available: TokenAmount;
   current: TokenAmount;
   linkedLoanId: AccountId;
+  goal?: TokenAmount;
 };
 
 export type CreditAccount = AccountBase & {
@@ -186,3 +188,18 @@ export type TransferResult =
 export type PaymentRequestResult =
   | { kind: "ok"; snapshot: BankSnapshot; request: PaymentRequest }
   | PaymentRequestFailure;
+
+export type OpenAccountCommand =
+  | { kind: "savings"; name: string; goal: TokenAmount }
+  | { kind: "offset"; name: string; goal: TokenAmount; linkedLoanId: AccountId };
+
+export type OpenAccountFailure =
+  | { kind: "name-empty" }
+  | { kind: "name-too-long" }
+  | { kind: "goal-not-positive" }
+  | { kind: "unknown-loan" }
+  | { kind: "network" };
+
+export type OpenAccountResult =
+  | { kind: "ok"; snapshot: BankSnapshot }
+  | OpenAccountFailure;

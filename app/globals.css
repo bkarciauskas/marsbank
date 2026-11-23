@@ -3760,6 +3760,60 @@ a.desk-demo-flag:focus-visible {
   }
 }
 
+.desk-open-account {
+  color-scheme: light;
+}
+
+.desk-open-account fieldset {
+  margin: 0;
+  border: 0;
+  padding: 0 22px 18px;
+}
+
+.desk-open-account legend {
+  padding: 18px 0 10px;
+  color: var(--desk-ink);
+  font-size: var(--desk-text-md);
+  font-weight: 500;
+}
+
+.desk-open-account fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 28px;
+  color: var(--desk-ink);
+  font-size: var(--desk-text-lg);
+}
+
+.desk-open-account input[type="radio"] {
+  accent-color: var(--oxide);
+}
+
+.desk-open-account select {
+  min-height: 46px;
+  border: 1px solid var(--desk-rule-strong);
+  border-radius: 3px;
+  padding: 0 12px;
+  background: var(--desk-sheet);
+  color: var(--desk-ink);
+  font-size: var(--desk-text-lg);
+}
+
+.desk-open-account .desk-planner-actions > div {
+  display: grid;
+  gap: 4px;
+}
+
+.desk-open-account .form-error {
+  color: var(--danger);
+}
+
+.desk-open-account button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
 .desk-primary-action {
   display: inline-flex;
   min-height: 46px;
@@ -3998,6 +4052,35 @@ button.desk-primary-action {
 .banking-shell .account-coordinates span {
   color: var(--desk-ink-soft);
   font-size: var(--desk-text-sm);
+}
+
+.account-goal {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.account-goal progress {
+  width: 100%;
+  max-width: 220px;
+  height: 6px;
+  overflow: hidden;
+  border: 0;
+  border-radius: 3px;
+  appearance: none;
+  background: var(--desk-rule);
+}
+
+.account-goal progress::-webkit-progress-bar {
+  background: var(--desk-rule);
+}
+
+.account-goal progress::-webkit-progress-value {
+  background: var(--blue);
+}
+
+.account-goal progress::-moz-progress-bar {
+  background: var(--blue);
 }
 
 .banking-shell .account-value {

@@ -3,6 +3,8 @@ import type {
   BankSnapshot,
   CardStatus,
   OffsetAccount,
+  OpenAccountCommand,
+  OpenAccountResult,
   PayIdTransferCommand,
   TransferCommand,
   TransferResult,
@@ -341,6 +343,74 @@ export function accountById(
   accountId: AccountId,
 ): Account | undefined {
   return snapshot.accounts.find((account) => account.id === accountId);
+}
+
+export const ACCOUNT_NAME_LIMIT = 40;
+
+function accountNumberForRevision(revision: number): string {
+  return `6600 ${String(revision).padStart(4, "0")}`;
+}
+
+export function openAccount(
+  snapshot: BankSnapshot,
+  command: OpenAccountCommand,
+  opened: { id: AccountId; now: Date },
+): OpenAccountResult {
+  const name = command.name.trim();
+  if (name.length === 0) return { kind: "name-empty" };
+  if (name.length > ACCOUNT_NAME_LIMIT) return { kind: "name-too-long" };
+  if (command.goal <= 0) return { kind: "goal-not-positive" };
+  if (
+    command.kind === "offset" &&
+    accountById(snapshot, command.linkedLoanId)?.kind !== "loan"
+  ) {
+    return { kind: "unknown-loan" };
+  }
+
+  const revision = snapshot.revision + 1;
+  const base = {
+    id: opened.id,
+    name,
+    branch: "MARS-001",
+    number: accountNumberForRevision(revision),
+    openedOn: opened.now.toISOString().slice(0, 10),
+    available: tokens(0),
+    current: tokens(0),
+    goal: command.goal,
+  };
+  const account: Account =
+    command.kind === "savings"
+      ? { ...base, kind: "savings", productName: "Mars Bank Goal Vault" }
+      : {
+          ...base,
+          kind: "offset",
+          productName: "Mars Bank Linked Offset Bucket",
+          linkedLoanId: command.linkedLoanId,
+        };
+
+  return {
+    kind: "ok",
+    snapshot: { ...snapshot, revision, accounts: [...snapshot.accounts, account] },
+  };
+}
+
+export type GoalProgress = {
+  saved: TokenAmount;
+  goal: TokenAmount;
+  remaining: TokenAmount;
+  percent: number;
+};
+
+export function goalProgress(
+  current: TokenAmount,
+  goal: TokenAmount,
+): GoalProgress {
+  return {
+    saved: current,
+    goal,
+    remaining: tokens(Math.max(0, goal - current)),
+    percent: Math.min(100, Math.floor((current * 100) / goal)),
+  };
 }
 
 export function offsetAccounts(

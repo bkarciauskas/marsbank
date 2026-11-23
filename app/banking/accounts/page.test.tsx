@@ -141,4 +141,69 @@ describe("AccountsPage", () => {
 
     expect(screen.getByText(/no accounts match/i)).toBeInTheDocument();
   });
+
+  function fillOpenForm(name: string, goal: string) {
+    fireEvent.change(screen.getByLabelText("Account name"), {
+      target: { value: name },
+    });
+    fireEvent.change(screen.getByLabelText("Target goal (MT)"), {
+      target: { value: goal },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Open account" }));
+  }
+
+  function openAccountRequests() {
+    return vi
+      .mocked(fetch)
+      .mock.calls.filter(([url]) => url === "/api/accounts")
+      .map(([, init]) => JSON.parse(String(init?.body)));
+  }
+
+  it("opens a goal vault through the register and shows its progress", async () => {
+    renderAccounts();
+
+    fillOpenForm("Launch Window Cargo Reserve", "120,000");
+
+    expect(
+      await screen.findByText("Opened Launch Window Cargo Reserve."),
+    ).toBeInTheDocument();
+    expect(openAccountRequests()).toEqual([
+      { kind: "savings", name: "Launch Window Cargo Reserve", goal: 120_000 },
+    ]);
+    const vaults = screen.getByRole("region", { name: "Savings vaults" });
+    expect(
+      within(vaults).getByRole("progressbar", {
+        name: "Launch Window Cargo Reserve goal progress",
+      }),
+    ).toHaveAttribute("value", "0");
+    expect(within(vaults).getByText("0 of 120,000 MT · 0%")).toBeInTheDocument();
+    expect(screen.getByLabelText("Account name")).toHaveValue("");
+  });
+
+  it("asks for a whole-token goal without calling the register", () => {
+    renderAccounts();
+
+    fillOpenForm("Launch Window Cargo Reserve", "1.5");
+
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Enter a whole-token goal.",
+    );
+    expect(openAccountRequests()).toEqual([]);
+    expect(
+      screen.queryByRole("region", { name: "Savings vaults" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("explains a name the register turns down", async () => {
+    renderAccounts();
+
+    fillOpenForm("   ", "50,000");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Name the account.",
+    );
+    expect(
+      screen.queryByRole("region", { name: "Savings vaults" }),
+    ).not.toBeInTheDocument();
+  });
 });
